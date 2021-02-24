@@ -1,2 +1,11 @@
 # Build files
 build/
+x64/
+
+# Visual Studio Code
+.vscode/
+
+# CMake Cache files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
