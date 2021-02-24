@@ -5,6 +5,14 @@ x64/
 # Visual Studio Code
 .vscode/
 
+# Visual Studio
+.vs/
+
+*.vcxproj
+*.vcxproj.*
+
+megatron3000.sln
+
 # CMake Cache files
 CMakeCache.txt
 CMakeFiles/

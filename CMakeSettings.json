@@ -1,0 +1,12 @@
+﻿{
+  "configurations": [
+    {
+      "name": "x64-Debug (default)",
+      "configurationType": "Debug",
+      "generator": "Ninja",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\build\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_PREFIX_PATH=\"D:\\Qt\\6.0.1\\msvc2019_64\""
+    }
+  ]
+}
