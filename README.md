@@ -1,4 +1,15 @@
 # Megatron 3000
+## Table of Contents
+- [Megatron 3000](#megatron-3000)
+  - [Table of Contents](#table-of-contents)
+  - [Development setup](#development-setup)
+    - [QMake](#qmake)
+    - [CMake](#cmake)
+      - [Visual Studio](#visual-studio)
+      - [Visual Studio Code](#visual-studio-code)
+  - [Deployment](#deployment)
+    - [Windows](#windows)
+      - [VS Code](#vs-code)
 ## Development setup
 The project uses two build systems that you can choose from when building: QMake and CMake.
 
