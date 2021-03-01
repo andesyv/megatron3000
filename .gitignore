@@ -1,2 +1,8 @@
+# Build files
+build/
+
 # Qt user files
 *.user
+
+# vs code user file
+.vscode/
