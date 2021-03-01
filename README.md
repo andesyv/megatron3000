@@ -34,3 +34,10 @@ If you're using the [CMake extension for visual studio code](https://marketplace
     }
 }
 ```
+
+## Deployment
+### Windows
+If using Windows you need to dynamically link to shared libraries. To do this you need to have all the dynamically linked libraries loaded in a path the executable have access to, like the working directory or system32. Fortunately Qt comes with a program to setup dynamically linked libraries for us called `windeployqt`. Simply run this program, located in the `bin` folder for your Qt installation, with the built executable as an argument and it will set up all shared libraries in the current working directory.
+
+#### VS Code
+VS Code tasks are handy, so I've set up a tasks template in the file `vscode.tasks.json` that can be used to automate the process of building and linking.
