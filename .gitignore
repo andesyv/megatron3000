@@ -1,8 +1,21 @@
 # Build files
 build/
+debug/
+release/
 
 # Qt user files
 *.user
+*.autosave
+.qmake.stash
+
+# Qt generated files
+ui_*.h
 
 # vs code user file
 .vscode/
+
+# Visual Studio files
+.vs/
+*.sln
+*.vcxproj
+*.filters

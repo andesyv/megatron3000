@@ -46,6 +46,21 @@ If you're using the [CMake extension for visual studio code](https://marketplace
 }
 ```
 
+For linter help you would probably also like to add the include path `<qt-installation-path>/include` to the `.vscode/c_cpp_properties.json` file aswell. Ex.:
+```json
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "D:\\Qt\\5.15.2\\msvc2019_64\\include"
+            ]
+        }
+    ]
+}
+```
+
 ## Deployment
 ### Windows
 If using Windows you need to dynamically link to shared libraries. To do this you need to have all the dynamically linked libraries loaded in a path the executable have access to, like the working directory or system32. Fortunately Qt comes with a program to setup dynamically linked libraries for us called `windeployqt`. Simply run this program, located in the `bin` folder for your Qt installation, with the built executable as an argument and it will set up all shared libraries in the current working directory.
