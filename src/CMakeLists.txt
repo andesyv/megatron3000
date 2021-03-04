@@ -2,4 +2,12 @@ add_executable(megatron3000
     main.cpp
     mainwindow.cpp
     mainwindow.ui
+    histogramwidget.cpp
+    histogramwidget.ui
+    transferfunctionwidget.cpp
+    transferfunctionwidget.h
+    viewport2d.cpp
+    viewport2d.ui
+    viewport3d.cpp
+    viewport3d.ui
 )
