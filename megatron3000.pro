@@ -1,6 +1,11 @@
-QT       += core gui widgets
+QT       += core gui widgets opengl
 
 CONFIG += c++17
+
+!versionAtLeast(QT_VERSION, 5.4.0) {
+    message("Cannot use Qt $${QT_VERSION}")
+    error("Use Qt 5.4 or newer")
+}
 
 SOURCES += \
     src/histogramwidget.cpp \
