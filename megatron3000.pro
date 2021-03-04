@@ -6,6 +6,7 @@ SOURCES += \
     src/histogramwidget.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
+    src/renderer.cpp \
     src/transferfunctionwidget.cpp \
     src/viewport2d.cpp \
     src/viewport3d.cpp
@@ -13,6 +14,7 @@ SOURCES += \
 HEADERS += \
     src/histogramwidget.h \
     src/mainwindow.h \
+    src/renderer.h \
     src/transferfunctionwidget.h \
     src/viewport2d.h \
     src/viewport3d.h

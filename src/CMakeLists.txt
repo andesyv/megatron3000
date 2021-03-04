@@ -10,4 +10,5 @@ add_executable(megatron3000
     viewport2d.ui
     viewport3d.cpp
     viewport3d.ui
+    renderer.cpp
 )

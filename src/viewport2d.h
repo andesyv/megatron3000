@@ -2,7 +2,9 @@
 #define VIEWPORT2D_H
 
 #include <QWidget>
+#include <memory>
 
+class Renderer;
 namespace Ui {
 class Viewport2D;
 }
@@ -17,6 +19,7 @@ public:
 
 private:
     Ui::Viewport2D *ui;
+    std::unique_ptr<Renderer> mRenderer;
 };
 
 #endif // VIEWPORT2D_H

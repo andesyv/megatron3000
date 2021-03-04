@@ -1,7 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <author/>
- <comment/>
- <exportmacro/>
  <class>Viewport2D</class>
  <widget class="QWidget" name="Viewport2D">
   <property name="geometry">
@@ -15,7 +13,18 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>-8</x>
+     <y>0</y>
+     <width>411</width>
+     <height>301</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="RenderLayout"/>
+  </widget>
  </widget>
- <pixmapfunction/>
+ <resources/>
  <connections/>
 </ui>
