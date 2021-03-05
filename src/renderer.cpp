@@ -28,7 +28,17 @@ void main() {
 })STR";
 
 Renderer::Renderer() {
+    /* Use the formats bufferswap to determine when to redraw the widget.
+     * After each bufferswap, determined by swap interval in the OpenGL context,
+     * a new render is scheduled. This limits the amount of rendering done to
+     * be no more than the refresh rate of the screen, preventing wasted frames.
+     */
+   connect(this, &QOpenGLWidget::frameSwapped, this, &Renderer::scheduleRender);
+}
 
+double Renderer::getFramesPerSecond() {
+    const auto elapsed = mAliveTimer.elapsed() * 0.001;
+    return 1.0 / (elapsed / mFrameCount);
 }
 
 void Renderer::initializeGL() {
@@ -75,6 +85,8 @@ void Renderer::initializeGL() {
 }
 
 void Renderer::paintGL() {
+    const float deltaTime = mFrameTimer.restart() * 0.001;
+
     glClear(GL_COLOR_BUFFER_BIT);
 
     mMat.rotate(0.1f, QVector3D{0.f, 1.f, 0.f});
@@ -85,12 +97,16 @@ void Renderer::paintGL() {
     glBindVertexArray(mVAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
-    
-    update();
+
+    ++mFrameCount;
 }
 
 void Renderer::resizeGL(int w, int h) {
     
+}
+
+void Renderer::scheduleRender() {
+    update();
 }
 
 Renderer::~Renderer() {

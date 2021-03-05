@@ -10,7 +10,7 @@ void setupGlobalRenderingSettings() {
     format.setVersion(4, 3);
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setOptions(QSurfaceFormat::DebugContext);
-    format.setSwapInterval(0);
+    format.setSwapInterval(1);
 
     QSurfaceFormat::setDefaultFormat(format);
 

@@ -5,12 +5,15 @@
 #include <QOpenGLFunctions_4_3_Core>
 #include <QOpenGLShaderProgram>
 #include <QMatrix>
+#include <QElapsedTimer>
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_3_Core
 {
     Q_OBJECT
 public:
     Renderer();
+
+    double getFramesPerSecond();
 
     ~Renderer();
 
@@ -24,6 +27,12 @@ protected:
     QMatrix4x4 mMat;
 
     QOpenGLShaderProgram mShader;
+
+    QElapsedTimer mFrameTimer, mAliveTimer;
+    uint32_t mFrameCount{0};
+
+private slots:
+    void scheduleRender();
 };
 
 #endif // RENDERER_H
