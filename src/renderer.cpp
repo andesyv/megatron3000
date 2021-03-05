@@ -1,31 +1,8 @@
 #include "renderer.h"
 #include <iostream>
 #include <QElapsedTimer>
-
-// Hardcoded vertex and fragment shader (only temporary (hopefully))
-constexpr char DEFAULT_VERTEX[] = R"STR(#version 430 core
-
-layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inCol;
-
-uniform mat4 MVP;
-
-out vec3 col;
-
-void main() {
-    col = inCol;
-    gl_Position = MVP * vec4(inPos, 1.0);
-})STR";
-
-constexpr char DEFAULT_FRAGMENT[] = R"STR(#version 430 core
-
-in vec3 col;
-
-out vec4 fragColor;
-
-void main() {
-    fragColor = vec4(col, 1.0);
-})STR";
+#include "default.vs.h"
+#include "default.fs.h"
 
 Renderer::Renderer() {
     /* Use the formats bufferswap to determine when to redraw the widget.
@@ -47,11 +24,11 @@ void Renderer::initializeGL() {
     glClearColor(0.f, 0.3f, 0.3f, 1.f);
 
     // Compile shader
-    if (!mShader.addShaderFromSourceCode(QOpenGLShader::Vertex, DEFAULT_VERTEX)) {
+    if (!mShader.addShaderFromSourceCode(QOpenGLShader::Vertex, DEFAULT_VS)) {
         throw std::runtime_error{"Failed to compile vertex shader"};
     }
 
-    if (!mShader.addShaderFromSourceCode(QOpenGLShader::Fragment, DEFAULT_FRAGMENT)) {
+    if (!mShader.addShaderFromSourceCode(QOpenGLShader::Fragment, DEFAULT_FS)) {
         throw std::runtime_error{"Failed to compile fragment shader"};
     }
 
