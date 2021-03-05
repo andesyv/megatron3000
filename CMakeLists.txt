@@ -9,8 +9,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Gui REQUIRED)
 
 add_subdirectory(src)
 
-target_link_libraries(megatron3000 PRIVATE Qt::Widgets)
+target_link_libraries(megatron3000 PRIVATE Qt::Widgets Qt::Gui)

@@ -19,7 +19,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
 
     void addWidget(QWidget* widget);
-    
+
     ~MainWindow();
 
 private:
