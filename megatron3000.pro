@@ -8,6 +8,7 @@ CONFIG += c++17
 }
 
 SOURCES += \
+    src/datawidget.cpp \
     src/histogramwidget.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
@@ -17,6 +18,7 @@ SOURCES += \
     src/viewport3d.cpp
 
 HEADERS += \
+    src/datawidget.h \
     src/histogramwidget.h \
     src/mainwindow.h \
     src/renderer.h \
@@ -25,6 +27,7 @@ HEADERS += \
     src/viewport3d.h
 
 FORMS += \
+    src/datawidget.ui \
     src/histogramwidget.ui \
     src/mainwindow.ui \
     src/transferfunctionwidget.ui \

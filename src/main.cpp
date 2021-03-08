@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "datawidget.h"
 
 #include <QApplication>
 #include <QSurfaceFormat>
@@ -23,7 +24,14 @@ int main(int argc, char *argv[])
     setupGlobalRenderingSettings();
 
     QApplication a(argc, argv);
+
+    //Main window
     MainWindow w;
     w.show();
+
+    //Separate data window
+    DataWidget dw;
+    dw.show();
+
     return a.exec();
 }
