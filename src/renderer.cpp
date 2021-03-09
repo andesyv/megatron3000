@@ -1,11 +1,7 @@
 #include "renderer.h"
 #include <iostream>
 #include <QElapsedTimer>
-
-#ifdef EMBEDDED_SHADERS
-#include "default.vs.h"
-#include "default.fs.h"
-#endif
+#include "shaders/shadermanager.h"
 
 Renderer::Renderer() {
     /* Use the formats bufferswap to determine when to redraw the widget.
@@ -25,29 +21,6 @@ void Renderer::initializeGL() {
     initializeOpenGLFunctions();
 
     glClearColor(0.f, 0.3f, 0.3f, 1.f);
-
-    // Compile shader
-#ifdef EMBEDDED_SHADERS
-    if (!mShader.addShaderFromSourceCode(QOpenGLShader::Vertex, DEFAULT_VS)) {
-        throw std::runtime_error{"Failed to compile vertex shader"};
-    }
-
-    if (!mShader.addShaderFromSourceCode(QOpenGLShader::Fragment, DEFAULT_FS)) {
-        throw std::runtime_error{"Failed to compile fragment shader"};
-    }
-#else
-    if (!mShader.addShaderFromSourceFile(QOpenGLShader::Vertex, "./src/shaders/default.vs")) {
-        throw std::runtime_error{"Failed to compile vertex shader"};
-    }
-
-    if (!mShader.addShaderFromSourceFile(QOpenGLShader::Fragment, "./src/shaders/default.fs")) {
-        throw std::runtime_error{"Failed to compile fragment shader"};
-    }
-#endif
-
-    if (!mShader.link()) {
-        throw std::runtime_error{"Failed to link shaderprogram"};
-    }
 
     glGenVertexArrays(1, &mVAO);
     glBindVertexArray(mVAO);
@@ -81,8 +54,9 @@ void Renderer::paintGL() {
 
     mMat.rotate(0.1f, QVector3D{0.f, 1.f, 0.f});
 
-    mShader.bind();
-    mShader.setUniformValue("MVP", mMat);
+    auto& shader = shaderProgram("default");
+    shader.bind();
+    shader.setUniformValue("MVP", mMat);
 
     glBindVertexArray(mVAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -102,4 +76,12 @@ void Renderer::scheduleRender() {
 Renderer::~Renderer() {
     glDeleteBuffers(1, &mVBO);
     glDeleteVertexArrays(1, &mVAO);
+}
+
+QOpenGLShaderProgram& Renderer::shaderProgram(const std::string& name) {
+    return ShaderManager::get().shader(name);
+}
+
+bool Renderer::isShaderValid(const std::string& name) const {
+    return ShaderManager::get().valid(name);
 }

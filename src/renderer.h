@@ -4,7 +4,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_4_3_Core>
 #include <QOpenGLShaderProgram>
-#include <QMatrix>
+#include <QMatrix4x4>
 #include <QElapsedTimer>
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_3_Core
@@ -26,10 +26,12 @@ protected:
     GLuint mVAO, mVBO;
     QMatrix4x4 mMat;
 
-    QOpenGLShaderProgram mShader;
-
     QElapsedTimer mFrameTimer, mAliveTimer;
     uint32_t mFrameCount{0};
+
+    // Shader interface:
+    QOpenGLShaderProgram& shaderProgram(const std::string& name);
+    bool isShaderValid(const std::string& name) const;
 
 private slots:
     void scheduleRender();
