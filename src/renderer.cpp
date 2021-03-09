@@ -1,8 +1,11 @@
 #include "renderer.h"
 #include <iostream>
 #include <QElapsedTimer>
+
+#ifdef EMBEDDED_SHADERS
 #include "default.vs.h"
 #include "default.fs.h"
+#endif
 
 Renderer::Renderer() {
     /* Use the formats bufferswap to determine when to redraw the widget.
@@ -24,6 +27,7 @@ void Renderer::initializeGL() {
     glClearColor(0.f, 0.3f, 0.3f, 1.f);
 
     // Compile shader
+#ifdef EMBEDDED_SHADERS
     if (!mShader.addShaderFromSourceCode(QOpenGLShader::Vertex, DEFAULT_VS)) {
         throw std::runtime_error{"Failed to compile vertex shader"};
     }
@@ -31,6 +35,15 @@ void Renderer::initializeGL() {
     if (!mShader.addShaderFromSourceCode(QOpenGLShader::Fragment, DEFAULT_FS)) {
         throw std::runtime_error{"Failed to compile fragment shader"};
     }
+#else
+    if (!mShader.addShaderFromSourceFile(QOpenGLShader::Vertex, "./src/shaders/default.vs")) {
+        throw std::runtime_error{"Failed to compile vertex shader"};
+    }
+
+    if (!mShader.addShaderFromSourceFile(QOpenGLShader::Fragment, "./src/shaders/default.fs")) {
+        throw std::runtime_error{"Failed to compile fragment shader"};
+    }
+#endif
 
     if (!mShader.link()) {
         throw std::runtime_error{"Failed to link shaderprogram"};
