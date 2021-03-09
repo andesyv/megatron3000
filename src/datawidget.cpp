@@ -35,3 +35,16 @@ void DataWidget::on_treeView_clicked(const QModelIndex &index)
     QString dirPath = dirmodel->fileInfo(index).absoluteFilePath();
     ui->listView->setRootIndex(filemodel->setRootPath(dirPath));
 }
+
+void DataWidget::on_listView_doubleClicked(const QModelIndex &index)
+{
+    // This is the absolute file path to the file double clicked
+    QString filePath = filemodel->fileInfo(index).absoluteFilePath();
+
+    if(filemodel->fileInfo(index).suffix()=="dat") {
+        qInfo() << "Successfully loaded file at " + filePath;
+    } else {
+        //Not supported file type
+        qInfo() << "Failed to load unsupported filetype at path " + filePath;
+    }
+}
