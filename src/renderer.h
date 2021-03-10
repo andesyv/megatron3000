@@ -6,6 +6,22 @@
 #include <QOpenGLShaderProgram>
 #include <QMatrix4x4>
 #include <QElapsedTimer>
+#include <memory>
+
+/**
+ * @brief Helper class to draw a screen spaced quad
+ */
+class ScreenSpacedBuffer : protected QOpenGLFunctions_4_3_Core {
+private:
+    GLuint mVAO, mVBO;
+
+public:
+    void bind();
+    void unbind();
+
+    ScreenSpacedBuffer();
+    ~ScreenSpacedBuffer();
+};
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_3_Core
 {
@@ -22,8 +38,8 @@ protected:
     void paintGL() override;
     void resizeGL(int w, int h) override;
 
-    // Temporary opengl test stuff:
-    GLuint mVAO, mVBO;
+    // Screen Spaced vertex array
+    std::unique_ptr<ScreenSpacedBuffer> mScreenVAO;
     QMatrix4x4 mMat;
 
     QElapsedTimer mFrameTimer, mAliveTimer;

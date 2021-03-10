@@ -3,24 +3,8 @@
 #include <QElapsedTimer>
 #include "shaders/shadermanager.h"
 
-Renderer::Renderer() {
-    /* Use the formats bufferswap to determine when to redraw the widget.
-     * After each bufferswap, determined by swap interval in the OpenGL context,
-     * a new render is scheduled. This limits the amount of rendering done to
-     * be no more than the refresh rate of the screen, preventing wasted frames.
-     */
-   connect(this, &QOpenGLWidget::frameSwapped, this, &Renderer::scheduleRender);
-}
-
-double Renderer::getFramesPerSecond() {
-    const auto elapsed = mAliveTimer.elapsed() * 0.001;
-    return 1.0 / (elapsed / mFrameCount);
-}
-
-void Renderer::initializeGL() {
+ScreenSpacedBuffer::ScreenSpacedBuffer() {
     initializeOpenGLFunctions();
-
-    glClearColor(0.f, 0.3f, 0.3f, 1.f);
 
     glGenVertexArrays(1, &mVAO);
     glBindVertexArray(mVAO);
@@ -42,7 +26,41 @@ void Renderer::initializeGL() {
     glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
+}
 
+void ScreenSpacedBuffer::bind() {
+    glBindVertexArray(mVAO);
+}
+
+void ScreenSpacedBuffer::unbind() {
+    glBindVertexArray(0);
+}
+
+ScreenSpacedBuffer::~ScreenSpacedBuffer() {
+    glDeleteBuffers(1, &mVBO);
+    glDeleteVertexArrays(1, &mVAO);
+}
+
+Renderer::Renderer() {
+    /* Use the formats bufferswap to determine when to redraw the widget.
+     * After each bufferswap, determined by swap interval in the OpenGL context,
+     * a new render is scheduled. This limits the amount of rendering done to
+     * be no more than the refresh rate of the screen, preventing wasted frames.
+     */
+   connect(this, &QOpenGLWidget::frameSwapped, this, &Renderer::scheduleRender);
+}
+
+double Renderer::getFramesPerSecond() {
+    const auto elapsed = mAliveTimer.elapsed() * 0.001;
+    return 1.0 / (elapsed / mFrameCount);
+}
+
+void Renderer::initializeGL() {
+    initializeOpenGLFunctions();
+
+    mScreenVAO = std::make_unique<ScreenSpacedBuffer>();
+
+    glClearColor(0.f, 0.3f, 0.3f, 1.f);
 
     mMat.setToIdentity();
 }
@@ -58,25 +76,20 @@ void Renderer::paintGL() {
     shader.bind();
     shader.setUniformValue("MVP", mMat);
 
-    glBindVertexArray(mVAO);
+    mScreenVAO->bind();
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    glBindVertexArray(0);
+    mScreenVAO->unbind();
 
     ++mFrameCount;
 }
 
-void Renderer::resizeGL(int w, int h) {
-    
-}
+void Renderer::resizeGL(int w, int h) {}
 
 void Renderer::scheduleRender() {
     update();
 }
 
-Renderer::~Renderer() {
-    glDeleteBuffers(1, &mVBO);
-    glDeleteVertexArrays(1, &mVAO);
-}
+Renderer::~Renderer() {}
 
 QOpenGLShaderProgram& Renderer::shaderProgram(const std::string& name) {
     return ShaderManager::get().shader(name);
