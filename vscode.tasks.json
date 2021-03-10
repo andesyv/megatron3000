@@ -17,7 +17,7 @@
                 "cwd": "${workspaceFolder}/build"
             },
             "args": [
-                "src/Debug/megatron3000.exe"
+                "Debug/megatron3000.exe"
             ],
             "problemMatcher": []
         },

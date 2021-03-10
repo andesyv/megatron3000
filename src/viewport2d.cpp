@@ -7,7 +7,7 @@ Viewport2D::Viewport2D(QWidget *parent) :
     ui(new Ui::Viewport2D)
 {
     ui->setupUi(this);
-    mRenderer = std::make_unique<Renderer>();
+    mRenderer = std::make_unique<Renderer>(this);
     ui->RenderLayout->addWidget(mRenderer.get());
 }
 

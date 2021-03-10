@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <memory>
 #include <vector>
+#include <QMatrix4x4>
 
 class QWidget;
 
@@ -19,7 +20,10 @@ public:
     MainWindow(QWidget *parent = nullptr);
 
     void addWidget(QWidget* widget);
-    
+
+    // Global camera matrix for all render-widgets
+    QMatrix4x4 mGlobalViewMatrix;
+
     ~MainWindow();
 
 private:
