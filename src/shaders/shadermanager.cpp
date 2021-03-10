@@ -33,6 +33,23 @@ ShaderManager::ShaderManager() {
             throw std::runtime_error{"Failed to link shaderprogram"};
         }
     }
+
+
+    if (!valid("screen")) {
+        auto& screenShader = shader("screen");
+
+        if (!screenShader.addShaderFromSourceFile(QOpenGLShader::Vertex, "./src/shaders/screen.vs")) {
+            throw std::runtime_error{"Failed to compile vertex shader"};
+        }
+
+        if (!screenShader.addShaderFromSourceFile(QOpenGLShader::Fragment, "./src/shaders/screen.fs")) {
+            throw std::runtime_error{"Failed to compile fragment shader"};
+        }
+
+        if (!screenShader.link()) {
+            throw std::runtime_error{"Failed to link shaderprogram"};
+        }
+    }
 }
 
 ShaderManager& ShaderManager::get() {

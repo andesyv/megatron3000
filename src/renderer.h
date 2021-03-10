@@ -19,15 +19,19 @@ public:
     void bind();
     void unbind();
 
+    void draw();
+
     ScreenSpacedBuffer();
     ~ScreenSpacedBuffer();
 };
+
+class MainWindow;
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_3_Core
 {
     Q_OBJECT
 public:
-    Renderer();
+    Renderer(QWidget *parent = nullptr);
 
     double getFramesPerSecond();
 
@@ -38,9 +42,14 @@ protected:
     void paintGL() override;
     void resizeGL(int w, int h) override;
 
+    MainWindow* mMainWindow;
+
     // Screen Spaced vertex array
     std::unique_ptr<ScreenSpacedBuffer> mScreenVAO;
-    QMatrix4x4 mMat;
+    // Render-widgets own camera matrix. If not using global camera matrix, render-widgets use this one.
+    QMatrix4x4 mPrivateViewMatrix;
+    // Whether to use widgets camera or global camera
+    bool mUseGlobalMatrix{false};
 
     QElapsedTimer mFrameTimer, mAliveTimer;
     uint32_t mFrameCount{0};
