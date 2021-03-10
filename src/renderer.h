@@ -50,6 +50,7 @@ protected:
     QMatrix4x4 mPrivateViewMatrix;
     // Whether to use widgets camera or global camera
     bool mUseGlobalMatrix{false};
+    QMatrix4x4 mPerspectiveMatrix;
 
     QElapsedTimer mFrameTimer, mAliveTimer;
     uint32_t mFrameCount{0};

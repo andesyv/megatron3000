@@ -83,6 +83,7 @@ void Renderer::initializeGL() {
     glClearColor(0.f, 0.3f, 0.3f, 1.f);
 
     mPrivateViewMatrix.setToIdentity();
+    mPrivateViewMatrix.translate({0.f, 0.f, -10.f});
 
     // Check if we could find MainWindow in contructor
     if (mMainWindow == nullptr) throw std::runtime_error{"Renderwidget could'nt find MainWindow!"};
@@ -93,19 +94,23 @@ void Renderer::paintGL() {
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    mPrivateViewMatrix.rotate(0.1f * deltaTime, QVector3D{0.f, 1.f, 0.f});
+    mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.5f, 1.f, 0.f});
     const auto& viewMatrix = mUseGlobalMatrix ? mMainWindow->mGlobalViewMatrix : mPrivateViewMatrix;
+    const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
 
     auto& shader = shaderProgram("screen");
     shader.bind();
-    shader.setUniformValue("MVP", viewMatrix);
+    shader.setUniformValue("MVP", MVP);
 
     mScreenVAO->draw();
 
     ++mFrameCount;
 }
 
-void Renderer::resizeGL(int w, int h) {}
+void Renderer::resizeGL(int w, int h) {
+    const auto aspectRatio = static_cast<float>(w) / h;
+    mPerspectiveMatrix.perspective(45.f, aspectRatio, 0.1f, 1000.f);
+}
 
 void Renderer::scheduleRender() {
     update();
