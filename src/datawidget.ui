@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>636</width>
+    <width>918</width>
     <height>392</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>301</width>
+     <width>571</width>
      <height>371</height>
     </rect>
    </property>
@@ -26,8 +26,8 @@
   <widget class="QListView" name="listView">
    <property name="geometry">
     <rect>
-     <x>320</x>
-     <y>11</y>
+     <x>600</x>
+     <y>10</y>
      <width>301</width>
      <height>371</height>
     </rect>
