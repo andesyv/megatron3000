@@ -53,3 +53,5 @@ endif()
 # Add project sources
 add_subdirectory(src)
 target_link_libraries(megatron3000 PRIVATE Qt::Widgets Qt::Gui)
+
+add_compile_definitions(SHADERPATH="${CMAKE_SOURCE_DIR}/src/shaders")

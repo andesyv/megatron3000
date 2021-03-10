@@ -7,6 +7,9 @@ CONFIG += c++17
     error("Use Qt 5.4 or newer")
 }
 
+SHADER_PATH = $${PWD}/src/shaders
+DEFINES += "SHADERPATH=\\\"$$SHADER_PATH\\\""
+
 SOURCES += \
     src/histogramwidget.cpp \
     src/main.cpp \

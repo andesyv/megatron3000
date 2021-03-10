@@ -1,12 +1,20 @@
 #include "shadermanager.h"
 #include <stdexcept>
+#include <filesystem>
+#include <iostream>
 
 #ifdef EMBEDDED_SHADERS
 #include "default.vs.h"
 #include "default.fs.h"
 #endif
 
+#pragma message(SHADERPATH)
+
+namespace fs = std::filesystem;
+
 ShaderManager::ShaderManager() {
+    const auto shaderpath = fs::absolute(fs::path{SHADERPATH});
+
     // Compile default shader (if it doesn't exist)
     if (!valid("default")) {
         auto& defaultShader = shader("default");
@@ -21,11 +29,13 @@ ShaderManager::ShaderManager() {
                 throw std::runtime_error{"Failed to compile fragment shader"};
             }
         #else
-            if (!defaultShader.addShaderFromSourceFile(QOpenGLShader::Vertex, "./src/shaders/default.vs")) {
+            const auto vspath = QString::fromStdString((shaderpath / "default.vs").string());
+            const auto fspath = QString::fromStdString((shaderpath / "default.fs").string());
+            if (!defaultShader.addShaderFromSourceFile(QOpenGLShader::Vertex, vspath)) {
                 throw std::runtime_error{"Failed to compile vertex shader"};
             }
 
-            if (!defaultShader.addShaderFromSourceFile(QOpenGLShader::Fragment, "./src/shaders/default.fs")) {
+            if (!defaultShader.addShaderFromSourceFile(QOpenGLShader::Fragment, fspath)) {
                 throw std::runtime_error{"Failed to compile fragment shader"};
             }
         #endif
@@ -39,11 +49,13 @@ ShaderManager::ShaderManager() {
     if (!valid("screen")) {
         auto& screenShader = shader("screen");
 
-        if (!screenShader.addShaderFromSourceFile(QOpenGLShader::Vertex, "./src/shaders/screen.vs")) {
+        const auto vspath = QString::fromStdString((shaderpath / "screen.vs").string());
+        const auto fspath = QString::fromStdString((shaderpath / "screen.fs").string());
+        if (!screenShader.addShaderFromSourceFile(QOpenGLShader::Vertex, vspath)) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!screenShader.addShaderFromSourceFile(QOpenGLShader::Fragment, "./src/shaders/screen.fs")) {
+        if (!screenShader.addShaderFromSourceFile(QOpenGLShader::Fragment, fspath)) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
 
