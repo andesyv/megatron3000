@@ -1,4 +1,5 @@
 #include "shadermanager.h"
+#include <stdexcept>
 
 #ifdef EMBEDDED_SHADERS
 #include "default.vs.h"
