@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include "datawidget.h"
+#include "volume.h"
 
 #include <QApplication>
 #include <QSurfaceFormat>
@@ -23,7 +25,17 @@ int main(int argc, char *argv[])
     setupGlobalRenderingSettings();
 
     QApplication a(argc, argv);
+
+    //Main window
     MainWindow w;
     w.show();
+
+    //Volume initialization
+    Volume *vol = new Volume();
+
+    //Separate data window
+    DataWidget dw(vol);
+    dw.show();
+
     return a.exec();
 }
