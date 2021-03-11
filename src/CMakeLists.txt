@@ -1,4 +1,4 @@
-add_executable(megatron3000
+target_sources(megatron3000 PRIVATE
     main.cpp
     mainwindow.cpp
     mainwindow.ui
@@ -12,3 +12,8 @@ add_executable(megatron3000
     viewport3d.ui
     renderer.cpp
 )
+
+# Add target for creating embedfile helper program
+add_executable(embedfile embedfile.cpp)
+
+add_subdirectory(shaders)

@@ -1,4 +1,7 @@
 # Megatron 3000
+
+[![Build](https://github.com/andesyv/megatron3000/actions/workflows/build.yml/badge.svg)](https://github.com/andesyv/megatron3000/actions/workflows/build.yml)
+
 ## Table of Contents
 - [Megatron 3000](#megatron-3000)
   - [Table of Contents](#table-of-contents)

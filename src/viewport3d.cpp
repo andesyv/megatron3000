@@ -7,7 +7,7 @@ Viewport3D::Viewport3D(QWidget *parent) :
     ui(new Ui::Viewport3D)
 {
     ui->setupUi(this);
-    mRenderer = std::make_unique<Renderer>();
+    mRenderer = std::make_unique<Renderer>(this);
     ui->RenderLayout->addWidget(mRenderer.get());
 }
 

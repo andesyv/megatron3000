@@ -11,8 +11,10 @@ MainWindow::MainWindow(QWidget *parent)
     // Connections:
     connect(mUi->action2D_Viewport, &QAction::triggered, this, [&](){
         // Lambda mediator: button connected to lambda -> lambda decides what widget to add to viewport
-        addWidget(new Viewport2D{});
+        addWidget(new Viewport2D{this});
     });
+
+    mGlobalViewMatrix.setToIdentity();
 }
 
 void MainWindow::addWidget(QWidget* widget) {

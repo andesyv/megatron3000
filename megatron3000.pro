@@ -7,6 +7,9 @@ CONFIG += c++17
     error("Use Qt 5.4 or newer")
 }
 
+SHADER_PATH = $${PWD}/src/shaders
+DEFINES += "SHADERPATH=\\\"$$SHADER_PATH\\\""
+
 SOURCES += \
     src/datawidget.cpp \
     src/histogramwidget.cpp \
@@ -16,7 +19,8 @@ SOURCES += \
     src/transferfunctionwidget.cpp \
     src/viewport2d.cpp \
     src/viewport3d.cpp \
-    src/volume.cpp
+    src/volume.cpp \
+    src/shaders/shadermanager.cpp
 
 HEADERS += \
     src/datawidget.h \
@@ -26,7 +30,8 @@ HEADERS += \
     src/transferfunctionwidget.h \
     src/viewport2d.h \
     src/viewport3d.h \
-    src/volume.h
+    src/volume.h \
+    src/shaders/shadermanager.h
 
 FORMS += \
     src/datawidget.ui \
@@ -35,3 +40,9 @@ FORMS += \
     src/transferfunctionwidget.ui \
     src/viewport2d.ui \
     src/viewport3d.ui
+
+DISTFILES += \
+    src/shaders/default.vs \
+    src/shaders/default.fs \
+    src/shaders/screen.vs \
+    src/shaders/screen.fs
