@@ -1,10 +1,13 @@
 #include "datawidget.h"
 #include "ui_datawidget.h"
 
-DataWidget::DataWidget(QWidget *parent) :
+
+DataWidget::DataWidget(Volume *vol, QWidget *parent) :
     QWidget(parent),
+    m_volume(vol),
     ui(new Ui::DataWidget)
 {
+
     ui->setupUi(this);
 
     //Directory model
@@ -21,7 +24,6 @@ DataWidget::DataWidget(QWidget *parent) :
     filemodel->setRootPath(rootPath);
 
     ui->listView->setModel(filemodel);
-
 }
 
 DataWidget::~DataWidget()
@@ -43,6 +45,8 @@ void DataWidget::on_listView_doubleClicked(const QModelIndex &index)
 
     if(filemodel->fileInfo(index).suffix()=="dat") {
         qInfo() << "Successfully loaded file at " + filePath;
+        m_volume->loadData(filePath);
+        this->close();
     } else {
         //Not supported file type
         qInfo() << "Failed to load unsupported filetype at path " + filePath;

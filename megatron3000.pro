@@ -15,7 +15,8 @@ SOURCES += \
     src/renderer.cpp \
     src/transferfunctionwidget.cpp \
     src/viewport2d.cpp \
-    src/viewport3d.cpp
+    src/viewport3d.cpp \
+    src/volume.cpp
 
 HEADERS += \
     src/datawidget.h \
@@ -24,7 +25,8 @@ HEADERS += \
     src/renderer.h \
     src/transferfunctionwidget.h \
     src/viewport2d.h \
-    src/viewport3d.h
+    src/viewport3d.h \
+    src/volume.h
 
 FORMS += \
     src/datawidget.ui \

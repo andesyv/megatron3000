@@ -6,6 +6,7 @@
 #include <QtCore>
 #include <QtGui>
 #include <QFileSystemModel>
+#include "volume.h"
 
 
 namespace Ui {
@@ -16,7 +17,7 @@ class DataWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit DataWidget(QWidget *parent = nullptr);
+    explicit DataWidget(Volume *vol, QWidget *parent = nullptr);
     ~DataWidget();
 
 private slots:
@@ -25,6 +26,7 @@ private slots:
     void on_listView_doubleClicked(const QModelIndex &index);
 
 private:
+    Volume *m_volume;
     Ui::DataWidget *ui;
     QFileSystemModel *dirmodel;
     QFileSystemModel *filemodel;
