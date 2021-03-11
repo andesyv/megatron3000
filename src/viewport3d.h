@@ -19,7 +19,7 @@ public:
     ~Viewport3D();
 
 private:
-    Ui::Viewport3D *ui;
+    std::unique_ptr<Ui::Viewport3D> ui;
     std::unique_ptr<Renderer> mRenderer;
 };
 

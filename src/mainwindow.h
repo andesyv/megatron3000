@@ -28,6 +28,6 @@ public:
 
 private:
     std::unique_ptr<Ui::MainWindow> mUi;
-    std::vector<std::unique_ptr<QWidget>> mWidgets;
+    std::vector<QWidget*> mWidgets;
 };
 #endif // MAINWINDOW_H

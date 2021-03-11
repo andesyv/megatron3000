@@ -18,8 +18,10 @@ public:
     ~Viewport2D();
 
 private:
-    Ui::Viewport2D *ui;
-    std::unique_ptr<Renderer> mRenderer;
+    // ui classes don't get garbage collected,
+    // so here it's actually smart to use a smart pointer
+    std::unique_ptr<Ui::Viewport2D> ui;
+    Renderer* mRenderer;
 };
 
 #endif // VIEWPORT2D_H
