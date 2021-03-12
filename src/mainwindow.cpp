@@ -1,8 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "viewport2d.h"
 #include <iostream>
 #include <QDockWidget>
+
+// Modules:
+#include "viewport2d.h"
+#include "viewport3d.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), mUi{new Ui::MainWindow}
@@ -15,6 +18,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mUi->action2D_Viewport, &QAction::triggered, this, [&](){
         // Lambda mediator: button connected to lambda -> lambda decides what widget to add to viewport
         addWidget(new Viewport2D{this});
+    });
+    connect(mUi->action3D_Viewport, &QAction::triggered, this, [&](){
+        addWidget(new Viewport3D{this});
     });
 
     mGlobalViewMatrix.setToIdentity();

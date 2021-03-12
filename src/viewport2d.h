@@ -2,7 +2,6 @@
 #define VIEWPORT2D_H
 
 #include <QWidget>
-#include <memory>
 
 #include "menuinterface.h"
 

@@ -28,4 +28,4 @@ Viewport2D::Viewport2D(QWidget *parent) :
     setLayout(mLayout);
 }
 
-Viewport2D::~Viewport2D() {}
+Viewport2D::~Viewport2D() = default;

@@ -2,15 +2,13 @@
 #define VIEWPORT3D_H
 
 #include <QWidget>
-#include <memory>
+
+#include "menuinterface.h"
 
 class Renderer;
+class QVBoxLayout;
 
-namespace Ui {
-class Viewport3D;
-}
-
-class Viewport3D : public QWidget
+class Viewport3D : public QWidget, public IMenu
 {
     Q_OBJECT
 
@@ -19,8 +17,8 @@ public:
     ~Viewport3D();
 
 private:
-    std::unique_ptr<Ui::Viewport3D> ui;
-    std::unique_ptr<Renderer> mRenderer;
+    Renderer* mRenderer{nullptr};
+    QVBoxLayout* mLayout{nullptr};
 };
 
 #endif // VIEWPORT3D_H
