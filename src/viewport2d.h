@@ -4,12 +4,12 @@
 #include <QWidget>
 #include <memory>
 
-class Renderer;
-namespace Ui {
-class Viewport2D;
-}
+#include "menuinterface.h"
 
-class Viewport2D : public QWidget
+class Renderer;
+class QVBoxLayout;
+
+class Viewport2D : public QWidget, public IMenu
 {
     Q_OBJECT
 
@@ -18,10 +18,9 @@ public:
     ~Viewport2D();
 
 private:
-    // ui classes don't get garbage collected,
-    // so here it's actually smart to use a smart pointer
-    std::unique_ptr<Ui::Viewport2D> ui;
-    Renderer* mRenderer;
+    Renderer* mRenderer{nullptr};
+    QVBoxLayout* mLayout{nullptr};
+
 };
 
 #endif // VIEWPORT2D_H

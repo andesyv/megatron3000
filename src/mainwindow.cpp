@@ -26,6 +26,17 @@ void MainWindow::addWidget(QWidget* widget) {
     auto dock = new QDockWidget{"Dockwidget", this};
     dock->setAttribute(Qt::WA_DeleteOnClose);
     dock->setWidget(widget);
+
+    // If the widget has a menu, add dock controls to the menu
+    // if (auto* menuwidget = dynamic_cast<IMenu*>(widget)) {
+    //     auto action = menuwidget->mViewMenu->addAction("Toggle window bar");
+    //     action->setCheckable(true);
+    //     connect(action, &QAction::toggled, dock, [&](bool checked){
+            
+    //     });
+    // }
+
+
     mWidgets.push_back(dock);
     addDockWidget(Qt::RightDockWidgetArea, dock);
 }
