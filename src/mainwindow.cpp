@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     mGlobalViewMatrix.setToIdentity();
 }
 
-void MainWindow::addWidget(QDockWidget* widget) {
+void MainWindow::addWidget(DockWrapper* widget) {
     std::cout << "Widget added!" << std::endl;
 
     // If the widget has a menu, add dock controls to the menu
@@ -50,21 +50,28 @@ void MainWindow::addWidget(QDockWidget* widget) {
     mWidgets.push_back(widget);
 }
 
-QDockWidget* MainWindow::createWrapperWidget(QWidget* widget, const QString& title) {
-    auto dock = new QDockWidget{title, this};
-    dock->setAttribute(Qt::WA_DeleteOnClose);
+DockWrapper* MainWindow::createWrapperWidget(QWidget* widget, const QString& title) {
+    auto dock = new DockWrapper{title, this};
+    /** This destroys widget and sub-widgets when closing the wrapper,
+     * freeing used resources. But a current bug with QOpenGLWidget
+     * makes the mainwindow render wrong when they're destroyed.
+     */
+    // dock->setAttribute(Qt::WA_DeleteOnClose);
     dock->setWidget(widget);
     return dock;
 }
 
 // Inspired by JezzBall :)
-void MainWindow::layoutDockWidget(QDockWidget* newWidget) {
+void MainWindow::layoutDockWidget(DockWrapper* newWidget) {
     bool bHorizontal{true};
     int largestAxis{0};
     QDockWidget* splitWidget{nullptr};
 
     // 1. Find largest axis, and orientation.
     for (auto widget : mWidgets) {
+        if (!widget->isVisible())
+            continue;
+        
         const auto& s = widget->size();
         if (largestAxis < s.width()) {
             largestAxis = s.width();
