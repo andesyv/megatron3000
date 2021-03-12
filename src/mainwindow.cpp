@@ -46,8 +46,8 @@ void MainWindow::addWidget(QDockWidget* widget) {
     //     });
     // }
 
+    layoutDockWidget(widget);
     mWidgets.push_back(widget);
-    addDockWidget(Qt::RightDockWidgetArea, widget);
 }
 
 QDockWidget* MainWindow::createWrapperWidget(QWidget* widget, const QString& title) {
@@ -55,6 +55,43 @@ QDockWidget* MainWindow::createWrapperWidget(QWidget* widget, const QString& tit
     dock->setAttribute(Qt::WA_DeleteOnClose);
     dock->setWidget(widget);
     return dock;
+}
+
+// Inspired by JezzBall :)
+void MainWindow::layoutDockWidget(QDockWidget* newWidget) {
+    bool bHorizontal{true};
+    int largestAxis{0};
+    QDockWidget* splitWidget{nullptr};
+
+    // 1. Find largest axis, and orientation.
+    for (auto widget : mWidgets) {
+        const auto& s = widget->size();
+        if (largestAxis < s.width()) {
+            largestAxis = s.width();
+            bHorizontal = true;
+            splitWidget = widget;
+        }
+        if (largestAxis < s.height()) {
+            largestAxis = s.height();
+            bHorizontal = false;
+            splitWidget = widget;
+        }
+    }
+
+    // 2. Split largest widget on axis and add new widget
+    if (splitWidget == nullptr) {
+        // If we didn't find any widgets, assume we have no widget from before and just add it normally.
+        addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, newWidget, Qt::Horizontal);
+    } else {
+        splitDockWidget(splitWidget, newWidget, bHorizontal ? Qt::Horizontal : Qt::Vertical);
+
+        // 3. Resize both widgets to equal size
+        resizeDocks(
+            {splitWidget, newWidget},
+            {largestAxis / 2, largestAxis / 2},
+            bHorizontal ? Qt::Horizontal : Qt::Vertical
+        );
+    }
 }
 
 MainWindow::~MainWindow() = default;

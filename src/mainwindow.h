@@ -8,6 +8,7 @@
 #include <QString>
 
 class QWidget;
+class QDockWidget;
 class Volume;
 
 QT_BEGIN_NAMESPACE
@@ -31,8 +32,10 @@ public:
 
 private:
     std::unique_ptr<Ui::MainWindow> mUi;
-    std::vector<QWidget*> mWidgets;
+    std::vector<QDockWidget*> mWidgets;
 
     QDockWidget* createWrapperWidget(QWidget* widget, const QString& title = "Dockwidget");
+    // ALgorithm for finding new dock widget placements.
+    void layoutDockWidget(QDockWidget* newWidget);
 };
 #endif // MAINWINDOW_H
