@@ -39,8 +39,7 @@ FORMS += \
     src/datawidget.ui \
     src/histogramwidget.ui \
     src/mainwindow.ui \
-    src/transferfunctionwidget.ui \
-    src/viewport3d.ui
+    src/transferfunctionwidget.ui
 
 DISTFILES += \
     src/shaders/default.vs \

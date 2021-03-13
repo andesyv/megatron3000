@@ -8,7 +8,6 @@ target_sources(megatron3000 PRIVATE
     transferfunctionwidget.h
     viewport2d.cpp
     viewport3d.cpp
-    viewport3d.ui
     renderer.cpp
     volume.cpp
     datawidget.cpp
