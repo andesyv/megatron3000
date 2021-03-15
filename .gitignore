@@ -19,3 +19,6 @@ ui_*.h
 *.sln
 *.vcxproj
 *.filters
+
+# Data files
+data/
