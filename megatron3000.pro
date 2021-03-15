@@ -20,6 +20,7 @@ SOURCES += \
     src/viewport2d.cpp \
     src/viewport3d.cpp \
     src/volume.cpp \
+    src/menuinterface.cpp \
     src/shaders/shadermanager.cpp
 
 HEADERS += \
@@ -31,15 +32,14 @@ HEADERS += \
     src/viewport2d.h \
     src/viewport3d.h \
     src/volume.h \
+    src/menuinterface.h \
     src/shaders/shadermanager.h
 
 FORMS += \
     src/datawidget.ui \
     src/histogramwidget.ui \
     src/mainwindow.ui \
-    src/transferfunctionwidget.ui \
-    src/viewport2d.ui \
-    src/viewport3d.ui
+    src/transferfunctionwidget.ui
 
 DISTFILES += \
     src/shaders/default.vs \

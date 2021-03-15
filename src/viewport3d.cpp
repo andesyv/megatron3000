@@ -1,17 +1,24 @@
 #include "viewport3d.h"
-#include "ui_viewport3d.h"
 #include "renderer.h"
+#include <QVBoxLayout>
 
 Viewport3D::Viewport3D(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::Viewport3D)
+    QWidget{parent}, IMenu{this}
 {
-    ui->setupUi(this);
-    mRenderer = std::make_unique<Renderer>(this);
-    ui->RenderLayout->addWidget(mRenderer.get());
+    // Layout:
+    mLayout = new QVBoxLayout{this};
+    mLayout->setContentsMargins(0, 0, 0, 0);
+
+    // Menubar:
+    auto datamenu = mMenuBar->addMenu("Data");
+    datamenu->addAction("Load");
+    mLayout->addWidget(mMenuBar);
+
+    // OpenGL Render Widget:
+    mRenderer = new Renderer{this};
+    mLayout->addWidget(mRenderer);
+
+    setLayout(mLayout);
 }
 
-Viewport3D::~Viewport3D()
-{
-    delete ui;
-}
+Viewport3D::~Viewport3D() = default;

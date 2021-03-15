@@ -44,6 +44,8 @@
       <string>Add</string>
      </property>
      <addaction name="action2D_Viewport"/>
+     <addaction name="action3D_Viewport"/>
+     <addaction name="actionData_Manager"/>
     </widget>
     <addaction name="menuAdd"/>
    </widget>
@@ -58,6 +60,16 @@
   <action name="action2D_Viewport">
    <property name="text">
     <string>2D Viewport</string>
+   </property>
+  </action>
+  <action name="action3D_Viewport">
+   <property name="text">
+    <string>3D Viewport</string>
+   </property>
+  </action>
+  <action name="actionData_Manager">
+   <property name="text">
+    <string>Data Manager</string>
    </property>
   </action>
  </widget>

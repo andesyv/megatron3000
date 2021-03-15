@@ -2,14 +2,13 @@
 #define VIEWPORT2D_H
 
 #include <QWidget>
-#include <memory>
+
+#include "menuinterface.h"
 
 class Renderer;
-namespace Ui {
-class Viewport2D;
-}
+class QVBoxLayout;
 
-class Viewport2D : public QWidget
+class Viewport2D : public QWidget, public IMenu
 {
     Q_OBJECT
 
@@ -18,8 +17,9 @@ public:
     ~Viewport2D();
 
 private:
-    Ui::Viewport2D *ui;
-    std::unique_ptr<Renderer> mRenderer;
+    Renderer* mRenderer{nullptr};
+    QVBoxLayout* mLayout{nullptr};
+
 };
 
 #endif // VIEWPORT2D_H

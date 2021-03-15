@@ -109,6 +109,7 @@ void Renderer::paintGL() {
 
 void Renderer::resizeGL(int w, int h) {
     const auto aspectRatio = static_cast<float>(w) / h;
+    mPerspectiveMatrix.setToIdentity();
     mPerspectiveMatrix.perspective(45.f, aspectRatio, 0.1f, 1000.f);
 }
 

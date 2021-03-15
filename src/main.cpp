@@ -30,12 +30,5 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
 
-    //Volume initialization
-    Volume *vol = new Volume();
-
-    //Separate data window
-    DataWidget dw(vol);
-    dw.show();
-
     return a.exec();
 }
