@@ -2,6 +2,7 @@
 #include <QFile>
 #include <QDataStream>
 #include <QDebug>
+#include <vector>
 
 Volume::Volume()
 {
@@ -29,11 +30,22 @@ bool Volume::loadData(const QString &fileName)
     qDebug() << "Depth:" << m_depth;
 
     int volumeSize = int(m_width)*int(m_height)*int(m_depth);
-    m_volumeData.resize(volumeSize);
+    QVector<unsigned short> volumeRaw{};
+    volumeRaw.resize(volumeSize);
 
-    if (stream.readRawData(reinterpret_cast<char*>(m_volumeData.data()),volumeSize*sizeof (unsigned short)) != volumeSize*sizeof (unsigned short))
+    if (stream.readRawData(reinterpret_cast<char*>(volumeRaw.data()),volumeSize*sizeof (unsigned short)) != volumeSize*sizeof (unsigned short))
     {
         return false;
+    }
+
+    // Convert data to floating points in range [0,1]
+    m_volumeData.resize(volumeSize, 0.f);
+    for (const auto& val : volumeRaw) {
+        // Original data uses 12 of 16 bits, giving the data range of
+        // [0, 2^12]. Therefore divide by 2^12 to give the range [0, 1].
+        // (upcast to double in calculation to avoid truncation)
+        const auto f = static_cast<float>(static_cast<double>(val) / std::pow(2, 12));
+        m_volumeData.emplace_back(f);
     }
 
     generateTexture();
@@ -64,7 +76,8 @@ void Volume::generateTexture() {
 
     glGenTextures(1, &m_texBuffer);
     glBindTexture(GL_TEXTURE_2D, m_texBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RED, GL_UNSIGNED_SHORT, m_volumeData.data());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_width, m_height, 0, GL_RED, GL_FLOAT, m_volumeData.data() + m_volumeData.size() / 2);
+
     // Min and mag filter: bilinear scaling
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

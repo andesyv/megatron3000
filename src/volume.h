@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QOpenGLFunctions_4_3_Core>
 #include <optional>
+#include <vector>
 
 class Volume : public QObject, protected QOpenGLFunctions_4_3_Core
 {
@@ -18,7 +19,7 @@ public:
 private:
     unsigned short m_width{0}, m_height{0}, m_depth{0};
 
-    QVector<unsigned short> m_volumeData;
+    std::vector<float> m_volumeData;
     GLuint m_texBuffer;
     bool m_texInitiated{false};
     std::optional<GLuint> m_binding{std::nullopt};
