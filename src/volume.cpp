@@ -3,6 +3,7 @@
 #include <QDataStream>
 #include <QDebug>
 #include <vector>
+#include <cmath>
 
 Volume::Volume()
 {
