@@ -3,6 +3,7 @@
 #include <QElapsedTimer>
 #include "shaders/shadermanager.h"
 #include "mainwindow.h"
+#include "volume.h"
 
 ScreenSpacedBuffer::ScreenSpacedBuffer() {
     initializeOpenGLFunctions();
@@ -78,6 +79,20 @@ double Renderer::getFramesPerSecond() {
 void Renderer::initializeGL() {
     initializeOpenGLFunctions();
 
+    // OpenGL Debugger callback:
+    // TODO: Very explicit so hould be removed (or silenced) in release
+    static auto debugMessageCallback = [](
+            GLenum source,
+            GLenum type,
+            GLuint id,
+            GLenum severity,
+            GLsizei length,
+            const GLchar *message,
+            const void *userParam) {
+        std::cout << "GL DEBUG: " << message << std::endl;
+    };
+    glDebugMessageCallback(debugMessageCallback, nullptr);
+
     mScreenVAO = std::make_unique<ScreenSpacedBuffer>();
 
     glClearColor(0.f, 0.3f, 0.3f, 1.f);
@@ -101,6 +116,9 @@ void Renderer::paintGL() {
     auto& shader = shaderProgram("screen");
     shader.bind();
     shader.setUniformValue("MVP", MVP);
+
+    // Volume guard automatically binds and unbinds. :)
+    const auto volumeGuard = mMainWindow->mGlobalVolume->guard(0);
 
     mScreenVAO->draw();
 

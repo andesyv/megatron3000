@@ -9,7 +9,7 @@
 // Has to be initialized before application gets created.
 void setupGlobalRenderingSettings() {
     QSurfaceFormat format{};
-    format.setVersion(4, 3);
+    format.setVersion(4, 5);
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setOptions(QSurfaceFormat::DebugContext);
     format.setSwapInterval(1);
