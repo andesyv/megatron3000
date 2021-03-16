@@ -8,6 +8,7 @@ public:
     Renderer3D(QWidget *parent = nullptr);
 
 protected:
+    void initializeGL() override;
     void paintGL() override;
 };
 

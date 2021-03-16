@@ -31,6 +31,13 @@ Renderer3D::Renderer3D(QWidget *parent)
     }
 }
 
+void Renderer3D::initializeGL() {
+    Renderer::initializeGL();
+
+    mPrivateViewMatrix.setToIdentity();
+    mPrivateViewMatrix.translate({0.f, 0.f, -4.f});
+}
+
 void Renderer3D::paintGL() {
     const float deltaTime = mFrameTimer.restart() * 0.001;
 

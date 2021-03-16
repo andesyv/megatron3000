@@ -1,6 +1,6 @@
 #version 430
 
-#define RAYMARCH_STEPS 100
+#define RAYMARCH_STEPS 1000
 #define EPSILON 0.001
 
 in vec2 fragCoord;
@@ -27,7 +27,15 @@ vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize)
 
 float tf(vec3 p) {
     p += 0.5; // Shift uv's so we go from [-0.5, 0.5] to [0, 1.0]
-    return texture(volume, p).r * 0.1;
+    return texture(volume, p).r * 0.4;
+}
+
+vec3 gradient(vec3 p) {
+    return vec3(
+        tf(vec3(p.x + EPSILON, p.y, p.z)) - tf(vec3(p.x - EPSILON, p.y, p.z)),
+        tf(vec3(p.x, p.y + EPSILON, p.z)) - tf(vec3(p.x, p.y - EPSILON, p.z)),
+        tf(vec3(p.x, p.y, p.z + EPSILON)) - tf(vec3(p.x, p.y, p.z - EPSILON))
+    );
 }
 
 void main() {
@@ -53,8 +61,12 @@ void main() {
         for (int i = 0; i < RAYMARCH_STEPS; ++i) {
             vec3 p = rayOrigin + rayDir * depth;
             float density = tf(p);
+            vec3 g = gradient(p);
+            density *= length(g) * 100.0;
+            vec3 normal = normalize(g);
             vec3 color = vec3(0.8, 0.7, 0.2); // Uniform color over volume
-            fragColor.rgb += (1.0 - fragColor.a) * color * density;
+            vec3 phong = max(dot(normal, vec3(1.0, 0., 0.)), 0.15) * color;
+            fragColor.rgb += (1.0 - fragColor.a) * phong * density;
             fragColor.a += density;
 
             // Early exit
