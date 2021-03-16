@@ -27,6 +27,23 @@ private:
     void generateTexture();
 
 public:
+    /**
+     * @brief Helper class that binds the texture on construction and unbinds on destruction.
+     */
+    class Guard {
+    private:
+        Volume* m_vol{nullptr};
+
+    public:
+        Guard(const Guard&) = delete;
+        Guard(Volume* v, GLuint binding = 0)
+            : m_vol{v}
+            { v->bind(binding); }
+        ~Guard() { m_vol->unbind(); }
+    };
+
+    Guard guard(GLuint binding = 0) { return Guard{this, binding}; }
+
     ~Volume();
 };
 

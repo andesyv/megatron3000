@@ -102,10 +102,10 @@ void Renderer::paintGL() {
     shader.bind();
     shader.setUniformValue("MVP", MVP);
 
-    mMainWindow->mGlobalVolume->bind(1);
+    // Volume guard automatically binds and unbinds. :)
+    const auto volumeGuard = mMainWindow->mGlobalVolume->guard(1);
 
     mScreenVAO->draw();
-    mMainWindow->mGlobalVolume->unbind();
 
     ++mFrameCount;
 }
