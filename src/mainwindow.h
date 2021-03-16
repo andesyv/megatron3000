@@ -12,6 +12,7 @@
 class QWidget;
 class Volume;
 class DockWrapper;
+class QShortcut;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -30,6 +31,7 @@ public:
     QMatrix4x4 mGlobalViewMatrix;
     std::unique_ptr<Volume> mGlobalVolume;
     std::vector<QDockWidget*> mWidgets;
+    std::vector<QShortcut*> mShortcuts;
 
     ~MainWindow();
 

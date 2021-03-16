@@ -137,7 +137,7 @@ void Renderer::scheduleRender() {
 
 Renderer::~Renderer() {}
 
-QOpenGLShaderProgram& Renderer::shaderProgram(const std::string& name) {
+Shader& Renderer::shaderProgram(const std::string& name) {
     return ShaderManager::get().shader(name);
 }
 
