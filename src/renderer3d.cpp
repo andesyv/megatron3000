@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "volume.h"
 #include <filesystem>
+#include <iostream>
 
 namespace fs = std::filesystem;
 
@@ -15,16 +16,17 @@ Renderer3D::Renderer3D(QWidget *parent)
         
         const auto vspath = QString::fromStdString((shaderpath / "screen.vs").string());
         const auto fspath = QString::fromStdString((shaderpath / "volume.fs").string());
-        if (!shader.addShaderFromSourceFile(QOpenGLShader::Vertex, vspath)) {
+        if (!shader.addSource(QOpenGLShader::Vertex, vspath)) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!shader.addShaderFromSourceFile(QOpenGLShader::Fragment, fspath)) {
+        if (!shader.addSource(QOpenGLShader::Fragment, fspath)) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
 
         if (!shader.link()) {
-            throw std::runtime_error{"Failed to link shaderprogram"};
+            // throw std::runtime_error{"Failed to link shaderprogram"};
+            std::cout << "Failed to link shader!" << std::endl;
         }
     }
 }
@@ -39,6 +41,8 @@ void Renderer3D::paintGL() {
     const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
 
     auto& shader = shaderProgram("volume");
+    if (!shader.isLinked()) return;
+
     shader.bind();
     shader.setUniformValue("MVP", MVP);
 

@@ -1,8 +1,12 @@
 #version 430
 
+#define RAYMARCH_STEPS 100
+#define EPSILON 0.001
+
 in vec2 fragCoord;
 
 uniform mat4 MVP = mat4(1.0);
+layout(binding = 0) uniform sampler3D volume;
 
 out vec4 fragColor;
 
@@ -21,6 +25,11 @@ vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize)
     return vec2( tN, tF );
 }
 
+float tf(vec3 p) {
+    p += 0.5; // Shift uv's so we go from [-0.5, 0.5] to [0, 1.0]
+    return texture(volume, p).r * 0.1;
+}
+
 void main() {
     vec4 near = MVP * vec4(fragCoord, -1., 1.);
     near /= near.w;
@@ -37,10 +46,25 @@ void main() {
         // Clamp to near plane
         bounds.x = max(bounds.x, 0.0);
 
-        vec3 p = rayOrigin + rayDir * bounds.x;
-        fragColor = vec4(abs(p), 1.);
-        return;
+        const float stepSize = (bounds.y - bounds.x) / float(RAYMARCH_STEPS);
+        float depth = bounds.x;
+        fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+
+        for (int i = 0; i < RAYMARCH_STEPS; ++i) {
+            vec3 p = rayOrigin + rayDir * depth;
+            float density = tf(p);
+            vec3 color = vec3(0.8, 0.7, 0.2); // Uniform color over volume
+            fragColor.rgb += (1.0 - fragColor.a) * color * density;
+            fragColor.a += density;
+
+            // Early exit
+            if (1.0 < fragColor.a) {
+                return;
+            }
+            depth += stepSize;
+        }
     }
 
-    fragColor = vec4(abs(rayDir), 1.);
+    if (fragColor.a < 0.1)
+        fragColor = vec4(abs(rayDir), 1.);
 }
