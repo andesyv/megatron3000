@@ -47,4 +47,5 @@ DISTFILES += \
     src/shaders/default.vs \
     src/shaders/default.fs \
     src/shaders/screen.vs \
-    src/shaders/screen.fs
+    src/shaders/screen.fs \
+    src/shaders/volume.fs \
