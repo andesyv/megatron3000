@@ -39,7 +39,7 @@ bool Volume::loadData(const QString &fileName)
     }
 
     // Convert data to floating points in range [0,1]
-    m_volumeData.resize(volumeSize, 0.f);
+    m_volumeData.reserve(volumeSize);
     for (const auto& val : volumeRaw) {
         // Original data uses 12 of 16 bits, giving the data range of
         // [0, 2^12]. Therefore divide by 2^12 to give the range [0, 1].
