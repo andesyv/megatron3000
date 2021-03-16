@@ -4,9 +4,6 @@
 #include "shaders/shadermanager.h"
 #include "mainwindow.h"
 #include "volume.h"
-#include <QOpenGLContext>
-#include <QOpenGLFunctions_4_5_Core>
-#include <QTime>
 
 ScreenSpacedBuffer::ScreenSpacedBuffer() {
     initializeOpenGLFunctions();
@@ -83,6 +80,7 @@ void Renderer::initializeGL() {
     initializeOpenGLFunctions();
 
     // OpenGL Debugger callback:
+    // TODO: Very explicit so hould be removed (or silenced) in release
     static auto debugMessageCallback = [](
             GLenum source,
             GLenum type,
@@ -118,9 +116,6 @@ void Renderer::paintGL() {
     auto& shader = shaderProgram("screen");
     shader.bind();
     shader.setUniformValue("MVP", MVP);
-
-    const auto time = QTime::currentTime();
-    shader.setUniformValue("time", static_cast<float>(time.msec()) * 0.001f);
 
     // Volume guard automatically binds and unbinds. :)
     const auto volumeGuard = mMainWindow->mGlobalVolume->guard(0);
