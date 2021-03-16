@@ -12,6 +12,7 @@ target_sources(megatron3000 PRIVATE
     volume.cpp
     datawidget.cpp
     menuinterface.cpp
+    renderer3d.cpp
 )
 
 # Add target for creating embedfile helper program

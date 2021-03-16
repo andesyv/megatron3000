@@ -1,5 +1,5 @@
 #include "viewport3d.h"
-#include "renderer.h"
+#include "renderer3d.h"
 #include <QVBoxLayout>
 
 Viewport3D::Viewport3D(QWidget *parent) :
@@ -15,7 +15,7 @@ Viewport3D::Viewport3D(QWidget *parent) :
     mLayout->addWidget(mMenuBar);
 
     // OpenGL Render Widget:
-    mRenderer = new Renderer{this};
+    mRenderer = new Renderer3D{this};
     mLayout->addWidget(mRenderer);
 
     setLayout(mLayout);
