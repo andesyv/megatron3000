@@ -3,6 +3,7 @@
 #include <QElapsedTimer>
 #include "shaders/shadermanager.h"
 #include "mainwindow.h"
+#include "volume.h"
 
 ScreenSpacedBuffer::ScreenSpacedBuffer() {
     initializeOpenGLFunctions();
@@ -77,6 +78,19 @@ double Renderer::getFramesPerSecond() {
 
 void Renderer::initializeGL() {
     initializeOpenGLFunctions();
+
+    // OpenGL Debugger callback:
+    static auto debugMessageCallback = [](
+            GLenum source,
+            GLenum type,
+            GLuint id,
+            GLenum severity,
+            GLsizei length,
+            const GLchar *message,
+            const void *userParam) {
+        std::cout << "GL DEBUG: " << message << std::endl;
+    };
+    glDebugMessageCallback(debugMessageCallback, nullptr);
 
     mScreenVAO = std::make_unique<ScreenSpacedBuffer>();
 

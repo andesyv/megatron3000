@@ -1,11 +1,11 @@
 #ifndef VOLUME_H
 #define VOLUME_H
 #include <QObject>
-#include <QOpenGLFunctions_4_3_Core>
+#include <QOpenGLFunctions_4_5_Core>
 #include <optional>
 #include <vector>
 
-class Volume : public QObject, protected QOpenGLFunctions_4_3_Core
+class Volume : public QObject, protected QOpenGLFunctions_4_5_Core
 {
     Q_OBJECT
 public:

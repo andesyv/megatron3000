@@ -2,7 +2,7 @@
 #define RENDERER_H
 
 #include <QOpenGLWidget>
-#include <QOpenGLFunctions_4_3_Core>
+#include <QOpenGLFunctions_4_5_Core>
 #include <QOpenGLShaderProgram>
 #include <QMatrix4x4>
 #include <QElapsedTimer>
@@ -11,7 +11,7 @@
 /**
  * @brief Helper class to draw a screen spaced quad
  */
-class ScreenSpacedBuffer : protected QOpenGLFunctions_4_3_Core {
+class ScreenSpacedBuffer : protected QOpenGLFunctions_4_5_Core {
 private:
     GLuint mVAO, mVBO;
 
@@ -27,7 +27,7 @@ public:
 
 class MainWindow;
 
-class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_3_Core
+class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
     Q_OBJECT
 public:
