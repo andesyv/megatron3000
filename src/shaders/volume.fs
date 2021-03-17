@@ -26,8 +26,9 @@ vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize)
     return vec2( tN, tF );
 }
 
+// Box intersection maks p in range [-1, 1]
 float tf(vec3 p) {
-    p /= volumeScale;
+    p /= volumeScale * 2.0; // Scale p to [-scale, scale] / 2
     p += 0.5; // Shift uv's so we go from [-0.5, 0.5] to [0, 1.0]
     return texture(volume, p).r * 0.4;
 }
@@ -58,7 +59,7 @@ void main() {
 
         const float stepSize = (bounds.y - bounds.x) / float(RAYMARCH_STEPS);
         float depth = bounds.x;
-        fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        fragColor = vec4(0., 0., 0., 0.0);
 
         for (int i = 0; i < RAYMARCH_STEPS; ++i) {
             vec3 p = rayOrigin + rayDir * depth;
@@ -79,6 +80,6 @@ void main() {
         }
     }
 
-    if (fragColor.a < 0.1)
+    if (fragColor.a < 0.8)
         fragColor = vec4(abs(rayDir), 1.);
 }
