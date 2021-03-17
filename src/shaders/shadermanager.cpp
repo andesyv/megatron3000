@@ -31,11 +31,11 @@ ShaderManager::ShaderManager() {
         #else
             const auto vspath = QString::fromStdString((shaderpath / "default.vs").string());
             const auto fspath = QString::fromStdString((shaderpath / "default.fs").string());
-            if (!defaultShader.addShaderFromSourceFile(QOpenGLShader::Vertex, vspath)) {
+            if (!defaultShader.addSource(QOpenGLShader::Vertex, vspath)) {
                 throw std::runtime_error{"Failed to compile vertex shader"};
             }
 
-            if (!defaultShader.addShaderFromSourceFile(QOpenGLShader::Fragment, fspath)) {
+            if (!defaultShader.addSource(QOpenGLShader::Fragment, fspath)) {
                 throw std::runtime_error{"Failed to compile fragment shader"};
             }
         #endif
@@ -51,11 +51,11 @@ ShaderManager::ShaderManager() {
 
         const auto vspath = QString::fromStdString((shaderpath / "screen.vs").string());
         const auto fspath = QString::fromStdString((shaderpath / "screen.fs").string());
-        if (!screenShader.addShaderFromSourceFile(QOpenGLShader::Vertex, vspath)) {
+        if (!screenShader.addSource(QOpenGLShader::Vertex, vspath)) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!screenShader.addShaderFromSourceFile(QOpenGLShader::Fragment, fspath)) {
+        if (!screenShader.addSource(QOpenGLShader::Fragment, fspath)) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
 
@@ -86,4 +86,33 @@ bool ShaderManager::valid(const std::string& name) const {
     const auto& s = it->second;
 
     return s.isLinked();
+}
+
+bool ShaderManager::reloadShaders() {
+    bool bRet{true};
+    for (auto& [name, program] : mShaders) {
+        if (!program.reload())
+            bRet = false;
+    }
+    return bRet;
+}
+
+bool Shader::addSource(QOpenGLShader::ShaderType type, const std::filesystem::path &filePath) {
+    const auto str = QString::fromStdString(std::filesystem::absolute(filePath).string());
+    return addSource(type, str);
+}
+
+bool Shader::addSource(QOpenGLShader::ShaderType type, const QString &fileName) {
+    mPath[type] = fileName;
+    return addShaderFromSourceFile(type, fileName);
+}
+
+bool Shader::reload() {
+    removeAllShaders();
+
+    for (const auto& [type, path] : mPath)
+        if (!addShaderFromSourceFile(type, path))
+            return false;
+    
+    return link();
 }

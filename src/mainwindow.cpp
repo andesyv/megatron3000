@@ -3,6 +3,8 @@
 #include <iostream>
 #include <QDockWidget>
 #include "volume.h"
+#include "shaders/shadermanager.h"
+#include <QShortcut>
 
 // Modules:
 #include "viewport2d.h"
@@ -36,6 +38,13 @@ MainWindow::MainWindow(QWidget *parent)
     mUi->action2D_Viewport->trigger();
 
     mGlobalViewMatrix.setToIdentity();
+
+    auto shortcut = new QShortcut{QKeySequence{tr("F5", "Reload_Shaders")}, this};
+    mShortcuts.push_back(shortcut);
+    connect(shortcut, &QShortcut::activated, this, [](){
+        std::cout << "Reloading shaders!" << std::endl;
+        ShaderManager::get().reloadShaders();
+    });
 }
 
 void MainWindow::addWidget(DockWrapper* widget) {

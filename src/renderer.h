@@ -3,7 +3,7 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_4_5_Core>
-#include <QOpenGLShaderProgram>
+#include "shaders/shadermanager.h"
 #include <QMatrix4x4>
 #include <QElapsedTimer>
 #include <memory>
@@ -56,7 +56,7 @@ protected:
     uint32_t mFrameCount{0};
 
     // Shader interface:
-    QOpenGLShaderProgram& shaderProgram(const std::string& name);
+    Shader& shaderProgram(const std::string& name);
     bool isShaderValid(const std::string& name) const;
 
 private slots:
