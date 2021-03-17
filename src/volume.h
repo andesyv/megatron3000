@@ -4,6 +4,7 @@
 #include <QOpenGLFunctions_4_5_Core>
 #include <optional>
 #include <vector>
+#include <QVector3D>
 
 class Volume : public QObject, protected QOpenGLFunctions_4_5_Core
 {
@@ -16,6 +17,8 @@ public:
     void bind(GLuint binding = 0);
     void unbind();
 
+    QVector3D volumeScale() const { return m_scale; }
+
 private:
     unsigned short m_width{0}, m_height{0}, m_depth{0};
 
@@ -23,6 +26,7 @@ private:
     GLuint m_texBuffer;
     bool m_texInitiated{false};
     std::optional<GLuint> m_binding{std::nullopt};
+    QVector3D m_scale{};
 
     void generateTexture();
 

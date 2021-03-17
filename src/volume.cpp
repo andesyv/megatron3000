@@ -3,6 +3,7 @@
 #include <QDataStream>
 #include <QDebug>
 #include <cmath>
+#include <algorithm>
 
 Volume::Volume()
 {
@@ -88,6 +89,10 @@ void Volume::generateTexture() {
 
     glBindTexture(GL_TEXTURE_3D, 0);
     m_texInitiated = true;
+
+    // Find relative scale of texture
+    const auto largest = static_cast<float>(std::max({m_width, m_height, m_depth}));
+    m_scale = {m_width / largest, m_height / largest, m_depth / largest};
 }
 
 Volume::~Volume() {

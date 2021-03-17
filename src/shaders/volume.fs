@@ -7,6 +7,7 @@ in vec2 fragCoord;
 
 uniform mat4 MVP = mat4(1.0);
 layout(binding = 0) uniform sampler3D volume;
+uniform vec3 volumeScale;
 
 out vec4 fragColor;
 
@@ -26,6 +27,7 @@ vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize)
 }
 
 float tf(vec3 p) {
+    p /= volumeScale;
     p += 0.5; // Shift uv's so we go from [-0.5, 0.5] to [0, 1.0]
     return texture(volume, p).r * 0.4;
 }
@@ -49,7 +51,7 @@ void main() {
     vec3 rayDir = normalize(far.xyz - near.xyz);
 
     // Example bounding cube:
-    vec2 bounds = boxIntersection(rayOrigin, rayDir, vec3(1., 1., 1.));
+    vec2 bounds = boxIntersection(rayOrigin, rayDir, volumeScale);
     if (0.0 <= bounds.y) {
         // Clamp to near plane
         bounds.x = max(bounds.x, 0.0);
