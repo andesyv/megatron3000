@@ -76,7 +76,7 @@ void Volume::generateTexture() {
 
     glGenTextures(1, &m_texBuffer);
     glBindTexture(GL_TEXTURE_3D, m_texBuffer);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, m_width, m_height, m_depth, 0, GL_RED, GL_FLOAT, m_volumeData.data());
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_R16F, m_width, m_height, m_depth, 0, GL_RED, GL_FLOAT, m_volumeData.data());
 
     // Min and mag filter: bilinear scaling
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
