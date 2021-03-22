@@ -46,15 +46,17 @@ void Renderer3D::paintGL() {
     mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.5f, 1.f, 0.f});
     const auto& viewMatrix = mUseGlobalMatrix ? mMainWindow->mGlobalViewMatrix : mPrivateViewMatrix;
     const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
+    const auto& volume = mMainWindow->mGlobalVolume;
 
     auto& shader = shaderProgram("volume");
     if (!shader.isLinked()) return;
 
     shader.bind();
     shader.setUniformValue("MVP", MVP);
+    shader.setUniformValue("volumeScale", volume->volumeScale());
 
     // Volume guard automatically binds and unbinds. :)
-    const auto volumeGuard = mMainWindow->mGlobalVolume->guard(0);
+    const auto volumeGuard = volume->guard(0);
 
     mScreenVAO->draw();
 

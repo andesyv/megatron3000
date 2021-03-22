@@ -3,6 +3,7 @@
 #include <QDataStream>
 #include <QDebug>
 #include <cmath>
+#include <algorithm>
 
 Volume::Volume()
 {
@@ -76,18 +77,22 @@ void Volume::generateTexture() {
 
     glGenTextures(1, &m_texBuffer);
     glBindTexture(GL_TEXTURE_3D, m_texBuffer);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, m_width, m_height, m_depth, 0, GL_RED, GL_FLOAT, m_volumeData.data());
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_R16F, m_width, m_height, m_depth, 0, GL_RED, GL_FLOAT, m_volumeData.data());
 
     // Min and mag filter: bilinear scaling
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Wrap mode: just clamp to edge since edge is 0
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 
     glBindTexture(GL_TEXTURE_3D, 0);
     m_texInitiated = true;
+
+    // Find relative scale of texture
+    const auto largest = static_cast<float>(std::max({m_width, m_height, m_depth}));
+    m_scale = {m_width / largest, m_height / largest, m_depth / largest};
 }
 
 Volume::~Volume() {
