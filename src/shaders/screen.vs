@@ -2,6 +2,7 @@
 
 in vec2 inPos;
 
+// Screen spaced coordinates in homogenous space [-1, 1]
 out vec2 fragCoord;
 
 void main() {

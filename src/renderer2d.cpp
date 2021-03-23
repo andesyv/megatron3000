@@ -35,14 +35,25 @@ void Renderer2D::initializeGL() {
 }
 
 void Renderer2D::paintGL() {
-    const float deltaTime = mFrameTimer.restart() * 0.001;
+    // const float deltaTime = mFrameTimer.restart() * 0.001;
 
     glClear(GL_COLOR_BUFFER_BIT);
+
+    const auto& viewMatrix = mUseGlobalMatrix ? mMainWindow->mGlobalViewMatrix : mPrivateViewMatrix;
+    const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
+    const auto& volume = mMainWindow->mGlobalVolume;
+    const auto time = mFrameTimer.elapsed() * 0.001f;
 
     auto& shader = shaderProgram("slice");
     if (!shader.isLinked()) return;
 
     shader.bind();
+    shader.setUniformValue("MVP", MVP);
+    shader.setUniformValue("volumeScale", volume->volumeScale());
+    shader.setUniformValue("time", time);
+
+    // Volume guard automatically binds and unbinds. :)
+    const auto volumeGuard = volume->guard(0);
 
     mScreenVAO->draw();
 
