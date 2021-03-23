@@ -5,7 +5,7 @@
 
 #include "menuinterface.h"
 
-class Renderer;
+class Renderer2D;
 class QVBoxLayout;
 
 class Viewport2D : public QWidget, public IMenu
@@ -17,7 +17,7 @@ public:
     ~Viewport2D();
 
 private:
-    Renderer* mRenderer{nullptr};
+    Renderer2D* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
 
 };
