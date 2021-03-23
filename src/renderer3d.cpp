@@ -6,8 +6,9 @@
 
 namespace fs = std::filesystem;
 
-Renderer3D::Renderer3D(QWidget *parent)
-    : Renderer{parent} {
+void Renderer3D::initializeGL() {
+    Renderer::initializeGL();
+
     // Create volume shader
     if (!isShaderValid("volume")) {
         auto& shader = shaderProgram("volume");
@@ -29,10 +30,6 @@ Renderer3D::Renderer3D(QWidget *parent)
             std::cout << "Failed to link shader!" << std::endl;
         }
     }
-}
-
-void Renderer3D::initializeGL() {
-    Renderer::initializeGL();
 
     mPrivateViewMatrix.setToIdentity();
     mPrivateViewMatrix.translate({0.f, 0.f, -4.f});

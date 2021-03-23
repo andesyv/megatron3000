@@ -5,7 +5,7 @@
 
 class Renderer2D : public Renderer {
 public:
-    Renderer2D(QWidget *parent = nullptr);
+    Renderer2D(QWidget *parent = nullptr) : Renderer{parent} {}
 
 protected:
     void initializeGL() override;

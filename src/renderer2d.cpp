@@ -6,8 +6,9 @@
 
 namespace fs = std::filesystem;
 
-Renderer2D::Renderer2D(QWidget *parent)
-    : Renderer{parent} {
+void Renderer2D::initializeGL() {
+    Renderer::initializeGL();
+
     // Create volume shader
     if (!isShaderValid("slice")) {
         auto& shader = shaderProgram("slice");
@@ -29,10 +30,6 @@ Renderer2D::Renderer2D(QWidget *parent)
             std::cout << "Failed to link shader!" << std::endl;
         }
     }
-}
-
-void Renderer2D::initializeGL() {
-    Renderer::initializeGL();
 
     mPrivateViewMatrix.setToIdentity();
 }
