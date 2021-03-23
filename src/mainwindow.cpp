@@ -28,14 +28,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mUi->action3D_Viewport, &QAction::triggered, this, [&](){
         addWidget(createWrapperWidget(new Viewport3D{this}, "3D Viewport"));
     });
-    connect(mUi->actionData_Manager, &QAction::triggered, this, [&](){
-        addWidget(createWrapperWidget(new DataWidget{mGlobalVolume.get(), this}, "Data Manager"));
-    });
+    connect(mUi->actionOpen, &QAction::triggered, this, [&](){ loadData(); });
 
-    // Manually create 2 widgets:
+    // Manually create a rendering widget:
     // NOTE: For datawidget to be able to create a volume, a render widget must be present. Else OpenGL crashes.
-    mUi->actionData_Manager->trigger();
     mUi->action2D_Viewport->trigger();
+
+    loadData();
 
     mGlobalViewMatrix.setToIdentity();
 
@@ -61,6 +60,13 @@ void MainWindow::addWidget(DockWrapper* widget) {
 
     layoutDockWidget(widget);
     mWidgets.push_back(widget);
+}
+
+DataWidget* MainWindow::loadData(Volume* targetVolume) {
+    auto widget = new DataWidget{targetVolume != nullptr ? targetVolume : mGlobalVolume.get(), this};
+    widget->setWindowFlag(Qt::Window);
+    widget->show();
+    return widget;
 }
 
 DockWrapper* MainWindow::createWrapperWidget(QWidget* widget, const QString& title) {
