@@ -51,6 +51,9 @@ bool Volume::loadData(const QString &fileName)
 
     generateTexture();
 
+    // Fire "loaded" events:
+    loaded();
+
     return true;
 }
 

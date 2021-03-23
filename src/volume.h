@@ -19,6 +19,9 @@ public:
 
     QVector3D volumeScale() const { return m_scale; }
 
+signals:
+    void loaded();
+
 private:
     unsigned short m_width{0}, m_height{0}, m_depth{0};
 

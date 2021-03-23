@@ -21,8 +21,11 @@ private:
     Renderer* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
 
+    QAction* mRemoveVolumeAction{nullptr};
+
 private slots:
     void load();
+    void removeVolume(bool bState);
 
 };
 
