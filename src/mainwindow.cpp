@@ -14,7 +14,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     mUi{new Ui::MainWindow},
-    mGlobalVolume{std::make_unique<Volume>()}
+    mGlobalVolume{std::make_shared<Volume>()}
 {
     mUi->setupUi(this);
     // QMainWindow requires a cental widget but we don't use it.
@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mUi->action3D_Viewport, &QAction::triggered, this, [&](){
         addWidget(createWrapperWidget(new Viewport3D{this}, "3D Viewport"));
     });
-    connect(mUi->actionOpen, &QAction::triggered, this, [&](){ loadData(); });
+    connect(mUi->actionOpen, &QAction::triggered, this, &MainWindow::load);
 
     // Manually create a rendering widget:
     // NOTE: For datawidget to be able to create a volume, a render widget must be present. Else OpenGL crashes.
@@ -67,6 +67,10 @@ DataWidget* MainWindow::loadData(Volume* targetVolume) {
     widget->setWindowFlag(Qt::Window);
     widget->show();
     return widget;
+}
+
+void MainWindow::load() {
+    loadData();
 }
 
 DockWrapper* MainWindow::createWrapperWidget(QWidget* widget, const QString& title) {

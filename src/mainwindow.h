@@ -30,7 +30,7 @@ public:
 
     // Global camera matrix for all render-widgets
     QMatrix4x4 mGlobalViewMatrix;
-    std::unique_ptr<Volume> mGlobalVolume;
+    std::shared_ptr<Volume> mGlobalVolume;
     std::vector<QDockWidget*> mWidgets;
     std::vector<QShortcut*> mShortcuts;
 
@@ -45,6 +45,10 @@ public slots:
      * @return DataWidget* A pointer to the created widget
      */
     DataWidget* loadData(Volume* targetVolume = nullptr);
+
+private slots:
+    // Helper slot for button.
+    void load();
 
 private:
     std::unique_ptr<Ui::MainWindow> mUi;
