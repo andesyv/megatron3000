@@ -21,4 +21,36 @@ Viewport3D::Viewport3D(QWidget *parent) :
     setLayout(mLayout);
 }
 
+void Viewport3D::mouseMoveEvent(QMouseEvent *ev)
+{
+    QPoint currentPoint = ev->pos();
+    int dx = currentPoint.x()-lastPoint3D.x();
+    int dy = currentPoint.y()-lastPoint3D.y();
+
+    this->mRenderer->rotate(dx,dy);
+    lastPoint3D = QPoint(ev->pos().x(),ev->pos().y());
+    emit Mouse_pos3D();
+}
+
+void Viewport3D::mousePressEvent(QMouseEvent *ev)
+{
+    qDebug() << "Clicked in 3D viewport area";
+
+    lastPoint3D = QPoint(ev->pos().x(),ev->pos().y());
+
+    emit Mouse_pressed3D();
+}
+
+void Viewport3D::wheelEvent(QWheelEvent *ev)
+{
+    //qDebug() << "Mouse scroll in 3D viewport";
+    const int degrees = ev->delta() / 8;
+    double z = degrees/10;
+    double speed = 1.0;
+
+    this->mRenderer->zoom(z*speed);
+    emit Mouse_scroll3D();
+}
+
+
 Viewport3D::~Viewport3D() = default;

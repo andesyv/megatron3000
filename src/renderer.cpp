@@ -109,7 +109,7 @@ void Renderer::paintGL() {
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.5f, 1.f, 0.f});
+    //mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.f, 1.f, 0.f});
     const auto& viewMatrix = mUseGlobalMatrix ? mMainWindow->mGlobalViewMatrix : mPrivateViewMatrix;
     const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
 
@@ -136,6 +136,32 @@ void Renderer::scheduleRender() {
 }
 
 Renderer::~Renderer() {}
+
+void Renderer::zoom(double z)
+{
+    QMatrix4x4 pos = mPrivateViewMatrix;
+    qDebug() << pos;
+    mPrivateViewMatrix(2,3) += z;
+}
+
+void Renderer::rotate(float dx, float dy)
+{
+
+    QMatrix4x4 rotM = {
+                        0.f,0.f,0.f,0.f,
+                        0.f,0.f,0.f,0.f,
+                        0.f,0.f,0.f,0.f,
+                        0.f,0.f,0.f,0.f
+                        };
+    rotM.setToIdentity();
+
+    rotM.rotate(1.f*dx,QVector3D{0.f,1.f,0.f});
+    rotM.rotate(1.f*dy,QVector3D{1.f,0.f,0.f});
+
+    mPrivateViewMatrix = (mPrivateViewMatrix * rotM);
+    qDebug() << mPrivateViewMatrix;
+}
+
 
 Shader& Renderer::shaderProgram(const std::string& name) {
     return ShaderManager::get().shader(name);

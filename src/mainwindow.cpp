@@ -34,7 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Manually create 2 widgets:
     // NOTE: For datawidget to be able to create a volume, a render widget must be present. Else OpenGL crashes.
-    mUi->actionData_Manager->trigger();
+    //mUi->actionData_Manager->trigger();
+
     mUi->action2D_Viewport->trigger();
 
     mGlobalViewMatrix.setToIdentity();

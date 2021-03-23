@@ -43,7 +43,7 @@ void Renderer3D::paintGL() {
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.5f, 1.f, 0.f});
+    //mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.5f, 1.f, 0.f});
     const auto& viewMatrix = mUseGlobalMatrix ? mMainWindow->mGlobalViewMatrix : mPrivateViewMatrix;
     const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
     const auto& volume = mMainWindow->mGlobalVolume;

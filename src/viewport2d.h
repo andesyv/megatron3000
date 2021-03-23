@@ -2,6 +2,8 @@
 #define VIEWPORT2D_H
 
 #include <QWidget>
+#include <QMouseEvent>
+#include <QWheelEvent>
 
 #include "menuinterface.h"
 
@@ -15,10 +17,19 @@ class Viewport2D : public QWidget, public IMenu
 public:
     explicit Viewport2D(QWidget *parent = nullptr);
     ~Viewport2D();
+    void mouseMoveEvent(QMouseEvent *ev);
+    void mousePressEvent(QMouseEvent *ev);
+    void wheelEvent(QWheelEvent *ev);
+
+signals:
+    void Mouse_pressed();
+    void Mouse_pos();
+    void Mouse_scroll();
 
 private:
     Renderer* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
+    QPoint lastPoint2D;
 
 };
 
