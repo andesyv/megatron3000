@@ -19,6 +19,9 @@ public:
 private:
     Renderer3D* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
+
+private slots:
+    void load();
 };
 
 #endif // VIEWPORT3D_H

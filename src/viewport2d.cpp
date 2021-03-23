@@ -5,6 +5,8 @@
 #include <QMenuBar>
 #include <QSizePolicy>
 #include <QDockWidget>
+#include "mainwindow.h"
+#include "volume.h"
 
 Viewport2D::Viewport2D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -18,7 +20,8 @@ Viewport2D::Viewport2D(QWidget *parent) :
 
     // Menubar:
     auto datamenu = mMenuBar->addMenu("Data");
-    datamenu->addAction("Load");
+    auto openAction = datamenu->addAction("Open");
+    connect(openAction, &QAction::triggered, this, &Viewport2D::load);
     mLayout->addWidget(mMenuBar);
 
     // OpenGL Render Widget:
@@ -29,3 +32,14 @@ Viewport2D::Viewport2D(QWidget *parent) :
 }
 
 Viewport2D::~Viewport2D() = default;
+
+void Viewport2D::load() {
+    if (parentWidget()) {
+        auto mainwindow = dynamic_cast<MainWindow*>(parentWidget()->parentWidget());
+        if (mainwindow) {
+            mRenderer->mUseGlobalVolume = true;
+            mRenderer->mPrivateVolume = std::make_shared<Volume>();
+            mainwindow->loadData(mRenderer->mPrivateVolume.get());
+        }
+    }
+}

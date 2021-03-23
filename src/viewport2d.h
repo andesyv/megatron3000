@@ -7,6 +7,7 @@
 
 class Renderer;
 class QVBoxLayout;
+class QAction;
 
 class Viewport2D : public QWidget, public IMenu
 {
@@ -19,6 +20,9 @@ public:
 private:
     Renderer* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
+
+private slots:
+    void load();
 
 };
 
