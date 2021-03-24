@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <cmath>
 #include <algorithm>
+#include "mini/ini.h"
 
 Volume::Volume()
 {
@@ -49,7 +50,16 @@ bool Volume::loadData(const QString &fileName)
         m_volumeData.emplace_back(f);
     }
 
+    // Generate OpenGL Texture
     generateTexture();
+
+    // Find relative scale of texture
+    const auto largest = static_cast<float>(std::max({m_width, m_height, m_depth}));
+    m_scale = {m_width / largest, m_height / largest, m_depth / largest};
+    
+    // Load additional settings in ini file:
+    if (!loadINI(fileName))
+        return false;
 
     return true;
 }
@@ -89,10 +99,29 @@ void Volume::generateTexture() {
 
     glBindTexture(GL_TEXTURE_3D, 0);
     m_texInitiated = true;
+}
 
-    // Find relative scale of texture
-    const auto largest = static_cast<float>(std::max({m_width, m_height, m_depth}));
-    m_scale = {m_width / largest, m_height / largest, m_depth / largest};
+bool Volume::loadINI(const QString &fileName) {
+    /// I'm using https://github.com/pulzed/mINI here to do the dirty work
+    const auto& iniFileName = (fileName.left(fileName.lastIndexOf('.')) + ".ini").toStdString();
+    mINI::INIFile file{iniFileName};
+    mINI::INIStructure ini;
+    if (!file.read(ini)) {
+        qDebug() << "Failed to read file accompanying ini file for " << fileName;
+        return false;
+    }
+
+    if (ini.has("DatFile")) {
+        const auto& dataCatagory = ini.get("DatFile");
+        if (dataCatagory.has("oldDat Spacing X"))
+            m_spacing.setX(std::stof(dataCatagory.get("oldDat Spacing X")));
+        if (dataCatagory.has("oldDat Spacing Y"))
+            m_spacing.setY(std::stof(dataCatagory.get("oldDat Spacing Y")));
+        if (dataCatagory.has("oldDat Spacing Z"))
+            m_spacing.setZ(std::stof(dataCatagory.get("oldDat Spacing Z")));
+    }
+
+    return true;
 }
 
 Volume::~Volume() {

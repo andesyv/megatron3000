@@ -54,6 +54,7 @@ void Renderer3D::paintGL() {
     shader.bind();
     shader.setUniformValue("MVP", MVP);
     shader.setUniformValue("volumeScale", volume->volumeScale());
+    shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
 
     // Volume guard automatically binds and unbinds. :)
     const auto volumeGuard = volume->guard(0);
