@@ -58,8 +58,7 @@ bool Volume::loadData(const QString &fileName)
     m_scale = {m_width / largest, m_height / largest, m_depth / largest};
     
     // Load additional settings in ini file:
-    if (!loadINI(fileName))
-        return false;
+    loadINI(fileName);
 
     return true;
 }
@@ -102,12 +101,14 @@ void Volume::generateTexture() {
 }
 
 bool Volume::loadINI(const QString &fileName) {
+    m_spacing = {1.f, 1.f, 1.f};
+
     /// I'm using https://github.com/pulzed/mINI here to do the dirty work
     const auto& iniFileName = (fileName.left(fileName.lastIndexOf('.')) + ".ini").toStdString();
     mINI::INIFile file{iniFileName};
     mINI::INIStructure ini;
     if (!file.read(ini)) {
-        qDebug() << "Failed to read file accompanying ini file for " << fileName;
+        qDebug() << "Failed to read accompanying ini file for " << fileName;
         return false;
     }
 
