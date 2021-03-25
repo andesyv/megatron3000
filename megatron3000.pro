@@ -21,6 +21,7 @@ SOURCES += \
     src/viewport3d.cpp \
     src/volume.cpp \
     src/menuinterface.cpp \
+    src/renderer2d.cpp \
     src/renderer3d.cpp \
     src/shaders/shadermanager.cpp
 
@@ -34,6 +35,7 @@ HEADERS += \
     src/viewport3d.h \
     src/volume.h \
     src/menuinterface.h \
+    src/renderer2d.h \
     src/renderer3d.h \
     src/shaders/shadermanager.h
 
@@ -49,3 +51,4 @@ DISTFILES += \
     src/shaders/screen.vs \
     src/shaders/screen.fs \
     src/shaders/volume.fs \
+    src/shaders/slice-image.fs

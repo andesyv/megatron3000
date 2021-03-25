@@ -1,5 +1,5 @@
 #include "viewport2d.h"
-#include "renderer.h"
+#include "renderer2d.h"
 #include <iostream>
 #include <QVBoxLayout>
 #include <QMenuBar>
@@ -22,7 +22,7 @@ Viewport2D::Viewport2D(QWidget *parent) :
     mLayout->addWidget(mMenuBar);
 
     // OpenGL Render Widget:
-    mRenderer = new Renderer{this};
+    mRenderer = new Renderer2D{this};
     mLayout->addWidget(mRenderer);
 
     setLayout(mLayout);
