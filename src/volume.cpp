@@ -125,6 +125,10 @@ bool Volume::loadINI(const QString &fileName) {
             m_spacing.setZ(std::stof(dataCatagory.get("oldDat Spacing Z")));
     }
 
+    // Normalize spacing (to make it easier for shaders)
+    const auto largest = std::max({m_spacing.x(), m_spacing.y(), m_spacing.z()});
+    m_spacing /= largest;
+
     return true;
 }
 
