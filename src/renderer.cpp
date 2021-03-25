@@ -79,8 +79,8 @@ double Renderer::getFramesPerSecond() {
 void Renderer::initializeGL() {
     initializeOpenGLFunctions();
 
+#ifndef NDEBUG
     // OpenGL Debugger callback:
-    // TODO: Very explicit so hould be removed (or silenced) in release
     static auto debugMessageCallback = [](
             GLenum source,
             GLenum type,
@@ -92,6 +92,7 @@ void Renderer::initializeGL() {
         std::cout << "GL DEBUG: " << message << std::endl;
     };
     glDebugMessageCallback(debugMessageCallback, nullptr);
+#endif
 
     mScreenVAO = std::make_unique<ScreenSpacedBuffer>();
 

@@ -4,13 +4,13 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "CMake: Build",
+            "label": "Debug: CMake: Build",
             "type": "shell",
             "command": "cmake --build ${config:cmake.buildDirectory} --config Debug",
             "problemMatcher": []
         },
         {
-            "label": "Qt Deploy",
+            "label": "Debug: Qt Deploy",
             "type": "shell",
             "command": "D:\\Qt\\5.15.2\\msvc2019_64\\bin\\windeployqt.exe",
             "options": {
@@ -22,10 +22,50 @@
             "problemMatcher": []
         },
         {
-            "label": "Build and Deploy",
+            "label": "Debug: Build and Deploy",
             "dependsOn": [
-                "CMake: Build",
-                "Qt Deploy"
+                "Debug: CMake: Build",
+                "Debug: Qt Deploy"
+            ],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+
+
+        {
+            "label": "Release: CMake: Build",
+            "type": "shell",
+            "command": "cmake --build ${config:cmake.buildDirectory} --config Release",
+            "problemMatcher": []
+        },
+        {
+            "label": "Release: Qt Deploy",
+            "type": "shell",
+            "command": "D:\\Qt\\5.15.2\\msvc2019_64\\bin\\windeployqt.exe",
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "args": [
+                "Release/megatron3000.exe"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Release: Run",
+            "type": "shell",
+            "command": "${config:cmake.buildDirectory}/Release/megatron3000.exe",
+            "problemMatcher": []
+        },
+        {
+            "label": "Release: Build, Deploy and Run",
+            "dependsOn": [
+                "Release: CMake: Build",
+                "Release: Qt Deploy",
+                "Release: Run"
             ],
             "dependsOrder": "sequence",
             "group": {

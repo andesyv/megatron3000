@@ -46,7 +46,9 @@ void Renderer3D::paintGL() {
     const auto& volume = getVolume();
 
     auto& shader = shaderProgram("volume");
+#ifndef NDEBUG
     if (!shader.isLinked()) return;
+#endif
 
     shader.bind();
     shader.setUniformValue("MVP", MVP);

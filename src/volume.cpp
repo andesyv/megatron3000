@@ -17,9 +17,13 @@ bool Volume::loadData(const QString &fileName)
 
     if (!file.open(QIODevice::ReadOnly))
     {
-        qDebug() << "File " << " is not possible to open.";
+        qWarning() << "File " << fileName << " is not possible to open.";
         return false;
     }
+
+#ifndef NDEBUG
+    qDebug() << "Reading file.";
+#endif
 
     QDataStream stream(&file);
     stream.setByteOrder(QDataStream::LittleEndian);
@@ -40,6 +44,12 @@ bool Volume::loadData(const QString &fileName)
         return false;
     }
 
+
+
+#ifndef NDEBUG
+    qDebug() << "Converting and normalizing data";
+#endif
+
     // Convert data to floating points in range [0,1]
     m_volumeData.reserve(volumeSize);
     for (const auto& val : volumeRaw) {
@@ -50,18 +60,35 @@ bool Volume::loadData(const QString &fileName)
         m_volumeData.emplace_back(f);
     }
 
-    // Generate OpenGL Texture
-    generateTexture();
-
     // Find relative scale of texture
     const auto largest = static_cast<float>(std::max({m_width, m_height, m_depth}));
     m_scale = {m_width / largest, m_height / largest, m_depth / largest};
-    
+
+
+
+#ifndef NDEBUG
+    qDebug() << "Allocating and storing in GPU memory";
+#endif
+
+    // Generate OpenGL Texture
+    generateTexture();
+
+
+
+#ifndef NDEBUG
+    qDebug() << "Loading additional settings from INI file";
+#endif
     // Load additional settings in ini file:
     loadINI(fileName);
 
+
+
+#ifndef NDEBUG
+    qDebug() << "Done loading volume";
+#endif
     // Fire "loaded" events:
     loaded();
+
 
     return true;
 }
@@ -111,7 +138,7 @@ bool Volume::loadINI(const QString &fileName) {
     mINI::INIFile file{iniFileName};
     mINI::INIStructure ini;
     if (!file.read(ini)) {
-        qDebug() << "Failed to read accompanying ini file for " << fileName;
+        qWarning() << "Failed to read accompanying ini file for " << fileName;
         return false;
     }
 

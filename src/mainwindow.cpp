@@ -47,7 +47,9 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 void MainWindow::addWidget(DockWrapper* widget) {
+#ifndef NDEBUG
     std::cout << "Widget added!" << std::endl;
+#endif
 
     // If the widget has a menu, add dock controls to the menu
     // if (auto* menuwidget = dynamic_cast<IMenu*>(widget)) {

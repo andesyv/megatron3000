@@ -45,7 +45,9 @@ void Renderer2D::paintGL() {
     const auto time = mFrameTimer.elapsed() * 0.001f;
 
     auto& shader = shaderProgram("slice");
+#ifndef NDEBUG
     if (!shader.isLinked()) return;
+#endif
 
     shader.bind();
     shader.setUniformValue("MVP", MVP);
