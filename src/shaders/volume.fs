@@ -8,6 +8,7 @@ in vec2 fragCoord;
 uniform mat4 MVP = mat4(1.0);
 layout(binding = 0) uniform sampler3D volume;
 uniform vec3 volumeScale;
+uniform vec3 volumeSpacing;
 
 out vec4 fragColor;
 
@@ -29,6 +30,7 @@ vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize)
 // Box intersection maks p in range [-1, 1]
 float tf(vec3 p) {
     p /= volumeScale * 2.0; // Scale p to [-scale, scale] / 2
+    p /= volumeSpacing;
     p += 0.5; // Shift uv's so we go from [-0.5, 0.5] to [0, 1.0]
     return texture(volume, p).r * 0.4;
 }
@@ -50,16 +52,16 @@ void main() {
 
     vec3 rayOrigin = near.xyz;
     vec3 rayDir = normalize(far.xyz - near.xyz);
+    fragColor = vec4(0.);
 
     // Example bounding cube:
-    vec2 bounds = boxIntersection(rayOrigin, rayDir, volumeScale);
+    vec2 bounds = boxIntersection(rayOrigin, rayDir, volumeScale * volumeSpacing);
     if (0.0 <= bounds.y) {
         // Clamp to near plane
         bounds.x = max(bounds.x, 0.0);
 
         const float stepSize = (bounds.y - bounds.x) / float(RAYMARCH_STEPS);
         float depth = bounds.x;
-        fragColor = vec4(0., 0., 0., 0.0);
 
         for (int i = 0; i < RAYMARCH_STEPS; ++i) {
             vec3 p = rayOrigin + rayDir * depth;

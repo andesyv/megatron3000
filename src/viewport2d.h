@@ -5,7 +5,7 @@
 
 #include "menuinterface.h"
 
-class Renderer;
+class Renderer2D;
 class QVBoxLayout;
 class QAction;
 
@@ -18,7 +18,7 @@ public:
     ~Viewport2D();
 
 private:
-    Renderer* mRenderer{nullptr};
+    Renderer2D* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
 
     QAction* mRemoveVolumeAction{nullptr};
