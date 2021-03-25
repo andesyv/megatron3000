@@ -51,6 +51,7 @@ endif()
 
 
 # Add project sources
+target_include_directories(megatron3000 PRIVATE lib/mINI/src)
 add_subdirectory(src)
 target_link_libraries(megatron3000 PRIVATE Qt::Widgets Qt::Gui)
 

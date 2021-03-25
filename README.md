@@ -5,6 +5,7 @@
 ## Table of Contents
 - [Megatron 3000](#megatron-3000)
   - [Table of Contents](#table-of-contents)
+  - [Dependencies](#dependencies)
   - [Development setup](#development-setup)
     - [QMake](#qmake)
     - [CMake](#cmake)
@@ -13,6 +14,13 @@
   - [Deployment](#deployment)
     - [Windows](#windows)
       - [VS Code](#vs-code)
+
+## Dependencies
+The project uses some dependencies beside Qt that are supplied as submodules. To fetch them simply do
+```
+git submodule update --init --recursive
+```
+
 ## Development setup
 The project uses two build systems that you can choose from when building: QMake and CMake.
 

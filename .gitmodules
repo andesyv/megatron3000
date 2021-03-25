@@ -1,0 +1,3 @@
+[submodule "lib/mINI"]
+	path = lib/mINI
+	url = https://github.com/pulzed/mINI
