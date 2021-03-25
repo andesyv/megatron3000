@@ -13,7 +13,6 @@ Viewport3D::Viewport3D(QWidget *parent) :
 
     // Menubar:
     auto datamenu = mMenuBar->addMenu("Data");
-    datamenu->addAction("Load");
     auto openAction = datamenu->addAction("Open");
     connect(openAction, &QAction::triggered, this, &Viewport3D::load);
     mRemoveVolumeAction = datamenu->addAction("Use global volume");
@@ -40,7 +39,7 @@ void Viewport3D::load() {
             mainwindow->loadData(mRenderer->mPrivateVolume.get());
             connect(mRenderer->mPrivateVolume.get(), &Volume::loaded, this, [&](){
                 mRemoveVolumeAction->setChecked(false);
-                mRenderer->mUseGlobalVolume = true;
+                mRenderer->mUseGlobalVolume = false;
             });
         }
     }

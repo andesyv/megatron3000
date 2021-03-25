@@ -46,7 +46,7 @@ void Viewport2D::load() {
             mainwindow->loadData(mRenderer->mPrivateVolume.get());
             connect(mRenderer->mPrivateVolume.get(), &Volume::loaded, this, [&](){
                 mRemoveVolumeAction->setChecked(false);
-                mRenderer->mUseGlobalVolume = true;
+                mRenderer->mUseGlobalVolume = false;
             });
         }
     }
