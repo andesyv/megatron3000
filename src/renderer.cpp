@@ -141,7 +141,7 @@ void Renderer::zoom(double z)
 {
     QMatrix4x4 pos = mPrivateViewMatrix;
     qDebug() << pos;
-    mPrivateViewMatrix(2,3) += z;
+    mPrivateViewMatrix(2,3) += z/2;
 }
 
 
@@ -152,7 +152,7 @@ void Renderer::rotate(float dx, float dy)
     QMatrix4x4 inversePrivateView = mPrivateViewMatrix.inverted();
     QVector4D transformedAxis = inversePrivateView*QVector4D(rotVec,0.f);
 
-    mPrivateViewMatrix.rotate(1.f*rotVec.length(),transformedAxis.toVector3D());
+    mPrivateViewMatrix.rotate(0.5f*rotVec.length(),transformedAxis.toVector3D());
 }
 
 Shader& Renderer::shaderProgram(const std::string& name) {
