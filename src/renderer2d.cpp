@@ -39,17 +39,20 @@ void Renderer2D::paintGL() {
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    const auto& viewMatrix = mUseGlobalMatrix ? mMainWindow->mGlobalViewMatrix : mPrivateViewMatrix;
+    const auto& viewMatrix = getViewMatrix();
     const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
-    const auto& volume = mMainWindow->mGlobalVolume;
+    const auto& volume = getVolume();
     const auto time = mFrameTimer.elapsed() * 0.001f;
 
     auto& shader = shaderProgram("slice");
+#ifndef NDEBUG
     if (!shader.isLinked()) return;
+#endif
 
     shader.bind();
     shader.setUniformValue("MVP", MVP);
     shader.setUniformValue("volumeScale", volume->volumeScale());
+    shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
     shader.setUniformValue("time", time);
 
     // Volume guard automatically binds and unbinds. :)

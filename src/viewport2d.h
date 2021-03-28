@@ -7,6 +7,7 @@
 
 class Renderer2D;
 class QVBoxLayout;
+class QAction;
 
 class Viewport2D : public QWidget, public IMenu
 {
@@ -19,6 +20,12 @@ public:
 private:
     Renderer2D* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
+
+    QAction* mRemoveVolumeAction{nullptr};
+
+private slots:
+    void load();
+    void removeVolume(bool bState);
 
 };
 

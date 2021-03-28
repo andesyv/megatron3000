@@ -43,9 +43,8 @@ void DataWidget::on_listView_doubleClicked(const QModelIndex &index)
     // This is the absolute file path to the file double clicked
     QString filePath = filemodel->fileInfo(index).absoluteFilePath();
 
-    if(filemodel->fileInfo(index).suffix()=="dat") {
+    if(filemodel->fileInfo(index).suffix()=="dat" && m_volume->loadData(filePath)) {
         qInfo() << "Successfully loaded file at " + filePath;
-        m_volume->loadData(filePath);
         this->close();
     } else {
         //Not supported file type

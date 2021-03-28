@@ -1,6 +1,8 @@
 #include "viewport3d.h"
 #include "renderer3d.h"
 #include <QVBoxLayout>
+#include "mainwindow.h"
+#include "volume.h"
 
 Viewport3D::Viewport3D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -11,7 +13,13 @@ Viewport3D::Viewport3D(QWidget *parent) :
 
     // Menubar:
     auto datamenu = mMenuBar->addMenu("Data");
-    datamenu->addAction("Load");
+    auto openAction = datamenu->addAction("Open");
+    connect(openAction, &QAction::triggered, this, &Viewport3D::load);
+    mRemoveVolumeAction = datamenu->addAction("Use global volume");
+    mRemoveVolumeAction->setCheckable(true);
+    mRemoveVolumeAction->setChecked(true);
+    connect(mRemoveVolumeAction, &QAction::triggered, this, &Viewport3D::removeVolume);
+    
     mLayout->addWidget(mMenuBar);
 
     // OpenGL Render Widget:
@@ -22,3 +30,30 @@ Viewport3D::Viewport3D(QWidget *parent) :
 }
 
 Viewport3D::~Viewport3D() = default;
+
+void Viewport3D::load() {
+    if (parentWidget()) {
+        auto mainwindow = dynamic_cast<MainWindow*>(parentWidget()->parentWidget());
+        if (mainwindow) {
+            mRenderer->mPrivateVolume = std::make_shared<Volume>();
+            mainwindow->loadData(mRenderer->mPrivateVolume.get());
+            connect(mRenderer->mPrivateVolume.get(), &Volume::loaded, this, [&](){
+                mRemoveVolumeAction->setChecked(false);
+                mRenderer->mUseGlobalVolume = false;
+            });
+        }
+    }
+}
+
+void Viewport3D::removeVolume(bool bState) {
+    // If user manually toggles it off, it should'nt do anything.
+    if (!bState) {
+        // Just enable the bool again. >:)
+        mRemoveVolumeAction->setChecked(true);
+        return;
+    }
+
+    mRenderer->mUseGlobalVolume = true;
+    // Delete ptr by replacing it with nothing
+    mRenderer->mPrivateVolume = {};
+}

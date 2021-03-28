@@ -5,6 +5,8 @@
 #include <QMenuBar>
 #include <QSizePolicy>
 #include <QDockWidget>
+#include "mainwindow.h"
+#include "volume.h"
 
 Viewport2D::Viewport2D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -18,7 +20,13 @@ Viewport2D::Viewport2D(QWidget *parent) :
 
     // Menubar:
     auto datamenu = mMenuBar->addMenu("Data");
-    datamenu->addAction("Load");
+    auto openAction = datamenu->addAction("Open");
+    connect(openAction, &QAction::triggered, this, &Viewport2D::load);
+    mRemoveVolumeAction = datamenu->addAction("Use global volume");
+    mRemoveVolumeAction->setCheckable(true);
+    mRemoveVolumeAction->setChecked(true);
+    connect(mRemoveVolumeAction, &QAction::triggered, this, &Viewport2D::removeVolume);
+    
     mLayout->addWidget(mMenuBar);
 
     // OpenGL Render Widget:
@@ -29,3 +37,30 @@ Viewport2D::Viewport2D(QWidget *parent) :
 }
 
 Viewport2D::~Viewport2D() = default;
+
+void Viewport2D::load() {
+    if (parentWidget()) {
+        auto mainwindow = dynamic_cast<MainWindow*>(parentWidget()->parentWidget());
+        if (mainwindow) {
+            mRenderer->mPrivateVolume = std::make_shared<Volume>();
+            mainwindow->loadData(mRenderer->mPrivateVolume.get());
+            connect(mRenderer->mPrivateVolume.get(), &Volume::loaded, this, [&](){
+                mRemoveVolumeAction->setChecked(false);
+                mRenderer->mUseGlobalVolume = false;
+            });
+        }
+    }
+}
+
+void Viewport2D::removeVolume(bool bState) {
+    // If user manually toggles it off, it should'nt do anything.
+    if (!bState) {
+        // Just enable the bool again. >:)
+        mRemoveVolumeAction->setChecked(true);
+        return;
+    }
+
+    mRenderer->mUseGlobalVolume = true;
+    // Delete ptr by replacing it with nothing
+    mRenderer->mPrivateVolume = {};
+}

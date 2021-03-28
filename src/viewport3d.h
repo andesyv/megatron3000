@@ -19,6 +19,13 @@ public:
 private:
     Renderer3D* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
+
+    QAction* mRemoveVolumeAction{nullptr};
+
+private slots:
+    void load();
+    void removeVolume(bool bState);
+    
 };
 
 #endif // VIEWPORT3D_H
