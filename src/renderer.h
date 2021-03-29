@@ -26,6 +26,7 @@ public:
 };
 
 class MainWindow;
+class Volume;
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
@@ -34,6 +35,15 @@ public:
     Renderer(QWidget *parent = nullptr);
 
     double getFramesPerSecond();
+
+    // Whether to use widgets camera or global camera
+    bool mUseGlobalMatrix{false};
+    // Render-widgets own camera matrix. If not using global camera matrix, render-widgets use this one.
+    QMatrix4x4 mPrivateViewMatrix;
+
+    // Whether to use widgets volume data or global volume data
+    bool mUseGlobalVolume{true};
+    std::shared_ptr<Volume> mPrivateVolume;
 
     ~Renderer();
 
@@ -45,14 +55,14 @@ protected:
     void paintGL() override;
     void resizeGL(int w, int h) override;
 
+    virtual const QMatrix4x4& getViewMatrix() const; 
+    virtual std::shared_ptr<Volume> getVolume() const;
+
     MainWindow* mMainWindow;
 
     // Screen Spaced vertex array
     std::unique_ptr<ScreenSpacedBuffer> mScreenVAO;
-    // Render-widgets own camera matrix. If not using global camera matrix, render-widgets use this one.
-    QMatrix4x4 mPrivateViewMatrix;
-    // Whether to use widgets camera or global camera
-    bool mUseGlobalMatrix{false};
+
     QMatrix4x4 mPerspectiveMatrix;
 
     QElapsedTimer mFrameTimer, mAliveTimer;

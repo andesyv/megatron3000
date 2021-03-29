@@ -3,9 +3,9 @@
 
 #include "renderer.h"
 
-class Renderer3D : public Renderer {
+class Renderer2D : public Renderer {
 public:
-    Renderer3D(QWidget *parent = nullptr) : Renderer{parent} {}
+    Renderer2D(QWidget *parent = nullptr) : Renderer{parent} {}
 
 protected:
     void initializeGL() override;

@@ -13,6 +13,7 @@ class QWidget;
 class Volume;
 class DockWrapper;
 class QShortcut;
+class DataWidget;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -29,11 +30,25 @@ public:
 
     // Global camera matrix for all render-widgets
     QMatrix4x4 mGlobalViewMatrix;
-    std::unique_ptr<Volume> mGlobalVolume;
+    std::shared_ptr<Volume> mGlobalVolume;
     std::vector<QDockWidget*> mWidgets;
     std::vector<QShortcut*> mShortcuts;
 
     ~MainWindow();
+
+public slots:
+    /**
+     * @brief Open up a data loading popup window
+     * Opens up a data widget as a data loading popup window
+     * that stores it's loaded data into targetVolume.
+     * @param targetVolume The target volume to load data into. If nullptr it will use the global volume.
+     * @return DataWidget* A pointer to the created widget
+     */
+    DataWidget* loadData(Volume* targetVolume = nullptr);
+
+private slots:
+    // Helper slot for button.
+    void load();
 
 private:
     std::unique_ptr<Ui::MainWindow> mUi;

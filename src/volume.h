@@ -18,6 +18,10 @@ public:
     void unbind();
 
     QVector3D volumeScale() const { return m_scale; }
+    QVector3D volumeSpacing() const { return m_spacing; }
+
+signals:
+    void loaded();
 
 private:
     unsigned short m_width{0}, m_height{0}, m_depth{0};
@@ -27,8 +31,10 @@ private:
     bool m_texInitiated{false};
     std::optional<GLuint> m_binding{std::nullopt};
     QVector3D m_scale{};
+    QVector3D m_spacing{};
 
     void generateTexture();
+    bool loadINI(const QString &fileName);
 
 public:
     /**

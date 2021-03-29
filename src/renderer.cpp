@@ -79,8 +79,8 @@ double Renderer::getFramesPerSecond() {
 void Renderer::initializeGL() {
     initializeOpenGLFunctions();
 
+#ifndef NDEBUG
     // OpenGL Debugger callback:
-    // TODO: Very explicit so hould be removed (or silenced) in release
     static auto debugMessageCallback = [](
             GLenum source,
             GLenum type,
@@ -92,6 +92,7 @@ void Renderer::initializeGL() {
         std::cout << "GL DEBUG: " << message << std::endl;
     };
     glDebugMessageCallback(debugMessageCallback, nullptr);
+#endif
 
     mScreenVAO = std::make_unique<ScreenSpacedBuffer>();
 
@@ -109,16 +110,17 @@ void Renderer::paintGL() {
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    //mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.f, 1.f, 0.f});
-    const auto& viewMatrix = mUseGlobalMatrix ? mMainWindow->mGlobalViewMatrix : mPrivateViewMatrix;
+    // mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.5f, 1.f, 0.f});
+    const auto& viewMatrix = getViewMatrix();
     const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
+    const auto& volume = getVolume();
 
     auto& shader = shaderProgram("screen");
     shader.bind();
     shader.setUniformValue("MVP", MVP);
 
     // Volume guard automatically binds and unbinds. :)
-    const auto volumeGuard = mMainWindow->mGlobalVolume->guard(0);
+    const auto volumeGuard = volume->guard(0);
 
     mScreenVAO->draw();
 
@@ -129,6 +131,14 @@ void Renderer::resizeGL(int w, int h) {
     const auto aspectRatio = static_cast<float>(w) / h;
     mPerspectiveMatrix.setToIdentity();
     mPerspectiveMatrix.perspective(45.f, aspectRatio, 0.1f, 1000.f);
+}
+
+const QMatrix4x4& Renderer::getViewMatrix() const {
+    return mUseGlobalMatrix ? mMainWindow->mGlobalViewMatrix : mPrivateViewMatrix;
+}
+
+std::shared_ptr<Volume> Renderer::getVolume() const {
+    return mUseGlobalVolume ? mMainWindow->mGlobalVolume : mPrivateVolume;
 }
 
 void Renderer::scheduleRender() {

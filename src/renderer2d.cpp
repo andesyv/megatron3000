@@ -1,4 +1,4 @@
-#include "renderer3d.h"
+#include "renderer2d.h"
 #include "mainwindow.h"
 #include "volume.h"
 #include <filesystem>
@@ -6,17 +6,17 @@
 
 namespace fs = std::filesystem;
 
-void Renderer3D::initializeGL() {
+void Renderer2D::initializeGL() {
     Renderer::initializeGL();
 
     // Create volume shader
-    if (!isShaderValid("volume")) {
-        auto& shader = shaderProgram("volume");
+    if (!isShaderValid("slice")) {
+        auto& shader = shaderProgram("slice");
 
         const auto shaderpath = fs::absolute(fs::path{SHADERPATH});
         
         const auto vspath = QString::fromStdString((shaderpath / "screen.vs").string());
-        const auto fspath = QString::fromStdString((shaderpath / "volume.fs").string());
+        const auto fspath = QString::fromStdString((shaderpath / "slice-image.fs").string());
         if (!shader.addSource(QOpenGLShader::Vertex, vspath)) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
@@ -32,20 +32,19 @@ void Renderer3D::initializeGL() {
     }
 
     mPrivateViewMatrix.setToIdentity();
-    mPrivateViewMatrix.translate({0.f, 0.f, -4.f});
 }
 
-void Renderer3D::paintGL() {
-    const float deltaTime = mFrameTimer.restart() * 0.001;
+void Renderer2D::paintGL() {
+    // const float deltaTime = mFrameTimer.restart() * 0.001;
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.5f, 1.f, 0.f});
     const auto& viewMatrix = getViewMatrix();
     const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
     const auto& volume = getVolume();
+    const auto time = mFrameTimer.elapsed() * 0.001f;
 
-    auto& shader = shaderProgram("volume");
+    auto& shader = shaderProgram("slice");
 #ifndef NDEBUG
     if (!shader.isLinked()) return;
 #endif
@@ -54,6 +53,7 @@ void Renderer3D::paintGL() {
     shader.setUniformValue("MVP", MVP);
     shader.setUniformValue("volumeScale", volume->volumeScale());
     shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
+    shader.setUniformValue("time", time);
 
     // Volume guard automatically binds and unbinds. :)
     const auto volumeGuard = volume->guard(0);

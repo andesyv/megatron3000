@@ -7,8 +7,9 @@
 
 #include "menuinterface.h"
 
-class Renderer;
+class Renderer2D;
 class QVBoxLayout;
+class QAction;
 
 class Viewport2D : public QWidget, public IMenu
 {
@@ -27,9 +28,15 @@ signals:
     void Mouse_scroll();
 
 private:
-    Renderer* mRenderer{nullptr};
+    Renderer2D* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
     QPoint lastPoint2D;
+
+    QAction* mRemoveVolumeAction{nullptr};
+
+private slots:
+    void load();
+    void removeVolume(bool bState);
 
 };
 
