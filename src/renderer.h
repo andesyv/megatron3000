@@ -47,6 +47,9 @@ public:
 
     ~Renderer();
 
+    void zoom(double z);
+    void rotate(float dx, float dy);
+
 protected:
     void initializeGL() override;
     void paintGL() override;
