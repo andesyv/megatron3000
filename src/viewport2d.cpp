@@ -8,6 +8,8 @@
 #include <QDebug>
 #include "mainwindow.h"
 #include "volume.h"
+#include <QWidgetAction>
+#include <QComboBox>
 
 Viewport2D::Viewport2D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -20,6 +22,19 @@ Viewport2D::Viewport2D(QWidget *parent) :
     mLayout->setContentsMargins(0, 0, 0, 0);
 
     // Menubar:
+    /// (View menu created in IMenu interface)
+    auto repMenu = mViewMenu->addMenu("View axis");
+    mAxisActions = {
+        repMenu->addAction("Orthogonal"),
+        repMenu->addAction("Arbitrary"),
+        repMenu->addAction("Slice"),
+    };
+    for (auto action : mAxisActions) {
+        action->setCheckable(true);
+        connect(action, &QAction::triggered, [&, action](){ setAxis(action); });
+    }
+    mAxisActions.front()->setChecked(true);
+
     auto datamenu = mMenuBar->addMenu("Data");
     auto openAction = datamenu->addAction("Open");
     connect(openAction, &QAction::triggered, this, &Viewport2D::load);
@@ -99,4 +114,19 @@ void Viewport2D::removeVolume(bool bState) {
     mRenderer->mUseGlobalVolume = true;
     // Delete ptr by replacing it with nothing
     mRenderer->mPrivateVolume = {};
+}
+
+void Viewport2D::setAxis(QAction* axis) {
+    axis->setChecked(true);
+    
+    // Unset all other axis:
+    for (auto other : mAxisActions)
+        if (other != axis)
+            other->setChecked(false);
+
+    // Set axis mode to button pressed
+    // NB: This works only if the order in the enum and the corresponding buttons are the same.
+    const auto pos = std::find(mAxisActions.begin(), mAxisActions.end(), axis);
+    if (pos != mAxisActions.end())
+        mAxisMode = static_cast<AxisMode>(pos - mAxisActions.begin());
 }
