@@ -52,7 +52,9 @@ void Viewport2D::mouseMoveEvent(QMouseEvent *ev)
 
 void Viewport2D::mousePressEvent(QMouseEvent *ev)
 {
+#ifndef NDEBUG
     qDebug() << "Clicked in 2D viewport area";
+#endif
 
     lastPoint2D = QPoint(ev->pos().x(),ev->pos().y());
 

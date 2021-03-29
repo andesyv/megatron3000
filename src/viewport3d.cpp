@@ -42,7 +42,9 @@ void Viewport3D::mouseMoveEvent(QMouseEvent *ev)
 
 void Viewport3D::mousePressEvent(QMouseEvent *ev)
 {
+#ifndef NDEBUG
     qDebug() << "Clicked in 3D viewport area";
+#endif
 
     lastPoint3D = QPoint(ev->pos().x(),ev->pos().y());
 
