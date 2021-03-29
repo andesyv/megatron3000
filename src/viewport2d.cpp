@@ -62,7 +62,7 @@ void Viewport2D::mousePressEvent(QMouseEvent *ev)
 void Viewport2D::wheelEvent(QWheelEvent *ev)
 {
     //qDebug() << "Mouse scroll in 2D viewport";
-    const int degrees = ev->delta() / 8;
+    const int degrees = ev->angleDelta().y() / 8;
     double z = degrees/10;
     double speed = 1.0;
 
