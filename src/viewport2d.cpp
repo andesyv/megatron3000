@@ -8,8 +8,6 @@
 #include <QDebug>
 #include "mainwindow.h"
 #include "volume.h"
-#include <QWidgetAction>
-#include <QComboBox>
 
 Viewport2D::Viewport2D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -23,17 +21,22 @@ Viewport2D::Viewport2D(QWidget *parent) :
 
     // Menubar:
     /// (View menu created in IMenu interface)
-    auto repMenu = mViewMenu->addMenu("View axis");
+    auto orthoMenu = mViewMenu->addMenu("Orthogonal Axis");
     mAxisActions = {
-        repMenu->addAction("Orthogonal"),
-        repMenu->addAction("Arbitrary"),
-        repMenu->addAction("Slice"),
+        orthoMenu->addAction("Z Axis"),
+        orthoMenu->addAction("X Axis"),
+        orthoMenu->addAction("Y Axis"),
     };
+    mAxisActions.push_back(mViewMenu->addAction("Arbitrary Axis"));
+    mAxisActions.push_back(mViewMenu->addAction("Slice Axis"));
+    
     for (auto action : mAxisActions) {
         action->setCheckable(true);
         connect(action, &QAction::triggered, [&, action](){ setAxis(action); });
     }
     mAxisActions.front()->setChecked(true);
+
+    
 
     auto datamenu = mMenuBar->addMenu("Data");
     auto openAction = datamenu->addAction("Open");
@@ -128,19 +131,32 @@ void Viewport2D::setAxis(QAction* axis) {
             other->setChecked(false);
 
     // Set axis mode to button pressed
-    // NB: This works only if the order in the enum and the corresponding buttons are the same.
-    const auto pos = std::find(mAxisActions.begin(), mAxisActions.end(), axis);
-    if (pos != mAxisActions.end())
-        mAxisMode = static_cast<AxisMode>(pos - mAxisActions.begin());
+    if (axis == mAxisActions[3])
+        mAxisMode = AxisMode::ARBITRARY;
+    else if (axis == mAxisActions[4])
+        mAxisMode = AxisMode::SLICE;
+    else
+        mAxisMode = AxisMode::ORTHOGONAL;
+
 
     // Reset view matrix to corresponding representation space:
     switch (mAxisMode) {
         case AxisMode::ORTHOGONAL:
             {
-                auto& viewMat = mRenderer->getViewMatrix();
-                const auto zoom = viewMat(2,3);
-                viewMat.setToIdentity();
-                viewMat.translate(0.f, 0.f, zoom);
+                const auto& end = mAxisActions.begin() + 3;
+                const auto dirIt = std::find(mAxisActions.begin(), end, axis);
+                if (dirIt != end) {
+                    const auto i = dirIt - mAxisActions.begin();
+                    auto& viewMat = mRenderer->getViewMatrix();
+                    const auto zoom = viewMat(2,3);
+                    viewMat.setToIdentity();
+                    if (i == 1)
+                        viewMat.rotate(90.f, {0.f, 1.f, 0.f});
+                    else if (i == 2)
+                        viewMat.rotate(-90.f, {1.f, 0.f, 0.f});
+                    
+                    viewMat.translate(0.f, 0.f, zoom);
+                }
             }
             break;
         case AxisMode::ARBITRARY:
