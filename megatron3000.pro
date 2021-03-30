@@ -25,6 +25,7 @@ SOURCES += \
     src/menuinterface.cpp \
     src/renderer2d.cpp \
     src/renderer3d.cpp \
+    src/renderutils.cpp \
     src/shaders/shadermanager.cpp
 
 HEADERS += \
@@ -39,6 +40,7 @@ HEADERS += \
     src/menuinterface.h \
     src/renderer2d.h \
     src/renderer3d.h \
+    src/renderutils.h \
     src/shaders/shadermanager.h
 
 FORMS += \

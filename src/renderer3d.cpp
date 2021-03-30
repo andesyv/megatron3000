@@ -3,6 +3,7 @@
 #include "volume.h"
 #include <filesystem>
 #include <iostream>
+#include "renderutils.h"
 
 namespace fs = std::filesystem;
 

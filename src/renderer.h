@@ -8,25 +8,9 @@
 #include <QElapsedTimer>
 #include <memory>
 
-/**
- * @brief Helper class to draw a screen spaced quad
- */
-class ScreenSpacedBuffer : protected QOpenGLFunctions_4_5_Core {
-private:
-    GLuint mVAO, mVBO;
-
-public:
-    void bind();
-    void unbind();
-
-    void draw();
-
-    ScreenSpacedBuffer();
-    ~ScreenSpacedBuffer();
-};
-
 class MainWindow;
 class Volume;
+class ScreenSpacedBuffer;
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
