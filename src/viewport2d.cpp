@@ -56,6 +56,9 @@ Viewport2D::Viewport2D(QWidget *parent) :
 
 void Viewport2D::mouseMoveEvent(QMouseEvent *ev)
 {
+    if (mAxisMode == AxisMode::ORTHOGONAL)
+        return;
+
     QPoint currentPoint = ev->pos();
     int dx = currentPoint.x()-lastPoint2D.x();
     int dy = currentPoint.y()-lastPoint2D.y();
@@ -79,6 +82,7 @@ void Viewport2D::mousePressEvent(QMouseEvent *ev)
 void Viewport2D::wheelEvent(QWheelEvent *ev)
 {
     //qDebug() << "Mouse scroll in 2D viewport";
+    // TODO: Fix precision error
     const int degrees = ev->angleDelta().y() / 8;
     double z = degrees/10;
     double speed = 1.0;
@@ -129,4 +133,19 @@ void Viewport2D::setAxis(QAction* axis) {
     const auto pos = std::find(mAxisActions.begin(), mAxisActions.end(), axis);
     if (pos != mAxisActions.end())
         mAxisMode = static_cast<AxisMode>(pos - mAxisActions.begin());
+
+    // Reset view matrix to corresponding representation space:
+    switch (mAxisMode) {
+        case AxisMode::ORTHOGONAL:
+            {
+                auto& viewMat = mRenderer->getViewMatrix();
+                const auto zoom = viewMat(2,3);
+                viewMat.setToIdentity();
+                viewMat.translate(0.f, 0.f, zoom);
+            }
+            break;
+        case AxisMode::ARBITRARY:
+        case AxisMode::SLICE:
+            break;
+    }
 }

@@ -131,6 +131,7 @@ void Renderer::resizeGL(int w, int h) {
     const auto aspectRatio = static_cast<float>(w) / h;
     mPerspectiveMatrix.setToIdentity();
     mPerspectiveMatrix.perspective(45.f, aspectRatio, 0.1f, 1000.f);
+    // mPerspectiveMatrix.ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
 }
 
 const QMatrix4x4& Renderer::getViewMatrix() const {
@@ -138,6 +139,14 @@ const QMatrix4x4& Renderer::getViewMatrix() const {
 }
 
 std::shared_ptr<Volume> Renderer::getVolume() const {
+    return mUseGlobalVolume ? mMainWindow->mGlobalVolume : mPrivateVolume;
+}
+
+QMatrix4x4& Renderer::getViewMatrix() {
+    return mUseGlobalMatrix ? mMainWindow->mGlobalViewMatrix : mPrivateViewMatrix;
+}
+
+std::shared_ptr<Volume> Renderer::getVolume() {
     return mUseGlobalVolume ? mMainWindow->mGlobalVolume : mPrivateVolume;
 }
 
@@ -150,7 +159,9 @@ Renderer::~Renderer() {}
 void Renderer::zoom(double z)
 {
     QMatrix4x4 pos = mPrivateViewMatrix;
+#ifndef NDEBUG
     qDebug() << pos;
+#endif
     mPrivateViewMatrix(2,3) += z/2;
 }
 

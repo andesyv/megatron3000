@@ -47,16 +47,18 @@ public:
 
     ~Renderer();
 
-    void zoom(double z);
+    virtual void zoom(double z);
     void rotate(float dx, float dy);
 
+    virtual const QMatrix4x4& getViewMatrix() const; 
+    virtual std::shared_ptr<Volume> getVolume() const;
+    virtual QMatrix4x4& getViewMatrix(); 
+    virtual std::shared_ptr<Volume> getVolume();
 protected:
     void initializeGL() override;
     void paintGL() override;
     void resizeGL(int w, int h) override;
 
-    virtual const QMatrix4x4& getViewMatrix() const; 
-    virtual std::shared_ptr<Volume> getVolume() const;
 
     MainWindow* mMainWindow;
 
