@@ -61,5 +61,7 @@ void Renderer3D::paintGL() {
 
     mScreenVAO->draw();
 
+    drawAxis();
+
     ++mFrameCount;
 }

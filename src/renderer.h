@@ -11,6 +11,7 @@
 class MainWindow;
 class Volume;
 class ScreenSpacedBuffer;
+class AxisGlyph;
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
@@ -43,16 +44,22 @@ protected:
     void paintGL() override;
     void resizeGL(int w, int h) override;
 
+    // Helper function to render an axis on screen
+    void drawAxis();
+
 
     MainWindow* mMainWindow;
 
     // Screen Spaced vertex array
     std::unique_ptr<ScreenSpacedBuffer> mScreenVAO;
+    std::unique_ptr<AxisGlyph> mAxisGlyph;
 
     QMatrix4x4 mPerspectiveMatrix;
 
     QElapsedTimer mFrameTimer, mAliveTimer;
     uint32_t mFrameCount{0};
+
+    float mAspectRatio{1.f};
 
     // Shader interface:
     Shader& shaderProgram(const std::string& name);

@@ -20,4 +20,21 @@ public:
     ~ScreenSpacedBuffer();
 };
 
+/**
+ * @brief Helper class for drawing an axis helper visualizer
+ */
+class AxisGlyph : protected QOpenGLFunctions_4_5_Core {
+private:
+    GLuint mVAO, mVBO;
+
+public:
+    void bind();
+    void unbind();
+
+    void draw();
+
+    AxisGlyph();
+    ~AxisGlyph();
+};
+
 #endif // RENDERUTILS_H

@@ -66,11 +66,13 @@ void Renderer2D::paintGL() {
 
     mScreenVAO->draw();
 
+    drawAxis();
+
     ++mFrameCount;
 }
 
 void Renderer2D::resizeGL(int w, int h) {
-    const auto aspectRatio = static_cast<float>(w) / h;
+    mAspectRatio = static_cast<float>(w) / h;
     mPerspectiveMatrix.setToIdentity();
     mPerspectiveMatrix.ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
 }

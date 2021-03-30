@@ -47,6 +47,7 @@ void Renderer::initializeGL() {
 #endif
 
     mScreenVAO = std::make_unique<ScreenSpacedBuffer>();
+    mAxisGlyph = std::make_unique<AxisGlyph>();
 
     glClearColor(0.f, 0.3f, 0.3f, 1.f);
 
@@ -76,13 +77,15 @@ void Renderer::paintGL() {
 
     mScreenVAO->draw();
 
+    drawAxis();
+
     ++mFrameCount;
 }
 
 void Renderer::resizeGL(int w, int h) {
-    const auto aspectRatio = static_cast<float>(w) / h;
+    mAspectRatio = static_cast<float>(w) / h;
     mPerspectiveMatrix.setToIdentity();
-    mPerspectiveMatrix.perspective(45.f, aspectRatio, 0.1f, 1000.f);
+    mPerspectiveMatrix.perspective(45.f, mAspectRatio, 0.1f, 1000.f);
     // mPerspectiveMatrix.ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
 }
 
@@ -100,6 +103,19 @@ QMatrix4x4& Renderer::getViewMatrix() {
 
 std::shared_ptr<Volume> Renderer::getVolume() {
     return mUseGlobalVolume ? mMainWindow->mGlobalVolume : mPrivateVolume;
+}
+
+void Renderer::drawAxis() {
+    const auto& viewMatrix = getViewMatrix();
+    const QVector2D aspectRatio = {1.0 < mAspectRatio ? 1.f / mAspectRatio : 1.f, 1.0 < mAspectRatio ? 1.f : mAspectRatio};
+
+    auto& shader = shaderProgram("axis");
+    if (!shader.isLinked()) return;
+    shader.bind();
+    shader.setUniformValue("viewMatrix", viewMatrix);
+    shader.setUniformValue("aspectRatio", aspectRatio);
+
+    mAxisGlyph->draw();
 }
 
 void Renderer::scheduleRender() {
