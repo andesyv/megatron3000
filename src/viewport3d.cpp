@@ -42,7 +42,9 @@ void Viewport3D::mouseMoveEvent(QMouseEvent *ev)
 
 void Viewport3D::mousePressEvent(QMouseEvent *ev)
 {
+#ifndef NDEBUG
     qDebug() << "Clicked in 3D viewport area";
+#endif
 
     lastPoint3D = QPoint(ev->pos().x(),ev->pos().y());
 
@@ -52,8 +54,8 @@ void Viewport3D::mousePressEvent(QMouseEvent *ev)
 void Viewport3D::wheelEvent(QWheelEvent *ev)
 {
     //qDebug() << "Mouse scroll in 3D viewport";
-    const int degrees = ev->angleDelta().y() / 8;
-    double z = degrees/10;
+    const auto degrees = ev->angleDelta().y() / 8.0;
+    double z = degrees/10.0;
     double speed = 1.0;
 
     this->mRenderer->zoom(z*speed);

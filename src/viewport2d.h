@@ -16,6 +16,12 @@ class Viewport2D : public QWidget, public IMenu
     Q_OBJECT
 
 public:
+    enum AxisMode : unsigned int {
+        ORTHOGONAL = 0, // Oriented in one of the orthogonal axis (x, y, z)
+        ARBITRARY,      // Oriented in arbitrary axis desided by camera rotation
+        SLICE           // Oriented in same axis as the cutting slice plane
+    };
+
     explicit Viewport2D(QWidget *parent = nullptr);
     ~Viewport2D();
     void mouseMoveEvent(QMouseEvent *ev);
@@ -31,12 +37,14 @@ private:
     Renderer2D* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
     QPoint lastPoint2D;
-
     QAction* mRemoveVolumeAction{nullptr};
+    std::vector<QAction*> mAxisActions;
+    AxisMode mAxisMode{AxisMode::ORTHOGONAL};
 
 private slots:
     void load();
     void removeVolume(bool bState);
+    void setAxis(QAction* axis);
 
 };
 

@@ -3,8 +3,14 @@
 #include "volume.h"
 #include <filesystem>
 #include <iostream>
+#include "renderutils.h"
 
 namespace fs = std::filesystem;
+
+void Renderer2D::zoom(double z) {
+    auto& trans = mPrivateViewMatrix(2,3);
+    trans = std::clamp(trans + static_cast<float>(z) * 0.02f, -1.f, 1.f);
+}
 
 void Renderer2D::initializeGL() {
     Renderer::initializeGL();
@@ -60,5 +66,13 @@ void Renderer2D::paintGL() {
 
     mScreenVAO->draw();
 
+    drawAxis();
+
     ++mFrameCount;
+}
+
+void Renderer2D::resizeGL(int w, int h) {
+    mAspectRatio = static_cast<float>(w) / h;
+    mPerspectiveMatrix.setToIdentity();
+    mPerspectiveMatrix.ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
 }

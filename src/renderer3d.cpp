@@ -3,6 +3,7 @@
 #include "volume.h"
 #include <filesystem>
 #include <iostream>
+#include "renderutils.h"
 
 namespace fs = std::filesystem;
 
@@ -59,6 +60,8 @@ void Renderer3D::paintGL() {
     const auto volumeGuard = volume->guard(0);
 
     mScreenVAO->draw();
+
+    drawAxis();
 
     ++mFrameCount;
 }

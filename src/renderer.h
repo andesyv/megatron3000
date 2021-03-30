@@ -8,25 +8,10 @@
 #include <QElapsedTimer>
 #include <memory>
 
-/**
- * @brief Helper class to draw a screen spaced quad
- */
-class ScreenSpacedBuffer : protected QOpenGLFunctions_4_5_Core {
-private:
-    GLuint mVAO, mVBO;
-
-public:
-    void bind();
-    void unbind();
-
-    void draw();
-
-    ScreenSpacedBuffer();
-    ~ScreenSpacedBuffer();
-};
-
 class MainWindow;
 class Volume;
+class ScreenSpacedBuffer;
+class AxisGlyph;
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
@@ -47,26 +32,34 @@ public:
 
     ~Renderer();
 
-    void zoom(double z);
+    virtual void zoom(double z);
     void rotate(float dx, float dy);
 
+    virtual const QMatrix4x4& getViewMatrix() const; 
+    virtual std::shared_ptr<Volume> getVolume() const;
+    virtual QMatrix4x4& getViewMatrix(); 
+    virtual std::shared_ptr<Volume> getVolume();
 protected:
     void initializeGL() override;
     void paintGL() override;
     void resizeGL(int w, int h) override;
 
-    virtual const QMatrix4x4& getViewMatrix() const; 
-    virtual std::shared_ptr<Volume> getVolume() const;
+    // Helper function to render an axis on screen
+    void drawAxis();
+
 
     MainWindow* mMainWindow;
 
     // Screen Spaced vertex array
     std::unique_ptr<ScreenSpacedBuffer> mScreenVAO;
+    std::unique_ptr<AxisGlyph> mAxisGlyph;
 
     QMatrix4x4 mPerspectiveMatrix;
 
     QElapsedTimer mFrameTimer, mAliveTimer;
     uint32_t mFrameCount{0};
+
+    float mAspectRatio{1.f};
 
     // Shader interface:
     Shader& shaderProgram(const std::string& name);
