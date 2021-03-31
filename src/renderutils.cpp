@@ -120,3 +120,74 @@ AxisGlyph::~AxisGlyph() {
     glDeleteBuffers(1, &mVBO);
     glDeleteVertexArrays(1, &mVAO);
 }
+
+
+
+
+
+NodeGlyphs::NodeGlyphs(const std::vector<QVector2D>& nodePos) {
+    initializeOpenGLFunctions();
+
+    glGenVertexArrays(1, &mVAO);
+    glBindVertexArray(mVAO);
+
+    glGenBuffers(1, &mVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBindVertexArray(0);
+
+    resizeNodeBuffer(nodePos);
+
+    auto& SM = ShaderManager::get();
+
+    if (!SM.valid("node")) {
+        const auto shaderPath = [](auto path){
+            const auto shaderpath = std::filesystem::absolute(std::filesystem::path{SHADERPATH});
+            return QString::fromStdString((shaderpath / path).string());
+        };
+
+        auto& shader = SM.shader("node");
+
+        if (!shader.addSource(QOpenGLShader::Vertex, shaderPath("node.vs"))) {
+            throw std::runtime_error{"Failed to compile vertex shader"};
+        }
+
+        if (!shader.addSource(QOpenGLShader::Geometry, shaderPath("node.gs"))) {
+            throw std::runtime_error{"Failed to compile vertex shader"};
+        }
+
+        if (!shader.addSource(QOpenGLShader::Fragment, shaderPath("default.fs"))) {
+            throw std::runtime_error{"Failed to compile fragment shader"};
+        }
+
+        if (!shader.link()) {
+            throw std::runtime_error{"Failed to link shaderprogram"};
+        }
+    }
+
+}
+
+void NodeGlyphs::draw() {
+    glBindVertexArray(mVAO);
+    
+    auto& shader = ShaderManager::get().shader("node");
+    shader.bind();
+
+    glDrawArrays(GL_POINTS, 0, mNodeCount);
+    glBindVertexArray(0);
+}
+
+void NodeGlyphs::resizeNodeBuffer(const std::vector<QVector2D>& nodePos) {
+    mNodeCount = static_cast<GLsizei>(nodePos.size());
+    if (mNodeCount == 0)
+        return;
+    glBindVertexArray(mVAO);
+    glBufferData(GL_ARRAY_BUFFER, nodePos.size() * sizeof(QVector2D), nodePos.data(), GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D), nullptr);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+}
+
+NodeGlyphs::~NodeGlyphs() {
+    glDeleteBuffers(1, &mVBO);
+    glDeleteVertexArrays(1, &mVAO);
+}

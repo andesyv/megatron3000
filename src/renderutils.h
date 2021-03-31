@@ -37,4 +37,18 @@ public:
     ~AxisGlyph();
 };
 
+class NodeGlyphs : protected QOpenGLFunctions_4_5_Core {
+private:
+    GLuint mVAO, mVBO;
+    GLsizei mNodeCount{0};
+
+public:
+    NodeGlyphs(const std::vector<QVector2D>& nodePos = {});
+
+    void draw();
+    void resizeNodeBuffer(const std::vector<QVector2D>& nodePos);
+
+    ~NodeGlyphs();
+};
+
 #endif // RENDERUTILS_H

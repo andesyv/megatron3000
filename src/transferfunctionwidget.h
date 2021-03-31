@@ -5,6 +5,8 @@
 #include <QOpenGLFunctions_4_5_Core>
 #include <QMatrix4x4>
 
+class NodeGlyphs;
+
 class TransferFunctionWidget : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
     Q_OBJECT
@@ -21,11 +23,9 @@ protected:
     void paintGL() override;
     void resizeGL(int w, int h) override;
 
-    void resizeNodeBuffer();
-
     QMatrix4x4 mPerspMat;
-    GLuint mNodeVAO, mNodeVBO;
     std::vector<QVector2D> mNodePos;
+    std::unique_ptr<NodeGlyphs> mNodeGlyphs;
 
 
 private slots:
