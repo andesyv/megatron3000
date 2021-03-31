@@ -2,12 +2,14 @@
 #define TRANSFERFUNCTIONWIDGET_H
 
 #include <QWidget>
+#include <QChartView>
 
-namespace Ui {
-class TransferFunctionWidget;
+namespace QtCharts {
+class QSplineSeries;
+class QChart;
 }
 
-class TransferFunctionWidget : public QWidget
+class TransferFunctionWidget : public QtCharts::QChartView
 {
     Q_OBJECT
 
@@ -16,7 +18,8 @@ public:
     ~TransferFunctionWidget();
 
 private:
-    Ui::TransferFunctionWidget *ui;
+    QtCharts::QSplineSeries* mSpline{nullptr};
+    QtCharts::QChart* mChart{nullptr};
 };
 
 #endif // TRANSFERFUNCTIONWIDGET_H

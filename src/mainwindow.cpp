@@ -10,6 +10,7 @@
 #include "viewport2d.h"
 #include "viewport3d.h"
 #include "datawidget.h"
+#include "transferfunctionwidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -27,6 +28,9 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(mUi->action3D_Viewport, &QAction::triggered, this, [&](){
         addWidget(createWrapperWidget(new Viewport3D{this}, "3D Viewport"));
+    });
+    connect(mUi->actionTransfer_function, &QAction::triggered, this, [&](){
+        addWidget(createWrapperWidget(new TransferFunctionWidget{this}, "Transfer function"));
     });
     connect(mUi->actionOpen, &QAction::triggered, this, &MainWindow::load);
 

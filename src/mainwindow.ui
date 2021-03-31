@@ -45,6 +45,7 @@
      </property>
      <addaction name="action2D_Viewport"/>
      <addaction name="action3D_Viewport"/>
+     <addaction name="actionTransfer_function"/>
     </widget>
     <addaction name="menuAdd"/>
    </widget>
@@ -84,6 +85,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionTransfer_function">
+   <property name="text">
+    <string>Transfer function</string>
    </property>
   </action>
  </widget>

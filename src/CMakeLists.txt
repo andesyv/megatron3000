@@ -5,7 +5,6 @@ target_sources(megatron3000 PRIVATE
     histogramwidget.cpp
     histogramwidget.ui
     transferfunctionwidget.cpp
-    transferfunctionwidget.h
     viewport2d.cpp
     viewport3d.cpp
     renderer.cpp
