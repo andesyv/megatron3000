@@ -3,17 +3,16 @@
 #include <QSplineSeries>
 #include <QChart>
 #include <QDebug>
+#include "materialnode.h"
 
 using namespace QtCharts;
 
-TransferFunctionWidget::TransferFunctionWidget(QWidget *parent) :
-    QChartView{parent} {
+TransferFunctionWidget::TransferFunctionWidget(QWidget *parent)
+    : QChartView{parent} {
     mSpline = new QSplineSeries{};
-    mSpline->append(0, 6);
-    mSpline->append(2, 4);
-    mSpline->append(3, 8);
-    mSpline->append(7, 4);
-    mSpline->append(10, 5);
+    mSpline->append(0, 0);
+    mSpline->append(2, 6);
+    mSpline->append(4, 2);
 
     mChart = new QChart{};
     mChart->legend()->hide();
@@ -22,7 +21,24 @@ TransferFunctionWidget::TransferFunctionWidget(QWidget *parent) :
     mChart->createDefaultAxes();
     mChart->axes(Qt::Vertical).first()->setRange(0, 10);
 
-    setChart(mChart);
+    // Add some example nodes:
+    mNodeScene = new QGraphicsScene{this};
+    mNodeScene->addText("Hello Scene!");
+    mNodes = {
+        new MaterialNode{},
+        new MaterialNode{},
+        new MaterialNode{},
+        new MaterialNode{},
+    };
+    std::vector<QPoint> nodepos = {{-30, -30}, {0, -23}, {16, 10}, {40, 20}};
+    for (auto i{0}; i < mNodes.size(); ++i) {
+        mNodes.at(i)->setPos(nodepos[i]);
+        mNodeScene->addItem(mNodes.at(i));
+    }
+
+
+    // setChart(mChart);
+    setScene(mNodeScene);
 }
 
 TransferFunctionWidget::~TransferFunctionWidget() = default;

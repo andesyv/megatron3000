@@ -3,6 +3,10 @@
 
 #include <QWidget>
 #include <QChartView>
+#include <vector>
+
+class QGraphicsScene;
+class MaterialNode;
 
 namespace QtCharts {
 class QSplineSeries;
@@ -17,9 +21,13 @@ public:
     explicit TransferFunctionWidget(QWidget *parent = nullptr);
     ~TransferFunctionWidget();
 
+    std::vector<MaterialNode*> mNodes;
+
 private:
     QtCharts::QSplineSeries* mSpline{nullptr};
     QtCharts::QChart* mChart{nullptr};
+
+    QGraphicsScene* mNodeScene{nullptr};
 };
 
 #endif // TRANSFERFUNCTIONWIDGET_H
