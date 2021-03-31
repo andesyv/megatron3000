@@ -37,6 +37,11 @@ public:
     ~AxisGlyph();
 };
 
+/**
+ * @brief Hepler class to draw a bunch of nodes
+ * Takes a bunch of normalized coordinates and draws them as points
+ * which is then transformed into spheres on the GPU.
+ */
 class NodeGlyphs : protected QOpenGLFunctions_4_5_Core {
 private:
     GLuint mVAO, mVBO;

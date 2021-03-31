@@ -15,7 +15,7 @@ out vec3 col;
 void main() {
     col = vCol[0];
 
-    const vec2 scale = vec2(0.1, 0.1);
+    const vec2 scale = vec2(0.02, 0.02);
     const float angle = TWOPI / float(TRIANGLECOUNT);
 
     for (int i = 0; i < TRIANGLECOUNT; i++) {

@@ -6,6 +6,7 @@
 #include <QMatrix4x4>
 
 class NodeGlyphs;
+class Spline;
 
 class TransferFunctionWidget : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
@@ -26,6 +27,7 @@ protected:
     QMatrix4x4 mPerspMat;
     std::vector<QVector2D> mNodePos;
     std::unique_ptr<NodeGlyphs> mNodeGlyphs;
+    std::unique_ptr<Spline> mSpline;
 
 
 private slots:

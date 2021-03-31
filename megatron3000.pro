@@ -27,6 +27,7 @@ SOURCES += \
     src/renderer3d.cpp \
     src/renderutils.cpp \
     src/materialnode.cpp \
+    src/spline.cpp \
     src/shaders/shadermanager.cpp
 
 HEADERS += \
@@ -43,6 +44,7 @@ HEADERS += \
     src/renderer3d.h \
     src/renderutils.h \
     src/materialnode.h \
+    src/spline.h \
     src/shaders/shadermanager.h
 
 FORMS += \
