@@ -5,49 +5,41 @@
 #include "shaders/shadermanager.h"
 
 TransferFunctionWidget::TransferFunctionWidget(QWidget* parent)
-    : QOpenGLWidget{parent} {
+    : QOpenGLWidget{parent},
+    mNodePos{{-0.2f, 0.2f}, {0.5f, 0.7f}, {-0.9f, 0.6f}, {0.2f, -0.5f}} {
     connect(this, &QOpenGLWidget::frameSwapped, this, &TransferFunctionWidget::scheduleRender);
 }
 
 void TransferFunctionWidget::initializeGL() {
     initializeOpenGLFunctions();
 
-    struct vec2 {
-        float x, y;
-    };
+    glGenVertexArrays(1, &mNodeVAO);
+    glBindVertexArray(mNodeVAO);
 
-    std::vector<vec2> coords{{-0.2, 0.2}, {0.5, 0.7}, {-0.9, 0.6}, {0.2, -0.5}};
-    mNodes.reserve(coords.size());
-    for (auto pos : coords) {
-        Node n;
-        glGenVertexArrays(1, &n.vao);
-        glBindVertexArray(n.vao);
+    glGenBuffers(1, &mNodeVBO);
+    resizeNodeBuffer();
 
-        glGenBuffers(1, &n.vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, n.vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(pos), &pos.x, GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vec2), nullptr);
-        glEnableVertexAttribArray(0);
-
-        mNodes.push_back(n);
-    }
     glBindVertexArray(0);
 
     auto& SM = ShaderManager::get();
 
     if (!SM.valid("node")) {
-        const auto shaderpath = std::filesystem::absolute(std::filesystem::path{SHADERPATH});
-        const auto vspath = QString::fromStdString((shaderpath / "node.vs").string());
-        const auto fspath = QString::fromStdString((shaderpath / "default.fs").string());
+        const auto shaderPath = [](auto path){
+            const auto shaderpath = std::filesystem::absolute(std::filesystem::path{SHADERPATH});
+            return QString::fromStdString((shaderpath / path).string());
+        };
 
         auto& shader = SM.shader("node");
 
-        if (!shader.addSource(QOpenGLShader::Vertex, vspath)) {
+        if (!shader.addSource(QOpenGLShader::Vertex, shaderPath("node.vs"))) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!shader.addSource(QOpenGLShader::Fragment, fspath)) {
+        if (!shader.addSource(QOpenGLShader::Geometry, shaderPath("node.gs"))) {
+            throw std::runtime_error{"Failed to compile vertex shader"};
+        }
+
+        if (!shader.addSource(QOpenGLShader::Fragment, shaderPath("default.fs"))) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
 
@@ -57,7 +49,21 @@ void TransferFunctionWidget::initializeGL() {
     }
 
 
-    glPointSize(10.f);
+    // glPointSize(10.f);
+}
+
+TransferFunctionWidget::~TransferFunctionWidget() {
+    glDeleteBuffers(1, &mNodeVBO);
+    glDeleteVertexArrays(1, &mNodeVAO);
+}
+
+const auto& TransferFunctionWidget::getNodesPos() const {
+    return mNodePos;
+}
+
+void TransferFunctionWidget::setNodesPos(const std::vector<QVector2D>& pos) {
+    mNodePos = pos;
+    resizeNodeBuffer();
 }
 
 void TransferFunctionWidget::paintGL() {
@@ -67,12 +73,20 @@ void TransferFunctionWidget::paintGL() {
     auto& shader = ShaderManager::get().shader("node");
     shader.bind();
 
-    for (const auto& node : mNodes) {
-        glBindVertexArray(node.vao);
-        glDrawArrays(GL_POINTS, 0, 1);
-    }
+    glBindVertexArray(mNodeVAO);
+    glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mNodePos.size()));
+    glBindVertexArray(0);
 }
 
 void TransferFunctionWidget::resizeGL(int w, int h) {
 
+}
+
+void TransferFunctionWidget::resizeNodeBuffer() {
+    glBindVertexArray(mNodeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, mNodeVBO);
+    glBufferData(GL_ARRAY_BUFFER, mNodePos.size() * sizeof(QVector2D), mNodePos.data(), GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D), nullptr);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
 }
