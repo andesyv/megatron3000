@@ -1,35 +1,34 @@
 #ifndef TRANSFERFUNCTIONWIDGET_H
 #define TRANSFERFUNCTIONWIDGET_H
 
-#include <QWidget>
-#include <QGraphicsView>
-#include <vector>
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions_4_5_Core>
+#include <QMatrix4x4>
 
-class QGraphicsScene;
-class MaterialNode;
+struct Node {
+    GLuint vao, vbo;
+};
 
-namespace QtCharts {
-class QSplineSeries;
-class QChart;
-}
-
-class TransferFunctionWidget : public QGraphicsView
+class TransferFunctionWidget : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
     Q_OBJECT
 
 public:
-    explicit TransferFunctionWidget(QWidget *parent = nullptr);
-    ~TransferFunctionWidget();
+    TransferFunctionWidget(QWidget *parent = nullptr);
 
-    std::vector<MaterialNode*> mNodes;
+protected:
+    void initializeGL() override;
+    void paintGL() override;
+    void resizeGL(int w, int h) override;
 
-private:
-    void resizeEvent(QResizeEvent *event) override;
+    QMatrix4x4 mPerspMat;
+    std::vector<Node> mNodes;
 
-    QtCharts::QSplineSeries* mSpline{nullptr};
-    QtCharts::QChart* mChart{nullptr};
 
-    QGraphicsScene* mNodeScene{nullptr};
+private slots:
+    void scheduleRender() {
+        paintGL();
+    }
 };
 
 #endif // TRANSFERFUNCTIONWIDGET_H
