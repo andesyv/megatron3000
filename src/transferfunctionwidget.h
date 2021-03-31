@@ -2,7 +2,7 @@
 #define TRANSFERFUNCTIONWIDGET_H
 
 #include <QWidget>
-#include <QChartView>
+#include <QGraphicsView>
 #include <vector>
 
 class QGraphicsScene;
@@ -13,7 +13,7 @@ class QSplineSeries;
 class QChart;
 }
 
-class TransferFunctionWidget : public QtCharts::QChartView
+class TransferFunctionWidget : public QGraphicsView
 {
     Q_OBJECT
 
@@ -24,6 +24,8 @@ public:
     std::vector<MaterialNode*> mNodes;
 
 private:
+    void resizeEvent(QResizeEvent *event) override;
+
     QtCharts::QSplineSeries* mSpline{nullptr};
     QtCharts::QChart* mChart{nullptr};
 
