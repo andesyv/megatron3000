@@ -61,9 +61,28 @@ void TransferFunctionWidget::mouseMoveEvent(QMouseEvent *event) {
 void TransferFunctionWidget::mousePressEvent(QMouseEvent *event) {
     const auto mousePos = screenToNormalizedCoordinates(event->pos());
     const auto index = isNodeIntersecting(mousePos);
+    
     if (index) {
-        mLastMousePos = mousePos;
-        mDraggedNode = index;
+        // If right clicking on a node we want it to remove it instead of moving it
+        if (event->button() == Qt::MouseButton::RightButton) {
+            
+            // Don't remove nodes when there's 2 or less.
+            if (mNodePos.size() < 3)
+                return;
+
+            mNodePos.erase(mNodePos.begin() + *index);
+            nodesChanged();
+        
+        // If normal clicking we want it to start moving the node
+        } else {
+            mLastMousePos = mousePos;
+            mDraggedNode = index;
+        }
+    
+    // Clicking outside a node should just add a node
+    } else {
+        mNodePos.push_back(mousePos);
+        nodesChanged();
     }
 }
 

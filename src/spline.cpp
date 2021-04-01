@@ -2,7 +2,7 @@
 #include "shaders/shadermanager.h"
 
 QVector2D piecewiseSpline(const std::vector<QVector2D>& p, double t) {
-    if (p.empty())
+    if (p.size() < 2)
         return {};
     else if (t < 0.0)
         return p.front();

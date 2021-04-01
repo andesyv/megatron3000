@@ -13,10 +13,10 @@ void main() {
 
     // "Simulate" a sphere projection
     const vec2 dir = (fragCoords - pos.xy) / nodeScale;
-    float z = -sqrt(1.0 - dir.x * dir.x - dir.y * dir.y);
+    const float z = -sqrt(1.0 - dir.x * dir.x - dir.y * dir.y);
     const vec3 normal = normalize(vec3(dir, z));
 
-    vec3 phong = vec3(1.0, 0., 0.) * max(dot(-lightDir, normal), 0.15);
+    const vec3 phong = vec3(1.0, 0., 0.) * max(dot(-lightDir, normal), 0.15);
 
     fragColor = vec4(phong, 1.0);
 }
