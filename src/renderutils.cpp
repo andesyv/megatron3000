@@ -1,5 +1,6 @@
 #include "renderutils.h"
 #include "shaders/shadermanager.h"
+#include <QTime>
 
 ScreenSpacedBuffer::ScreenSpacedBuffer() {
     initializeOpenGLFunctions();
@@ -166,11 +167,13 @@ NodeGlyphs::NodeGlyphs(const std::vector<QVector2D>& nodePos) {
 
 }
 
-void NodeGlyphs::draw() {
+void NodeGlyphs::draw(float radius) {
     glBindVertexArray(mVAO);
     
     auto& shader = ShaderManager::get().shader("node");
     shader.bind();
+    shader.setUniformValue("nodeScale", QVector2D{radius, radius});
+    shader.setUniformValue("time", QTime::currentTime().msec() * 0.001f);
 
     glDrawArrays(GL_POINTS, 0, mNodeCount);
     glBindVertexArray(0);
@@ -181,10 +184,22 @@ void NodeGlyphs::resizeNodeBuffer(const std::vector<QVector2D>& nodePos) {
     if (mNodeCount == 0)
         return;
     glBindVertexArray(mVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
     glBufferData(GL_ARRAY_BUFFER, nodePos.size() * sizeof(QVector2D), nodePos.data(), GL_DYNAMIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D), nullptr);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
+}
+
+void NodeGlyphs::updateNodeBuffer(const std::vector<QVector2D>& nodePos) {
+    if (mNodeCount != static_cast<GLsizei>(nodePos.size()))
+        resizeNodeBuffer(nodePos);
+    else {
+        glBindVertexArray(mVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, nodePos.size() * sizeof(QVector2D), nodePos.data());
+        glBindVertexArray(0);
+    }
 }
 
 NodeGlyphs::~NodeGlyphs() {

@@ -5,6 +5,18 @@
 #include <vector>
 #include <QVector2D>
 
+// de Casteljau interpolation algorithm
+template <typename T>
+T bezier(std::vector<T> p, double t) {
+    for (auto d{p.size() - 1}; 0 < d; --d)
+        for (auto i{0}; i < d; ++i)
+            p[i] = (1.0 - t) * p[i] + t * p[i+1];
+
+    return p[0];
+}
+
+QVector2D piecewiseSpline(const std::vector<QVector2D>& p, double t);
+
 class Spline : protected QOpenGLFunctions_4_5_Core {
 private:
     GLuint mVAO, mVBO;

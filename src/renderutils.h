@@ -50,8 +50,9 @@ private:
 public:
     NodeGlyphs(const std::vector<QVector2D>& nodePos = {});
 
-    void draw();
+    void draw(float radius = 0.1);
     void resizeNodeBuffer(const std::vector<QVector2D>& nodePos);
+    void updateNodeBuffer(const std::vector<QVector2D>& nodePos);
 
     ~NodeGlyphs();
 };

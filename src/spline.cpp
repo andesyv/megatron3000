@@ -1,6 +1,23 @@
 #include "spline.h"
 #include "shaders/shadermanager.h"
 
+QVector2D piecewiseSpline(const std::vector<QVector2D>& p, double t) {
+    if (p.empty())
+        return {};
+    else if (t < 0.0)
+        return p.front();
+    else if (1.0 <= t)
+        return p.back();
+
+    const auto i = static_cast<unsigned int>(p.size() * t);
+    const auto& a = p[i];
+    const auto& b = p[i+1];
+    const auto at = QVector2D{0.75f * a.x() + 0.25f * b.x(), a.y()};
+    const auto bt = QVector2D{0.25f * a.x() + 0.75f * b.x(), b.y()};
+
+    return bezier(std::vector{a, at, bt, b}, t);
+}
+
 Spline::Spline(const std::vector<QVector2D>& points, unsigned int segments)
     : mSplinePoints{points}, mSplineSegments{segments} {
     initializeOpenGLFunctions();
