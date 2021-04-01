@@ -34,7 +34,8 @@ float tf(vec3 p) {
     p /= volumeScale * 2.0; // Scale p to [-scale, scale] / 2
     p /= volumeSpacing;
     p += 0.5; // Shift uv's so we go from [-0.5, 0.5] to [0, 1.0]
-    return texture(volume, p).r * 0.4;
+    float d = texture(volume, p).r;
+    return texture(transferFunction, d).a;
 }
 
 vec3 gradient(vec3 p) {
@@ -77,15 +78,13 @@ void main() {
             fragColor.a += density;
 
             // Early exit
-            // if (1.0 < fragColor.a) {
-            //     return;
-            // }
+            if (1.0 < fragColor.a) {
+                return;
+            }
             depth += stepSize;
         }
     }
 
     if (fragColor.a < 0.8)
         fragColor = vec4(abs(rayDir), 1.);
-
-    fragColor = vec4(vec3(texture(transferFunction, fragCoord.x * 0.5 + 0.5).a), 1.0);
 }
