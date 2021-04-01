@@ -10,6 +10,8 @@ layout(binding = 0) uniform sampler3D volume;
 uniform vec3 volumeScale;
 uniform vec3 volumeSpacing;
 
+layout(binding = 4) uniform sampler1D transferFunction;
+
 out vec4 fragColor;
 
 // https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
@@ -75,13 +77,15 @@ void main() {
             fragColor.a += density;
 
             // Early exit
-            if (1.0 < fragColor.a) {
-                return;
-            }
+            // if (1.0 < fragColor.a) {
+            //     return;
+            // }
             depth += stepSize;
         }
     }
 
     if (fragColor.a < 0.8)
         fragColor = vec4(abs(rayDir), 1.);
+
+    fragColor = vec4(vec3(texture(transferFunction, fragCoord.x * 0.5 + 0.5).a), 1.0);
 }

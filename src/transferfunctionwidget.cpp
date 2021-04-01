@@ -6,11 +6,25 @@
 #include "renderutils.h"
 #include "spline.h"
 #include <QMouseEvent>
+#include "volume.h"
+#include "mainwindow.h"
 
 TransferFunctionWidget::TransferFunctionWidget(QWidget* parent)
     : QOpenGLWidget{parent},
     mNodePos{{-0.2f, 0.2f}, {0.5f, 0.7f}, {-0.9f, 0.6f}, {0.2f, -0.5f}, {0.8f, 0.6f}} {
     // connect(this, &QOpenGLWidget::frameSwapped, this, qOverload<>(&QWidget::update));
+
+    // Follow outer chain to find main window:
+    auto widget = window();
+    while (widget != nullptr && !widget->isWindow())
+        widget = widget->window();
+    
+    mMainWindow = dynamic_cast<MainWindow*>(widget);
+
+    mVolume = mMainWindow->mGlobalVolume;
+
+    // Connect event to eventually load volume:
+    connect(mVolume.get(), &Volume::loaded, this, &TransferFunctionWidget::updateVolume);
 }
 
 void TransferFunctionWidget::initializeGL() {
@@ -28,7 +42,11 @@ const auto& TransferFunctionWidget::getNodesPos() const {
 
 void TransferFunctionWidget::setNodesPos(const std::vector<QVector2D>& pos) {
     mNodePos = pos;
-    mNodeGlyphs->resizeNodeBuffer(pos);
+    nodesChanged();
+}
+
+QVector4D TransferFunctionWidget::eval(float t) const {
+    return QVector4D{0.f, 0.f, 0.f, mSpline->eval(t).y()};
 }
 
 void TransferFunctionWidget::paintGL() {
@@ -61,7 +79,7 @@ void TransferFunctionWidget::mouseMoveEvent(QMouseEvent *event) {
 void TransferFunctionWidget::mousePressEvent(QMouseEvent *event) {
     const auto mousePos = screenToNormalizedCoordinates(event->pos());
     const auto index = isNodeIntersecting(mousePos);
-    
+
     if (index) {
         // If right clicking on a node we want it to remove it instead of moving it
         if (event->button() == Qt::MouseButton::RightButton) {
@@ -111,9 +129,30 @@ QVector2D TransferFunctionWidget::screenToNormalizedCoordinates(const QPoint& po
     };
 }
 
+void TransferFunctionWidget::updateVolume() {
+    if (!mVolume || !mVolume->isValid())
+        return;
+
+    const auto resolution = 64;
+    const auto dres = static_cast<double>(resolution - 1);
+    
+    std::vector<QVector4D> values;
+    values.reserve(resolution);
+
+    for (int i {0}; i < resolution; ++i) {
+        const double t = i / dres;
+        values.push_back(eval(t));
+    }
+
+    mVolume->updateTransferFunction(values);
+}
+
 void TransferFunctionWidget::nodesChanged() {
     mNodeGlyphs->updateNodeBuffer(mNodePos);
     mSpline->update(mNodePos);
+
+    // Update volumes transfer function:
+    updateVolume();
 
     update();
 }
