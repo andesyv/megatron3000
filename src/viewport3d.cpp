@@ -3,6 +3,7 @@
 #include <QVBoxLayout>
 #include "mainwindow.h"
 #include "volume.h"
+#include "datawidget.h"
 
 Viewport3D::Viewport3D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -66,9 +67,9 @@ void Viewport3D::load() {
     if (parentWidget()) {
         auto mainwindow = dynamic_cast<MainWindow*>(parentWidget()->parentWidget());
         if (mainwindow) {
-            mRenderer->mPrivateVolume = std::make_shared<Volume>();
-            mainwindow->loadData(mRenderer->mPrivateVolume.get());
-            connect(mRenderer->mPrivateVolume.get(), &Volume::loaded, this, [&](){
+            auto dataloader = mainwindow->loadData();
+            connect(dataloader, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume){
+                mRenderer->mPrivateVolume = volume;
                 mRemoveVolumeAction->setChecked(false);
                 mRenderer->mUseGlobalVolume = false;
             });

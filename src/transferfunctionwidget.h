@@ -5,7 +5,6 @@
 #include <QOpenGLFunctions_4_5_Core>
 #include <QMatrix4x4>
 #include <QVector2D>
-#include <QVector4D>
 #include <optional>
 
 class NodeGlyphs;
@@ -22,8 +21,8 @@ public:
     TransferFunctionWidget(QWidget *parent = nullptr);
     ~TransferFunctionWidget();
 
-    const auto& getNodesPos() const;
-    void setNodesPos(const std::vector<QVector2D>& pos);
+    std::shared_ptr<Volume> getVolume() const;
+    std::shared_ptr<Volume> getVolume();
 
     QVector4D eval(float t) const;
     auto operator()(float t) const { return eval(t); }

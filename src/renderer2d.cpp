@@ -2,8 +2,9 @@
 #include "mainwindow.h"
 #include "volume.h"
 #include <filesystem>
-#include <iostream>
 #include "renderutils.h"
+#include "shaders/shadermanager.h"
+#include <QDebug>
 
 namespace fs = std::filesystem;
 
@@ -33,7 +34,7 @@ void Renderer2D::initializeGL() {
 
         if (!shader.link()) {
             // throw std::runtime_error{"Failed to link shaderprogram"};
-            std::cout << "Failed to link shader!" << std::endl;
+            qDebug() << "Failed to link shader!";
         }
     }
 
@@ -48,6 +49,7 @@ void Renderer2D::paintGL() {
     const auto& viewMatrix = getViewMatrix();
     const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
     const auto& volume = getVolume();
+    Volume::Guard volumeGuard;
     const auto time = mFrameTimer.elapsed() * 0.001f;
 
     auto& shader = shaderProgram("slice");
@@ -57,13 +59,16 @@ void Renderer2D::paintGL() {
 
     shader.bind();
     shader.setUniformValue("MVP", MVP);
-    shader.setUniformValue("volumeScale", volume->volumeScale());
-    shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
     shader.setUniformValue("time", time);
+    
+    if (volume) {
+        shader.setUniformValue("volumeScale", volume->volumeScale());
+        shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
 
-    // Volume guard automatically binds and unbinds. :)
-    const auto volumeGuard = volume->guard(0);
-
+        // Volume guard automatically binds and unbinds. :)
+        volumeGuard = volume->guard();
+    }
+    
     mScreenVAO->draw();
 
     drawAxis();

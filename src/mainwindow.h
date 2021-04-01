@@ -39,12 +39,13 @@ public:
 public slots:
     /**
      * @brief Open up a data loading popup window
-     * Opens up a data widget as a data loading popup window
-     * that stores it's loaded data into targetVolume.
-     * @param targetVolume The target volume to load data into. If nullptr it will use the global volume.
+     * Opens up a data widget as a data loading popup window.
+     * The resulting volume loaded from this operation can
+     * be fetched by hooking up to the DataWidget::loaded signal.
+     *
      * @return DataWidget* A pointer to the created widget
      */
-    DataWidget* loadData(Volume* targetVolume = nullptr);
+    DataWidget* loadData();
 
 private slots:
     // Helper slot for button.

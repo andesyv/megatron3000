@@ -1,13 +1,11 @@
 #include "viewport2d.h"
 #include "renderer2d.h"
-#include <iostream>
 #include <QVBoxLayout>
 #include <QMenuBar>
-#include <QSizePolicy>
-#include <QDockWidget>
 #include <QDebug>
 #include "mainwindow.h"
 #include "volume.h"
+#include "datawidget.h"
 
 Viewport2D::Viewport2D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -99,9 +97,9 @@ void Viewport2D::load() {
     if (parentWidget()) {
         auto mainwindow = dynamic_cast<MainWindow*>(parentWidget()->parentWidget());
         if (mainwindow) {
-            mRenderer->mPrivateVolume = std::make_shared<Volume>();
-            mainwindow->loadData(mRenderer->mPrivateVolume.get());
-            connect(mRenderer->mPrivateVolume.get(), &Volume::loaded, this, [&](){
+            auto dataloader = mainwindow->loadData();
+            connect(dataloader, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume){
+                mRenderer->mPrivateVolume = volume;
                 mRemoveVolumeAction->setChecked(false);
                 mRenderer->mUseGlobalVolume = false;
             });

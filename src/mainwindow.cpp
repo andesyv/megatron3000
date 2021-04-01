@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <iostream>
 #include <QDockWidget>
+#include <QDebug>
 #include "volume.h"
 #include "shaders/shadermanager.h"
 #include <QShortcut>
@@ -15,7 +15,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     mUi{new Ui::MainWindow},
-    mGlobalVolume{std::make_shared<Volume>()}
+    mGlobalVolume{}
 {
     mUi->setupUi(this);
     // QMainWindow requires a cental widget but we don't use it.
@@ -38,21 +38,21 @@ MainWindow::MainWindow(QWidget *parent)
     // NOTE: For datawidget to be able to create a volume, a render widget must be present. Else OpenGL crashes.
     mUi->action2D_Viewport->trigger();
 
-    loadData();
+    // loadData();
 
     mGlobalViewMatrix.setToIdentity();
 
     auto shortcut = new QShortcut{QKeySequence{tr("F5", "Reload_Shaders")}, this};
     mShortcuts.push_back(shortcut);
     connect(shortcut, &QShortcut::activated, this, [](){
-        std::cout << "Reloading shaders!" << std::endl;
+        qDebug() << "Reloading shaders!";
         ShaderManager::get().reloadShaders();
     });
 }
 
 void MainWindow::addWidget(DockWrapper* widget) {
 #ifndef NDEBUG
-    std::cout << "Widget added!" << std::endl;
+    qDebug() << "Widget added!";
 #endif
 
     // If the widget has a menu, add dock controls to the menu
@@ -68,15 +68,18 @@ void MainWindow::addWidget(DockWrapper* widget) {
     mWidgets.push_back(widget);
 }
 
-DataWidget* MainWindow::loadData(Volume* targetVolume) {
-    auto widget = new DataWidget{targetVolume != nullptr ? targetVolume : mGlobalVolume.get(), this};
+DataWidget* MainWindow::loadData() {
+    auto widget = new DataWidget{this};
     widget->setWindowFlag(Qt::Window);
     widget->show();
     return widget;
 }
 
 void MainWindow::load() {
-    loadData();
+    auto widget = loadData();
+    connect(widget, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume){
+        mGlobalVolume = volume;
+    });
 }
 
 DockWrapper* MainWindow::createWrapperWidget(QWidget* widget, const QString& title) {

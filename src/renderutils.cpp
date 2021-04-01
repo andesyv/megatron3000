@@ -1,6 +1,5 @@
 #include "renderutils.h"
 #include "shaders/shadermanager.h"
-#include <QTime>
 
 ScreenSpacedBuffer::ScreenSpacedBuffer() {
     initializeOpenGLFunctions();

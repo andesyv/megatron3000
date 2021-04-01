@@ -1,10 +1,14 @@
 #include "datawidget.h"
 #include "ui_datawidget.h"
+#include "volume.h"
+#include <QDialog>
+#include <QtCore>
+#include <QtGui>
+#include <QFileSystemModel>
 
 
-DataWidget::DataWidget(Volume *vol, QWidget *parent) :
+DataWidget::DataWidget(QWidget *parent) :
     QWidget(parent),
-    m_volume(vol),
     ui(new Ui::DataWidget)
 {
 
@@ -43,8 +47,12 @@ void DataWidget::on_listView_doubleClicked(const QModelIndex &index)
     // This is the absolute file path to the file double clicked
     QString filePath = filemodel->fileInfo(index).absoluteFilePath();
 
-    if(filemodel->fileInfo(index).suffix()=="dat" && m_volume->loadData(filePath)) {
+    auto volume = std::make_shared<Volume>();
+    if(filemodel->fileInfo(index).suffix()=="dat" && volume->loadData(filePath)) {
         qInfo() << "Successfully loaded file at " + filePath;
+
+        // If we managed to load the volume, pass it as a signal for anyone to catch
+        loaded(volume);
         this->close();
     } else {
         //Not supported file type

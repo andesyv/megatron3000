@@ -7,11 +7,6 @@
 #include "mini/ini.h"
 #include <QVector4D>
 
-Volume::Volume()
-{
-
-}
-
 bool Volume::loadData(const QString &fileName)
 {
     QFile file(fileName);

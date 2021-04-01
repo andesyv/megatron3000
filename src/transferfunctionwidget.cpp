@@ -1,18 +1,15 @@
 #include "transferfunctionwidget.h"
 #include <vector>
-#include <utility>
-#include <QVector2D>
-#include "shaders/shadermanager.h"
 #include "renderutils.h"
 #include "spline.h"
 #include <QMouseEvent>
 #include "volume.h"
 #include "mainwindow.h"
+#include <QVector4D>
 
 TransferFunctionWidget::TransferFunctionWidget(QWidget* parent)
     : QOpenGLWidget{parent},
     mNodePos{{-0.2f, 0.2f}, {0.5f, 0.7f}, {-0.9f, 0.6f}, {0.2f, -0.5f}, {0.8f, 0.6f}} {
-    // connect(this, &QOpenGLWidget::frameSwapped, this, qOverload<>(&QWidget::update));
 
     // Follow outer chain to find main window:
     auto widget = window();
@@ -21,10 +18,10 @@ TransferFunctionWidget::TransferFunctionWidget(QWidget* parent)
     
     mMainWindow = dynamic_cast<MainWindow*>(widget);
 
-    mVolume = mMainWindow->mGlobalVolume;
 
+    /// NOTE: Can't do this because this will create race conditions with other transfer function widgets
     // Connect event to eventually load volume:
-    connect(mVolume.get(), &Volume::loaded, this, &TransferFunctionWidget::updateVolume);
+    // connect(mVolume.get(), &Volume::loaded, this, &TransferFunctionWidget::updateVolume);
 }
 
 void TransferFunctionWidget::initializeGL() {
@@ -36,13 +33,12 @@ void TransferFunctionWidget::initializeGL() {
 
 TransferFunctionWidget::~TransferFunctionWidget() = default;
 
-const auto& TransferFunctionWidget::getNodesPos() const {
-    return mNodePos;
+std::shared_ptr<Volume> TransferFunctionWidget::getVolume() const {
+    return mMainWindow->mGlobalVolume;
 }
 
-void TransferFunctionWidget::setNodesPos(const std::vector<QVector2D>& pos) {
-    mNodePos = pos;
-    nodesChanged();
+std::shared_ptr<Volume> TransferFunctionWidget::getVolume() {
+    return mMainWindow->mGlobalVolume;
 }
 
 QVector4D TransferFunctionWidget::eval(float t) const {
@@ -130,7 +126,8 @@ QVector2D TransferFunctionWidget::screenToNormalizedCoordinates(const QPoint& po
 }
 
 void TransferFunctionWidget::updateVolume() {
-    if (!mVolume || !mVolume->isValid())
+    auto& volume = getVolume();
+    if (!volume)
         return;
 
     const auto resolution = 64;
@@ -144,7 +141,7 @@ void TransferFunctionWidget::updateVolume() {
         values.push_back(eval(t));
     }
 
-    mVolume->updateTransferFunction(values);
+    volume->updateTransferFunction(values);
 }
 
 void TransferFunctionWidget::nodesChanged() {

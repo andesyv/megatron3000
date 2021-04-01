@@ -10,7 +10,7 @@ class Volume : public QObject, protected QOpenGLFunctions_4_5_Core
 {
     Q_OBJECT
 public:
-    Volume();
+    Volume() = default;
 
     bool loadData(const QString &fileName);
 
