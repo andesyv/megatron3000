@@ -167,13 +167,13 @@ NodeGlyphs::NodeGlyphs(const std::vector<QVector2D>& nodePos) {
 
 }
 
-void NodeGlyphs::draw(float radius) {
+void NodeGlyphs::draw(float aspectRatio, float radius) {
     glBindVertexArray(mVAO);
     
     auto& shader = ShaderManager::get().shader("node");
     shader.bind();
-    shader.setUniformValue("nodeScale", QVector2D{radius, radius});
-    shader.setUniformValue("time", QTime::currentTime().msec() * 0.001f);
+    const auto scale = aspectScale(aspectRatio) * radius;
+    shader.setUniformValue("nodeScale", scale);
 
     glDrawArrays(GL_POINTS, 0, mNodeCount);
     glBindVertexArray(0);

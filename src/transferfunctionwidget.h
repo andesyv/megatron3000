@@ -24,7 +24,7 @@ public:
 protected:
     void initializeGL() override;
     void paintGL() override;
-    // void resizeGL(int w, int h) override;
+    void resizeGL(int w, int h) override;
 
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
@@ -41,11 +41,9 @@ protected:
     const float mNodeRadius = 0.02f;
     std::optional<unsigned int> mDraggedNode;
     QVector2D mLastMousePos;
-    bool mNeedsUpdate{false};
 
 
 private slots:
-    void scheduleRender();
     void nodesChanged();
 
 };

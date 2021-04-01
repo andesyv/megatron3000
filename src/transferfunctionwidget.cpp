@@ -10,7 +10,7 @@
 TransferFunctionWidget::TransferFunctionWidget(QWidget* parent)
     : QOpenGLWidget{parent},
     mNodePos{{-0.2f, 0.2f}, {0.5f, 0.7f}, {-0.9f, 0.6f}, {0.2f, -0.5f}, {0.8f, 0.6f}} {
-    connect(this, &QOpenGLWidget::frameSwapped, this, &TransferFunctionWidget::scheduleRender);
+    // connect(this, &QOpenGLWidget::frameSwapped, this, qOverload<>(&QWidget::update));
 }
 
 void TransferFunctionWidget::initializeGL() {
@@ -18,13 +18,9 @@ void TransferFunctionWidget::initializeGL() {
 
     mNodeGlyphs = std::make_unique<NodeGlyphs>(mNodePos);
     mSpline = std::make_unique<Spline>(mNodePos, 30);
-
-    // glPointSize(10.f);
 }
 
-TransferFunctionWidget::~TransferFunctionWidget() {
-    
-}
+TransferFunctionWidget::~TransferFunctionWidget() = default;
 
 const auto& TransferFunctionWidget::getNodesPos() const {
     return mNodePos;
@@ -39,14 +35,16 @@ void TransferFunctionWidget::paintGL() {
     glClearColor(0.3f, 0.1f, 0.6f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    const auto aspectRatio = width() / static_cast<float>(height());
+
     mSpline->draw();
     
-    mNodeGlyphs->draw(mNodeRadius);
+    mNodeGlyphs->draw(aspectRatio, mNodeRadius);
 }
 
-// void TransferFunctionWidget::resizeGL(int w, int h) {
-
-// }
+void TransferFunctionWidget::resizeGL(int w, int h) {
+    update();
+}
 
 void TransferFunctionWidget::mouseMoveEvent(QMouseEvent *event) {
     if (mDraggedNode) {
@@ -74,9 +72,13 @@ void TransferFunctionWidget::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 std::optional<unsigned int> TransferFunctionWidget::isNodeIntersecting(const QVector2D& point) const {
-    for (unsigned int i{0}; i < mNodePos.size(); ++i)
-        if ((point - mNodePos[i]).length() - mNodeRadius < 0.0)
+    const auto aspectRatio = width() / static_cast<float>(height());
+    const auto scrScale = aspectScale(aspectRatio);
+    for (unsigned int i{0}; i < mNodePos.size(); ++i) {
+        const auto dir = (point - mNodePos[i]);
+        if ((dir * scrScale).length() - mNodeRadius < 0.0)
             return i;
+    }
     
     return std::nullopt;
 }
@@ -90,17 +92,9 @@ QVector2D TransferFunctionWidget::screenToNormalizedCoordinates(const QPoint& po
     };
 }
 
-void TransferFunctionWidget::scheduleRender() {
-    // Only render whenever we need to update the screen, at most once per screen refresh rate:
-    if (mNeedsUpdate) {
-        mNeedsUpdate = false;
-        update();
-    }
-}
-
 void TransferFunctionWidget::nodesChanged() {
     mNodeGlyphs->updateNodeBuffer(mNodePos);
     mSpline->update(mNodePos);
 
-    mNeedsUpdate = true;
+    update();
 }

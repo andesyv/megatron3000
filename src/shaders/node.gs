@@ -8,7 +8,6 @@ layout(triangle_strip, max_vertices = TRIANGLECOUNT * 3) out;
 in vec3 vCol[];
 
 uniform vec2 nodeScale = vec2(0.02, 0.02);
-uniform float time = 0.0;
 
 out vec3 col;
 
@@ -17,7 +16,7 @@ out vec3 col;
 
 
 void main() {
-    col = vCol[0] + sin(time);
+    col = vCol[0];
     const float angle = TWOPI / float(TRIANGLECOUNT);
 
     for (int i = 0; i < TRIANGLECOUNT; i++) {

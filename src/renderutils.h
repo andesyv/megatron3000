@@ -2,6 +2,7 @@
 #define RENDERUTILS_H
 
 #include <QOpenGLFunctions_4_5_Core>
+#include <QVector2D>
 
 /**
  * @brief Helper class to draw a screen spaced quad
@@ -50,11 +51,18 @@ private:
 public:
     NodeGlyphs(const std::vector<QVector2D>& nodePos = {});
 
-    void draw(float radius = 0.1);
+    void draw(float aspectRatio = 1.f, float radius = 0.1);
     void resizeNodeBuffer(const std::vector<QVector2D>& nodePos);
     void updateNodeBuffer(const std::vector<QVector2D>& nodePos);
 
     ~NodeGlyphs();
 };
+
+
+
+
+inline QVector2D aspectScale(float aspectRatio = 1.f) {
+    return {1.0 < aspectRatio ? 1.f / aspectRatio : 1.f, 1.0 < aspectRatio ? 1.f : aspectRatio};
+}
 
 #endif // RENDERUTILS_H
