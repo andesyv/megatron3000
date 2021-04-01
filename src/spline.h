@@ -26,9 +26,10 @@ private:
 public:
     Spline(const std::vector<QVector2D>& points = {}, unsigned int segments = 10);
 
-    QVector2D eval(double t) const;
+    QVector2D eval(double t) const { return piecewiseSpline(mSplinePoints, t); }
     QVector2D operator()(double t) const { return eval(t); }
 
+    void update(std::vector<QVector2D> points);
     void setSegments(unsigned int segments);
 
     void draw();

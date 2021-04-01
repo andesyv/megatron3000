@@ -9,17 +9,20 @@ QVector2D piecewiseSpline(const std::vector<QVector2D>& p, double t) {
     else if (1.0 <= t)
         return p.back();
 
-    const auto i = static_cast<unsigned int>(p.size() * t);
+    auto f = (p.size()-1) * t;
+    const auto i = static_cast<unsigned int>(f);
+    f -= i;
+
     const auto& a = p[i];
     const auto& b = p[i+1];
     const auto at = QVector2D{0.75f * a.x() + 0.25f * b.x(), a.y()};
     const auto bt = QVector2D{0.25f * a.x() + 0.75f * b.x(), b.y()};
 
-    return bezier(std::vector{a, at, bt, b}, t);
+    return bezier(std::vector{a, at, bt, b}, f);
 }
 
 Spline::Spline(const std::vector<QVector2D>& points, unsigned int segments)
-    : mSplinePoints{points}, mSplineSegments{segments} {
+    : mSplinePoints{points}, mSplineSegments{0} {
     initializeOpenGLFunctions();
 
     glGenVertexArrays(1, &mVAO);
@@ -28,25 +31,23 @@ Spline::Spline(const std::vector<QVector2D>& points, unsigned int segments)
     glGenBuffers(1, &mVBO);
     glBindBuffer(GL_ARRAY_BUFFER, mVBO);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QVector3D), nullptr);
-    glEnableVertexAttribArray(0);
-
     glBindVertexArray(0);
 
-    discretizeSpline();
+    // Sort spline points
+    std::sort(mSplinePoints.begin(), mSplinePoints.end(), [](const auto& a, const auto& b){
+        return a.x() < b.x();
+    });
+    setSegments(segments);
 }
 
-// Good ol' de Casteljau
-QVector2D Spline::eval(double t) const {
-    std::vector<QVector2D> p{mSplinePoints};
+void Spline::update(std::vector<QVector2D> points) {
+    // Sort points in horizontal axis
+    std::sort(points.begin(), points.end(), [](const auto& a, const auto& b){
+        return a.x() < b.x();
+    });
+    mSplinePoints = points;
 
-    for (auto d{p.size() - 1}; 0 < d; --d) {
-        for (auto i{0}; i < d; ++i) {
-            p.at(i) = (1.0 - t) * p.at(i) + t * p.at(i+1);
-        }
-    }
-
-    return p.at(0);
+    discretizeSpline();
 }
 
 void Spline::setSegments(unsigned int segments) {
@@ -54,6 +55,15 @@ void Spline::setSegments(unsigned int segments) {
         return;
     
     mSplineSegments = segments;
+
+    // Resize buffer
+    glBindVertexArray(mVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBufferData(GL_ARRAY_BUFFER, (mSplineSegments + 1) * sizeof(QVector3D), nullptr, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QVector3D), nullptr);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+
     discretizeSpline();
 }
 
@@ -77,12 +87,14 @@ void Spline::discretizeSpline() {
     linePoints.reserve(mSplineSegments+1);
     for (unsigned int i{0}; i < mSplineSegments; ++i) {
         const auto t = i / static_cast<double>(mSplineSegments);
-        linePoints.push_back(QVector3D{eval(t)});
+        const auto p = QVector3D{piecewiseSpline(mSplinePoints, t)};
+        linePoints.push_back(p);
     }
-    linePoints.push_back(QVector3D{eval(1.0)});
+    linePoints.push_back(QVector3D{piecewiseSpline(mSplinePoints, 1.0)});
 
-    // Resize buffer and send to GPU
+    // Send to GPU
     glBindVertexArray(mVAO);
-    glBufferData(GL_ARRAY_BUFFER, linePoints.size() * sizeof(QVector3D), linePoints.data(), GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, linePoints.size() * sizeof(QVector3D), linePoints.data());
     glBindVertexArray(0);
 }

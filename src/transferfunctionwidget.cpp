@@ -17,7 +17,7 @@ void TransferFunctionWidget::initializeGL() {
     initializeOpenGLFunctions();
 
     mNodeGlyphs = std::make_unique<NodeGlyphs>(mNodePos);
-    mSpline = std::make_unique<Spline>(mNodePos);
+    mSpline = std::make_unique<Spline>(mNodePos, 30);
 
     // glPointSize(10.f);
 }
@@ -100,5 +100,7 @@ void TransferFunctionWidget::scheduleRender() {
 
 void TransferFunctionWidget::nodesChanged() {
     mNodeGlyphs->updateNodeBuffer(mNodePos);
+    mSpline->update(mNodePos);
+
     mNeedsUpdate = true;
 }
