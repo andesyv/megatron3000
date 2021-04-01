@@ -60,4 +60,5 @@ DISTFILES += \
     src/shaders/volume.fs \
     src/shaders/slice-image.fs \
     src/shaders/node.vs \
-    src/shaders/node.gs
+    src/shaders/node.gs \
+    src/shaders/node.fs

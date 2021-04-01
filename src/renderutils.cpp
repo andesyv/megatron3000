@@ -156,7 +156,7 @@ NodeGlyphs::NodeGlyphs(const std::vector<QVector2D>& nodePos) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!shader.addSource(QOpenGLShader::Fragment, shaderPath("default.fs"))) {
+        if (!shader.addSource(QOpenGLShader::Fragment, shaderPath("node.fs"))) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
 

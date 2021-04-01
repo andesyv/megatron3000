@@ -38,7 +38,7 @@ protected:
     std::unique_ptr<NodeGlyphs> mNodeGlyphs;
     std::unique_ptr<Spline> mSpline;
 
-    const float mNodeRadius = 0.02f;
+    const float mNodeRadius = 0.04f;
     std::optional<unsigned int> mDraggedNode;
     QVector2D mLastMousePos;
 
