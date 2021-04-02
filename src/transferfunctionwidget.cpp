@@ -6,6 +6,8 @@
 #include "volume.h"
 #include "mainwindow.h"
 #include <QVector4D>
+#include <algorithm>
+#include <utility>
 
 TransferFunctionWidget::TransferFunctionWidget(QWidget* parent)
     : QOpenGLWidget{parent},
@@ -125,20 +127,75 @@ QVector2D TransferFunctionWidget::screenToNormalizedCoordinates(const QPoint& po
     };
 }
 
+float linearBetween(float a, float b, float p) {
+    if (p < a)
+        return 0.0;
+    else if (b < p)
+        return 1.0;
+    
+    return (p - a) / (b - a);
+}
+
+// Assumes points are sorted
+float findTHorizontally(const std::vector<QVector2D>& p, const QVector2D& point) {
+    if (p.size() < 2)
+        return 0.0;
+
+    return linearBetween(-1.f, 1.f, point.x());
+}
+
+
 void TransferFunctionWidget::updateVolume() {
     auto& volume = getVolume();
-    if (!volume)
+    if (!volume || mNodePos.size() < 2)
         return;
 
+    /** B(t) describes a spline that is continous for t = [0, 1],
+     * but the segments ( B(t) dt ) have no guarantee being
+     * similar / consistently spaced. Thus finding the t that
+     * gives a point B on a spline is a difficult task. See
+     * https://math.stackexchange.com/questions/527005/find-value-of-t-at-a-point-on-a-cubic-bezier-curve
+     * for an actual solution. I'm not that smart so instead
+     * I just calculate 10 times the integrals and take the
+     * average pos.
+     * TODO: Calculate this shit and use that instead
+     */
     const auto resolution = 64;
-    const auto dres = static_cast<double>(resolution - 1);
+    const auto evalResolution = 10 * resolution;
+    const auto dres = static_cast<double>(evalResolution - 1);
+    auto sortedPoints{mNodePos};
+    std::sort(sortedPoints.begin(), sortedPoints.end(), [](const auto& a, const auto& b){ return a.x() < b.x(); });
     
+    std::vector<std::pair<QVector4D, unsigned int>> valueBuckets;
+    valueBuckets.resize(resolution, {QVector4D{}, 0});
+
+    for (int i {0}; i < evalResolution; ++i) {
+        const double t = i / dres;
+        const auto val = mSpline->eval(t);
+        const auto x = findTHorizontally(sortedPoints, val);
+        const auto bucketI = static_cast<unsigned int>(x * (resolution - 1));
+        auto& [bval, bcount] = valueBuckets.at(bucketI);
+        bval += QVector4D{0.f, 0.f, 0.f, val.y()};
+        ++bcount;
+    }
+
+    // Average values:
     std::vector<QVector4D> values;
     values.reserve(resolution);
 
-    for (int i {0}; i < resolution; ++i) {
-        const double t = i / dres;
-        values.push_back(eval(t));
+    bool bUpper = false;
+    for (const auto& [sum, num] : valueBuckets) {
+        if (num != 0) {
+            // Fill middle values with buckets
+            values.push_back(sum / num);
+            bUpper = true;
+        } else {
+            // Fill upper values with last node:
+            if (bUpper)
+                values.push_back(QVector4D{0.f, 0.f, 0.f, sortedPoints.back().y()});
+            else
+                values.push_back(QVector4D{0.f, 0.f, 0.f, sortedPoints.front().y()});
+        }
     }
 
     volume->updateTransferFunction(values);
