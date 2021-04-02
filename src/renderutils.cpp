@@ -84,15 +84,12 @@ AxisGlyph::AxisGlyph() {
 
     if (!SM.valid("axis")) {
         auto& shader = SM.shader("axis");
-        const auto shaderpath = std::filesystem::absolute(std::filesystem::path{SHADERPATH});
-        const auto vspath = QString::fromStdString((shaderpath / "axis.vs").string());
-        const auto fspath = QString::fromStdString((shaderpath / "axis.fs").string());
 
-        if (!shader.addSource(QOpenGLShader::Vertex, vspath)) {
+        if (!shader.addSourceRelative(QOpenGLShader::Vertex, "axis.vs")) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!shader.addSource(QOpenGLShader::Fragment, fspath)) {
+        if (!shader.addSourceRelative(QOpenGLShader::Fragment, "axis.fs")) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
 
@@ -140,22 +137,17 @@ NodeGlyphs::NodeGlyphs(const std::vector<QVector2D>& nodePos) {
     auto& SM = ShaderManager::get();
 
     if (!SM.valid("node")) {
-        const auto shaderPath = [](auto path){
-            const auto shaderpath = std::filesystem::absolute(std::filesystem::path{SHADERPATH});
-            return QString::fromStdString((shaderpath / path).string());
-        };
-
         auto& shader = SM.shader("node");
 
-        if (!shader.addSource(QOpenGLShader::Vertex, shaderPath("node.vs"))) {
+        if (!shader.addSourceRelative(QOpenGLShader::Vertex, "node.vs")) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!shader.addSource(QOpenGLShader::Geometry, shaderPath("node.gs"))) {
+        if (!shader.addSourceRelative(QOpenGLShader::Geometry, "node.gs")) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!shader.addSource(QOpenGLShader::Fragment, shaderPath("node.fs"))) {
+        if (!shader.addSourceRelative(QOpenGLShader::Fragment, "node.fs")) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
 

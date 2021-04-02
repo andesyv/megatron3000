@@ -5,11 +5,8 @@
 layout(points) in;
 layout(triangle_strip, max_vertices = TRIANGLECOUNT * 3) out;
 
-in vec3 vCol[];
-
 uniform vec2 nodeScale = vec2(0.02, 0.02);
 
-out vec3 col;
 out vec3 pos;
 out vec2 fragCoords;
 
@@ -18,7 +15,6 @@ out vec2 fragCoords;
 
 
 void main() {
-    col = vCol[0];
     pos = gl_in[0].gl_Position.xyz;
     const float angle = TWOPI / float(TRIANGLECOUNT);
 

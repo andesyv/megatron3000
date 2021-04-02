@@ -1,6 +1,5 @@
 #version 450
 
-in vec3 col;
 in vec3 pos;
 in vec2 fragCoords;
 

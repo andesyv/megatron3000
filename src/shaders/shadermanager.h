@@ -16,6 +16,7 @@ public:
     Shader(QObject *parent = nullptr) : QOpenGLShaderProgram{parent} {}
 
     bool addSource(QOpenGLShader::ShaderType type, const std::filesystem::path &filePath);
+    bool addSourceRelative(QOpenGLShader::ShaderType type, const std::string &filePath);
     bool addSource(QOpenGLShader::ShaderType type, const QString &fileName);
 
     bool reload();

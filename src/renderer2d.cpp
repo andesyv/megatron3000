@@ -19,16 +19,11 @@ void Renderer2D::initializeGL() {
     // Create volume shader
     if (!isShaderValid("slice")) {
         auto& shader = shaderProgram("slice");
-
-        const auto shaderpath = fs::absolute(fs::path{SHADERPATH});
-        
-        const auto vspath = QString::fromStdString((shaderpath / "screen.vs").string());
-        const auto fspath = QString::fromStdString((shaderpath / "slice-image.fs").string());
-        if (!shader.addSource(QOpenGLShader::Vertex, vspath)) {
+        if (!shader.addSourceRelative(QOpenGLShader::Vertex, "screen.vs")) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!shader.addSource(QOpenGLShader::Fragment, fspath)) {
+        if (!shader.addSourceRelative(QOpenGLShader::Fragment, "slice-image.fs")) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
 

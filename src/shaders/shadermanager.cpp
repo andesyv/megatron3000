@@ -29,13 +29,11 @@ ShaderManager::ShaderManager() {
                 throw std::runtime_error{"Failed to compile fragment shader"};
             }
         #else
-            const auto vspath = QString::fromStdString((shaderpath / "default.vs").string());
-            const auto fspath = QString::fromStdString((shaderpath / "default.fs").string());
-            if (!defaultShader.addSource(QOpenGLShader::Vertex, vspath)) {
+            if (!defaultShader.addSourceRelative(QOpenGLShader::Vertex, "default.vs")) {
                 throw std::runtime_error{"Failed to compile vertex shader"};
             }
 
-            if (!defaultShader.addSource(QOpenGLShader::Fragment, fspath)) {
+            if (!defaultShader.addSourceRelative(QOpenGLShader::Fragment, "default.fs")) {
                 throw std::runtime_error{"Failed to compile fragment shader"};
             }
         #endif
@@ -49,13 +47,11 @@ ShaderManager::ShaderManager() {
     if (!valid("screen")) {
         auto& screenShader = shader("screen");
 
-        const auto vspath = QString::fromStdString((shaderpath / "screen.vs").string());
-        const auto fspath = QString::fromStdString((shaderpath / "screen.fs").string());
-        if (!screenShader.addSource(QOpenGLShader::Vertex, vspath)) {
+        if (!screenShader.addSourceRelative(QOpenGLShader::Vertex, "screen.vs")) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!screenShader.addSource(QOpenGLShader::Fragment, fspath)) {
+        if (!screenShader.addSourceRelative(QOpenGLShader::Fragment, "screen.fs")) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
 
@@ -95,6 +91,10 @@ bool ShaderManager::reloadShaders() {
             bRet = false;
     }
     return bRet;
+}
+
+bool Shader::addSourceRelative(QOpenGLShader::ShaderType type, const std::string &filePath) {
+    return addSource(type, fs::path{SHADERPATH} / filePath);
 }
 
 bool Shader::addSource(QOpenGLShader::ShaderType type, const std::filesystem::path &filePath) {
