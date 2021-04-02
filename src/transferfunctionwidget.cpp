@@ -48,12 +48,12 @@ QVector4D TransferFunctionWidget::eval(float t) const {
 }
 
 void TransferFunctionWidget::paintGL() {
-    glClearColor(0.3f, 0.1f, 0.6f, 1.f);
+    glClearColor(0.7f, 0.7f, 0.7f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     const auto aspectRatio = width() / static_cast<float>(height());
 
-    mSpline->draw();
+    mSpline->draw(getVolume());
     
     mNodeGlyphs->draw(aspectRatio, mNodeRadius);
 }

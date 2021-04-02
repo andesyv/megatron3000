@@ -1,5 +1,7 @@
 #include "spline.h"
 #include "shaders/shadermanager.h"
+#include <QVector2D>
+#include "volume.h"
 
 QVector2D piecewiseSpline(const std::vector<QVector2D>& p, double t) {
     if (p.size() < 2)
@@ -38,6 +40,28 @@ Spline::Spline(const std::vector<QVector2D>& points, unsigned int segments)
         return a.x() < b.x();
     });
     setSegments(segments);
+
+    // Create shader
+    auto& SM = ShaderManager::get();
+    if (!SM.valid("spline")) {
+        auto& shader = SM.shader("spline");
+
+        if (!shader.addSourceRelative(QOpenGLShader::Vertex, "node.vs")) {
+            throw std::runtime_error{"Failed to compile vertex shader"};
+        }
+
+        if (!shader.addSourceRelative(QOpenGLShader::Geometry, "spline.gs")) {
+            throw std::runtime_error{"Failed to compile vertex shader"};
+        }
+
+        if (!shader.addSourceRelative(QOpenGLShader::Fragment, "spline.fs")) {
+            throw std::runtime_error{"Failed to compile fragment shader"};
+        }
+
+        if (!shader.link()) {
+            throw std::runtime_error{"Failed to link shaderprogram"};
+        }
+    }
 }
 
 void Spline::update(std::vector<QVector2D> points) {
@@ -59,20 +83,27 @@ void Spline::setSegments(unsigned int segments) {
     // Resize buffer
     glBindVertexArray(mVAO);
     glBindBuffer(GL_ARRAY_BUFFER, mVBO);
-    glBufferData(GL_ARRAY_BUFFER, (mSplineSegments + 1) * sizeof(QVector3D), nullptr, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QVector3D), nullptr);
+    glBufferData(GL_ARRAY_BUFFER, (mSplineSegments + 3) * sizeof(QVector2D), nullptr, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
 
     discretizeSpline();
 }
 
-void Spline::draw() {
-    glBindVertexArray(mVAO);
-    auto& shader = ShaderManager::get().shader("default");
+void Spline::draw(std::shared_ptr<Volume> volume) {
+    auto& shader = ShaderManager::get().shader(volume ? "spline" : "default");
+#ifndef NDEBUG
+    if (!shader.isLinked()) return;
+#endif
     shader.bind();
+    
+    Volume::Guard volumeGuard;
+    if (volume)
+        volumeGuard = volume->guard();
 
-    glDrawArrays(GL_LINE_STRIP, 0, mSplineSegments+1);
+    glBindVertexArray(mVAO);
+    glDrawArrays(GL_LINE_STRIP, 0, mSplineSegments+3);
     glBindVertexArray(0);
 }
 
@@ -83,18 +114,28 @@ Spline::~Spline() {
 
 void Spline::discretizeSpline() {
     // Gather line points
-    std::vector<QVector3D> linePoints;
-    linePoints.reserve(mSplineSegments+1);
+    std::vector<QVector2D> linePoints;
+    linePoints.reserve(mSplineSegments+3);
+
+    // Draw start point (from screen edge to first node):
+    linePoints.emplace_back(-1.f, mSplinePoints.front().y());
+    
+    // Draw points between1
     for (unsigned int i{0}; i < mSplineSegments; ++i) {
         const auto t = i / static_cast<double>(mSplineSegments);
-        const auto p = QVector3D{piecewiseSpline(mSplinePoints, t)};
+        const auto p = piecewiseSpline(mSplinePoints, t);
         linePoints.push_back(p);
     }
-    linePoints.push_back(QVector3D{piecewiseSpline(mSplinePoints, 1.0)});
+
+    // last point on spline:
+    linePoints.push_back(piecewiseSpline(mSplinePoints, 1.0));
+
+    // Draw end point (from last node to screen edge):
+    linePoints.emplace_back(1.f, mSplinePoints.back().y());
 
     // Send to GPU
     glBindVertexArray(mVAO);
     glBindBuffer(GL_ARRAY_BUFFER, mVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, linePoints.size() * sizeof(QVector3D), linePoints.data());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, linePoints.size() * sizeof(QVector2D), linePoints.data());
     glBindVertexArray(0);
 }

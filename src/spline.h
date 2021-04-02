@@ -5,6 +5,8 @@
 #include <vector>
 #include <QVector2D>
 
+class Volume;
+
 // de Casteljau interpolation algorithm
 template <typename T>
 T bezier(std::vector<T> p, double t) {
@@ -32,7 +34,7 @@ public:
     void update(std::vector<QVector2D> points);
     void setSegments(unsigned int segments);
 
-    void draw();
+    void draw(std::shared_ptr<Volume> volume = {});
 
     ~Spline();
 
