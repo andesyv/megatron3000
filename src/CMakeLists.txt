@@ -14,7 +14,6 @@ target_sources(megatron3000 PRIVATE
     renderer2d.cpp
     renderer3d.cpp
     renderutils.cpp
-    materialnode.cpp
     spline.cpp
 )
 

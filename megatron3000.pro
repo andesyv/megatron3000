@@ -26,7 +26,6 @@ SOURCES += \
     src/renderer2d.cpp \
     src/renderer3d.cpp \
     src/renderutils.cpp \
-    src/materialnode.cpp \
     src/spline.cpp \
     src/shaders/shadermanager.cpp
 
@@ -43,7 +42,6 @@ HEADERS += \
     src/renderer2d.h \
     src/renderer3d.h \
     src/renderutils.h \
-    src/materialnode.h \
     src/spline.h \
     src/shaders/shadermanager.h
 
@@ -61,4 +59,7 @@ DISTFILES += \
     src/shaders/slice-image.fs \
     src/shaders/node.vs \
     src/shaders/node.gs \
-    src/shaders/node.fs
+    src/shaders/node.fs \
+    src/shaders/spline.vs \
+    src/shaders/spline.gs \
+    src/shaders/spline.fs
