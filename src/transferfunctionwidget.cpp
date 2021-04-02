@@ -69,6 +69,13 @@ void TransferFunctionWidget::mouseMoveEvent(QMouseEvent *event) {
         mLastMousePos = mousePos;
         
         mNodePos[*mDraggedNode] += delta;
+        // Clamp:
+        const auto aspectRatio = width() / static_cast<float>(height());
+        const auto scrScale = aspectScale(aspectRatio);
+        const auto nodeRadius = scrScale * mNodeRadius;
+
+        mNodePos[*mDraggedNode].setX(std::clamp(mNodePos[*mDraggedNode].x(), -1.f + nodeRadius.x(), 1.f - nodeRadius.x()));
+        mNodePos[*mDraggedNode].setY(std::clamp(mNodePos[*mDraggedNode].y(), -1.f + nodeRadius.y(), 1.f - nodeRadius.y()));
 
         nodesChanged();
     }
