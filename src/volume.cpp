@@ -39,6 +39,8 @@ bool Volume::loadData(const QString &fileName)
     QVector<unsigned short> volumeRaw{};
     volumeRaw.resize(volumeSize);
 
+    emit loaded();
+
     if (stream.readRawData(reinterpret_cast<char*>(volumeRaw.data()),volumeSize*sizeof (unsigned short)) != volumeSize*sizeof (unsigned short))
     {
         return false;

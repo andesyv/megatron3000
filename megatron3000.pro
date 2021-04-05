@@ -1,4 +1,4 @@
-QT       += core gui widgets opengl
+QT       += core gui widgets opengl charts
 
 CONFIG += c++17
 
@@ -45,7 +45,6 @@ HEADERS += \
 
 FORMS += \
     src/datawidget.ui \
-    src/histogramwidget.ui \
     src/mainwindow.ui \
     src/transferfunctionwidget.ui
 

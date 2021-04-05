@@ -10,6 +10,7 @@
 #include "viewport2d.h"
 #include "viewport3d.h"
 #include "datawidget.h"
+#include "histogramwidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -28,11 +29,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mUi->action3D_Viewport, &QAction::triggered, this, [&](){
         addWidget(createWrapperWidget(new Viewport3D{this}, "3D Viewport"));
     });
+    connect(mUi->actionHistogram_Widget, &QAction::triggered, this, [&](){
+        addWidget(createWrapperWidget(new HistogramWidget{this}, "Histogram Widget"));
+    });
     connect(mUi->actionOpen, &QAction::triggered, this, &MainWindow::load);
 
     // Manually create a rendering widget:
     // NOTE: For datawidget to be able to create a volume, a render widget must be present. Else OpenGL crashes.
     mUi->action2D_Viewport->trigger();
+    //mUi->actionHistogram_Widget->trigger();
 
     loadData();
 
@@ -66,6 +71,7 @@ void MainWindow::addWidget(DockWrapper* widget) {
 
 DataWidget* MainWindow::loadData(Volume* targetVolume) {
     auto widget = new DataWidget{targetVolume != nullptr ? targetVolume : mGlobalVolume.get(), this};
+
     widget->setWindowFlag(Qt::Window);
     widget->show();
     return widget;

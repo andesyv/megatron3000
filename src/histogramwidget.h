@@ -3,9 +3,9 @@
 
 #include <QWidget>
 
-namespace Ui {
-class HistogramWidget;
-}
+class QVBoxLayout;
+class MainWindow;
+class Volume;
 
 class HistogramWidget : public QWidget
 {
@@ -14,9 +14,13 @@ class HistogramWidget : public QWidget
 public:
     explicit HistogramWidget(QWidget *parent = nullptr);
     ~HistogramWidget();
+    std::shared_ptr<Volume> mVolume;
+
+protected:
+    MainWindow* mMainWindow{nullptr};
 
 private:
-    Ui::HistogramWidget *ui;
+    QVBoxLayout* mLayout{nullptr};
 };
 
 #endif // HISTOGRAMWIDGET_H
