@@ -19,11 +19,15 @@ HistogramWidget::HistogramWidget(QWidget *parent) :
     while (widget != nullptr && !widget->isWindow())
         widget = widget->window();
     mMainWindow = dynamic_cast<MainWindow*>(widget);
-    mVolume = mMainWindow->mGlobalVolume;
 
     //DEBUGGING
+    drawStdLineGraph();
 
+    qDebug() << getVolume().get();
+}
 
+void HistogramWidget::drawStdLineGraph()
+{
     // Histogram chart:
     QLineSeries *series = new QLineSeries();
     for (int i = 0; i < 256; i++) {
@@ -59,6 +63,12 @@ HistogramWidget::HistogramWidget(QWidget *parent) :
     mLayout->addWidget(chartView);
 }
 
-//HistogramWidget::createDataHistogram()
-
 HistogramWidget::~HistogramWidget() = default;
+
+std::shared_ptr<Volume> HistogramWidget::getVolume() const {
+    return mMainWindow->mGlobalVolume;
+}
+
+std::shared_ptr<Volume> HistogramWidget::getVolume() {
+    return mMainWindow->mGlobalVolume;
+}

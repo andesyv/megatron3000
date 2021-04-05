@@ -45,6 +45,7 @@
      </property>
      <addaction name="action2D_Viewport"/>
      <addaction name="action3D_Viewport"/>
+     <addaction name="actionHistogram_Widget"/>
     </widget>
     <addaction name="menuAdd"/>
    </widget>
@@ -84,6 +85,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionHistogram_Widget">
+   <property name="text">
+    <string>Histogram Widget</string>
    </property>
   </action>
  </widget>

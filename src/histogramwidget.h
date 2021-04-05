@@ -14,8 +14,9 @@ class HistogramWidget : public QWidget
 public:
     explicit HistogramWidget(QWidget *parent = nullptr);
     ~HistogramWidget();
-    std::shared_ptr<Volume> mVolume;
-
+    std::shared_ptr<Volume> getVolume() const;
+    std::shared_ptr<Volume> getVolume();
+    void drawStdLineGraph();
 protected:
     MainWindow* mMainWindow{nullptr};
 
