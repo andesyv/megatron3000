@@ -11,7 +11,7 @@
 
 TransferFunctionRenderer::TransferFunctionRenderer(QWidget* parent)
     : QOpenGLWidget{parent},
-    mNodePos{{-0.2f, 0.2f}, {0.5f, 0.7f}, {-0.9f, 0.6f}, {0.2f, -0.5f}, {0.8f, 0.6f}} {
+    mNodes{{{-0.2f, 0.2f}}, {{0.5f, 0.7f}}, {{-0.9f, 0.6f}}, {{0.2f, -0.5f}}, {{0.8f, 0.6f}}} {
 
     // Follow outer chain to find main window:
     auto widget = window();
@@ -29,8 +29,9 @@ TransferFunctionRenderer::TransferFunctionRenderer(QWidget* parent)
 void TransferFunctionRenderer::initializeGL() {
     initializeOpenGLFunctions();
 
-    mNodeGlyphs = std::make_unique<NodeGlyphs>(mNodePos);
-    mSpline = std::make_unique<Spline>(mNodePos, 30);
+    const auto positions = mapList(mNodes, [](const auto& n){ return n.pos; });
+    mNodeGlyphs = std::make_unique<NodeGlyphs>(positions);
+    mSpline = std::make_unique<Spline>(positions, 30);
 }
 
 TransferFunctionRenderer::~TransferFunctionRenderer() = default;
@@ -68,14 +69,15 @@ void TransferFunctionRenderer::mouseMoveEvent(QMouseEvent *event) {
         const auto delta = mousePos - mLastMousePos;
         mLastMousePos = mousePos;
         
-        mNodePos[*mDraggedNode] += delta;
+        auto& nodePos = mNodes[*mDraggedNode].pos;
+        nodePos += delta;
         // Clamp:
         const auto aspectRatio = width() / static_cast<float>(height());
         const auto scrScale = aspectScale(aspectRatio);
         const auto nodeRadius = scrScale * mNodeRadius;
 
-        mNodePos[*mDraggedNode].setX(std::clamp(mNodePos[*mDraggedNode].x(), -1.f + nodeRadius.x(), 1.f - nodeRadius.x()));
-        mNodePos[*mDraggedNode].setY(std::clamp(mNodePos[*mDraggedNode].y(), -1.f + nodeRadius.y(), 1.f - nodeRadius.y()));
+        nodePos.setX(std::clamp(nodePos.x(), -1.f + nodeRadius.x(), 1.f - nodeRadius.x()));
+        nodePos.setY(std::clamp(nodePos.y(), -1.f + nodeRadius.y(), 1.f - nodeRadius.y()));
 
         nodesChanged();
     }
@@ -90,21 +92,23 @@ void TransferFunctionRenderer::mousePressEvent(QMouseEvent *event) {
         if (event->button() == Qt::MouseButton::RightButton) {
             
             // Don't remove nodes when there's 2 or less.
-            if (mNodePos.size() < 3)
+            if (mNodes.size() < 3)
                 return;
 
-            mNodePos.erase(mNodePos.begin() + *index);
+            mNodes.erase(mNodes.begin() + *index);
             nodesChanged();
         
         // If normal clicking we want it to start moving the node
         } else {
             mLastMousePos = mousePos;
             mDraggedNode = index;
+
+            nodeSelected(mNodes[*index]);
         }
     
     // Clicking outside a node should just add a node
     } else {
-        mNodePos.push_back(mousePos);
+        mNodes.push_back({mousePos});
         nodesChanged();
     }
 }
@@ -116,8 +120,8 @@ void TransferFunctionRenderer::mouseReleaseEvent(QMouseEvent *event) {
 std::optional<unsigned int> TransferFunctionRenderer::isNodeIntersecting(const QVector2D& point) const {
     const auto aspectRatio = width() / static_cast<float>(height());
     const auto scrScale = aspectScale(aspectRatio);
-    for (unsigned int i{0}; i < mNodePos.size(); ++i) {
-        const auto dir = (point - mNodePos[i]);
+    for (unsigned int i{0}; i < mNodes.size(); ++i) {
+        const auto dir = (point - mNodes[i].pos);
         if ((dir * scrScale).length() - mNodeRadius < 0.0)
             return i;
     }
@@ -154,7 +158,7 @@ float findTHorizontally(const std::vector<QVector2D>& p, const QVector2D& point)
 
 void TransferFunctionRenderer::updateVolume() {
     auto volume = getVolume();
-    if (!volume || mNodePos.size() < 2)
+    if (!volume || mNodes.size() < 2)
         return;
 
     /** B(t) describes a spline that is continous for t = [0, 1],
@@ -170,7 +174,7 @@ void TransferFunctionRenderer::updateVolume() {
     const auto resolution = 64;
     const auto evalResolution = 10 * resolution;
     const auto dres = static_cast<double>(evalResolution - 1);
-    auto sortedPoints{mNodePos};
+    auto sortedPoints = mapList(mNodes, [](const auto& n){ return n.pos; });
     std::sort(sortedPoints.begin(), sortedPoints.end(), [](const auto& a, const auto& b){ return a.x() < b.x(); });
     
     std::vector<std::pair<QVector4D, unsigned int>> valueBuckets;
@@ -209,8 +213,10 @@ void TransferFunctionRenderer::updateVolume() {
 }
 
 void TransferFunctionRenderer::nodesChanged() {
-    mNodeGlyphs->updateNodeBuffer(mNodePos);
-    mSpline->update(mNodePos);
+    const auto positions = mapList(mNodes, [](const auto& n){ return n.pos; });
+
+    mNodeGlyphs->updateNodeBuffer(positions);
+    mSpline->update(positions);
 
     // Update volumes transfer function:
     updateVolume();
