@@ -71,7 +71,7 @@ void MainWindow::addWidget(DockWrapper* widget) {
 DataWidget* MainWindow::loadData() {
     auto widget = new DataWidget{this};
     widget->setWindowFlag(Qt::Window);
-    widget->show();
+    widget->show(); 
     return widget;
 }
 

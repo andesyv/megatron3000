@@ -18,6 +18,7 @@ SOURCES += \
     src/main.cpp \
     src/mainwindow.cpp \
     src/renderer.cpp \
+    src/transferfunctionrenderer.cpp \
     src/transferfunctionwidget.cpp \
     src/viewport2d.cpp \
     src/viewport3d.cpp \
@@ -34,6 +35,7 @@ HEADERS += \
     src/histogramwidget.h \
     src/mainwindow.h \
     src/renderer.h \
+    src/transferfunctionrenderer.h \
     src/transferfunctionwidget.h \
     src/viewport2d.h \
     src/viewport3d.h \
@@ -48,7 +50,8 @@ HEADERS += \
 FORMS += \
     src/datawidget.ui \
     src/histogramwidget.ui \
-    src/mainwindow.ui
+    src/mainwindow.ui \
+    src/transferfunctionwidget.ui
 
 DISTFILES += \
     src/shaders/default.vs \
