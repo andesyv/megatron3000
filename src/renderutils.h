@@ -51,7 +51,7 @@ private:
 public:
     NodeGlyphs(const std::vector<QVector2D>& nodePos = {});
 
-    void draw(float aspectRatio = 1.f, float radius = 0.1);
+    void draw(float aspectRatio = 1.f, float radius = 0.1, int selectedNode = -1);
     void resizeNodeBuffer(const std::vector<QVector2D>& nodePos);
     void updateNodeBuffer(const std::vector<QVector2D>& nodePos);
 

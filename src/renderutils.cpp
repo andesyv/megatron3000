@@ -158,13 +158,15 @@ NodeGlyphs::NodeGlyphs(const std::vector<QVector2D>& nodePos) {
 
 }
 
-void NodeGlyphs::draw(float aspectRatio, float radius) {
+void NodeGlyphs::draw(float aspectRatio, float radius, int selectedNode) {
     glBindVertexArray(mVAO);
     
     auto& shader = ShaderManager::get().shader("node");
     shader.bind();
     const auto scale = aspectScale(aspectRatio) * radius;
     shader.setUniformValue("nodeScale", scale);
+    shader.setUniformValue("selected", selectedNode);
+    shader.setUniformValue("glowRadius", radius * 20.0f);
 
     glDrawArrays(GL_POINTS, 0, mNodeCount);
     glBindVertexArray(0);

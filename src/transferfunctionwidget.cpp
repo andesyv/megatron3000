@@ -48,7 +48,7 @@ TransferFunctionWidget::~TransferFunctionWidget() = default;
 void TransferFunctionWidget::select(Node& node) {
     auto widget = new QWidget{this};
     propertyUi->setupUi(widget);
-    propertyUi->info->setText(QString{"Node: "}.append(QString::number(mRenderer->getNodeIndex(node))));
+    propertyUi->info->setText(QString{"Node: "}.append(QString::number(mRenderer->getSortedNodeIndex(node))));
     // propertyWidget->setMaximumSize(QSize{QWIDGETSIZE_MAX, 100});
     
     if (mPropertyWidget) {

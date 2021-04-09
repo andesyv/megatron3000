@@ -45,6 +45,10 @@ std::shared_ptr<Volume> TransferFunctionRenderer::getVolume() {
 }
 
 unsigned int TransferFunctionRenderer::getNodeIndex(const Node& node) const {
+    return std::find(mNodes.begin(), mNodes.end(), node) - mNodes.begin();
+}
+
+unsigned int TransferFunctionRenderer::getSortedNodeIndex(const Node& node) const {
     auto pos{mNodes};
     std::sort(pos.begin(), pos.end(), [](const auto& a, const auto& b){ return a.pos.x() < b.pos.x(); });
     return std::find(pos.begin(), pos.end(), node) - pos.begin();
@@ -57,12 +61,15 @@ QVector4D TransferFunctionRenderer::eval(float t) const {
 void TransferFunctionRenderer::paintGL() {
     glClearColor(0.7f, 0.7f, 0.7f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     const auto aspectRatio = width() / static_cast<float>(height());
 
     mSpline->draw(getVolume());
-    
-    mNodeGlyphs->draw(aspectRatio, mNodeRadius);
+    mNodeGlyphs->draw(aspectRatio, mNodeRadius, mSelectedNode);
+
+    glDisable(GL_BLEND);
 }
 
 void TransferFunctionRenderer::resizeGL(int w, int h) {
@@ -109,12 +116,28 @@ void TransferFunctionRenderer::mousePressEvent(QMouseEvent *event) {
             mLastMousePos = mousePos;
             mDraggedNode = index;
 
-            nodeSelected(mNodes[*index]);
+            auto& node = mNodes[*index];
+
+            mSelectedNode = getNodeIndex(node);
+            nodeSelected(node);
+
+            nodesChanged();
         }
-    
-    // Clicking outside a node should just add a node
-    } else {
+    }
+}
+
+void TransferFunctionRenderer::mouseDoubleClickEvent(QMouseEvent *event) {
+    const auto mousePos = screenToNormalizedCoordinates(event->pos());
+    const auto index = isNodeIntersecting(mousePos);
+
+    // Double clicking outside a node should just add a node
+    if (!index) {
         mNodes.push_back({mousePos});
+        auto& newNode = mNodes.back();
+        
+        mSelectedNode = getNodeIndex(newNode);
+        nodeSelected(newNode);
+        
         nodesChanged();
     }
 }

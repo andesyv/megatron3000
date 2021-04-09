@@ -55,6 +55,7 @@ public:
     std::shared_ptr<Volume> getVolume();
 
     unsigned int getNodeIndex(const Node& node) const;
+    unsigned int getSortedNodeIndex(const Node& node) const;
 
     QVector4D eval(float t) const;
     auto operator()(float t) const { return eval(t); }
@@ -68,6 +69,7 @@ protected:
 
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
 
     std::optional<unsigned int> isNodeIntersecting(const QVector2D& point) const;
@@ -80,11 +82,13 @@ protected:
     std::unique_ptr<NodeGlyphs> mNodeGlyphs;
     std::unique_ptr<Spline> mSpline;
 
-    const float mNodeRadius = 0.04f;
+    const float mNodeRadius = 0.07f;
     std::optional<unsigned int> mDraggedNode;
     QVector2D mLastMousePos;
 
     MainWindow* mMainWindow{nullptr};
+
+    int mSelectedNode{-1};
 
 
 private slots:
