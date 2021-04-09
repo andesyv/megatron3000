@@ -26,7 +26,7 @@
       <bool>false</bool>
      </property>
      <property name="text">
-      <string>Current Node: &quot;nothing&quot; :/</string>
+      <string>Node: 0</string>
      </property>
      <property name="scaledContents">
       <bool>false</bool>

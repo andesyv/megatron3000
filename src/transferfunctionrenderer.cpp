@@ -11,7 +11,7 @@
 
 TransferFunctionRenderer::TransferFunctionRenderer(QWidget* parent)
     : QOpenGLWidget{parent},
-    mNodes{{{-0.2f, 0.2f}}, {{0.5f, 0.7f}}, {{-0.9f, 0.6f}}, {{0.2f, -0.5f}}, {{0.8f, 0.6f}}} {
+    mNodes{{{-0.2f, 0.2f}}, {{0.2f, -0.5f}}, {{0.8f, 0.6f}}} {
 
     // Follow outer chain to find main window:
     auto widget = window();

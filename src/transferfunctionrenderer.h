@@ -91,7 +91,7 @@ protected:
     int mSelectedNode{-1};
 
 
-private slots:
+public slots:
     void nodesChanged();
 
 signals:

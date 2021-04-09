@@ -2,24 +2,49 @@
 #include "ui_nodepropertywidget.h"
 #include "transferfunctionrenderer.h"
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-// #include <QColorDialog>
+#include <QAbstractButton>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QColorDialog>
 
-// class ColorLabel : public QLabel {
-// public:
-//     ColorLabel(QWidget* parent) : QLabel{parent} {}
+class ColorButton : public QAbstractButton {
+public:
+    explicit ColorButton(QWidget* parent = nullptr) : QAbstractButton{parent} {}
+    // explicit QAbstractButton(const QString &text, QWidget *parent = nullptr) : QAbstractButton{text, parent} {}
+    explicit ColorButton(const QColor& color, const QString& texxxxxxt, QWidget *parent = nullptr)
+        : QAbstractButton{parent}, mColor{color} {
+            setText(texxxxxxt);
+        }
 
-// protected:
-//     void paintEvent(QPaintEvent* e) override {
+    QSize sizeHint() const override {
+        return {50, 30};
+    }
 
-//     }
-// };
+    void setColor(const QColor& col) {
+        mColor = col;
+        update();
+    }
+
+    auto color() const {
+        return mColor;
+    }
+
+protected:
+    void paintEvent(QPaintEvent* e) override {
+        // QPushButton::paintEvent(e);
+        const auto rect = e->rect();
+        QPainter painter{this};
+        painter.fillRect(rect, mColor);
+        painter.drawText(rect, Qt::AlignCenter, text());
+    }
+
+    QColor mColor;
+};
 
 TransferFunctionWidget::TransferFunctionWidget(QWidget* parent)
     : QWidget{parent},
     propertyUi{std::make_unique<Ui::NodePropertyWidget>()}
 {
-
     // Layout:
     auto layout = new QVBoxLayout{this};
     layout->setContentsMargins(0, 0, 0, 0);
@@ -28,17 +53,6 @@ TransferFunctionWidget::TransferFunctionWidget(QWidget* parent)
     mRenderer = new TransferFunctionRenderer{this};
     layout->addWidget(mRenderer);
     connect(mRenderer, &TransferFunctionRenderer::nodeSelected, this, &TransferFunctionWidget::select);
-    
-    // Proptery widget:
-    // auto propertyWidget = new QWidget{this};
-    // propertyUi->setupUi(propertyWidget);
-    // // propertyWidget->setMaximumSize(QSize{QWIDGETSIZE_MAX, 100});
-    // layout->addWidget(propertyWidget);
-    // // Right side panel:
-    // auto rightSide = new QWidget{this};
-    // auto rightLayout = new QVBoxLayout{this};
-    // rightSide->setLayout(rightLayout);
-    // layout->addWidget(rightSide);
 
     setLayout(layout);
 }
@@ -46,10 +60,18 @@ TransferFunctionWidget::TransferFunctionWidget(QWidget* parent)
 TransferFunctionWidget::~TransferFunctionWidget() = default;
 
 void TransferFunctionWidget::select(Node& node) {
+    mSelectedNode = &node;
+
     auto widget = new QWidget{this};
     propertyUi->setupUi(widget);
     propertyUi->info->setText(QString{"Node: "}.append(QString::number(mRenderer->getSortedNodeIndex(node))));
-    // propertyWidget->setMaximumSize(QSize{QWIDGETSIZE_MAX, 100});
+
+    // Swap old button for custom button
+    mColorButton = new ColorButton{node.color, "Color", widget};
+    auto layoutItem = widget->layout()->replaceWidget(propertyUi->color, mColorButton);
+    propertyUi->color->hide();
+    delete layoutItem;
+    connect(mColorButton, &QAbstractButton::clicked, this, &TransferFunctionWidget::pickColor);
     
     if (mPropertyWidget) {
         auto layoutItem = layout()->replaceWidget(mPropertyWidget, widget);
@@ -60,8 +82,6 @@ void TransferFunctionWidget::select(Node& node) {
         layout()->addWidget(widget);
 
     mPropertyWidget = widget;
-
-    qDebug() << "Node selected!";
 }
 
 void TransferFunctionWidget::deselect() {
@@ -71,4 +91,18 @@ void TransferFunctionWidget::deselect() {
     layout()->removeWidget(mPropertyWidget);
     // Note: According to the Qt documentation the layout will do cleanup for us.
     mPropertyWidget = nullptr;
+    mSelectedNode = nullptr;
+    mColorButton = nullptr;
+}
+
+void TransferFunctionWidget::pickColor() {
+    // Note: QColorDialog gives a debug warning about failing to set correct size, but it seems safe to ignore it.
+    const auto newColor = QColorDialog::getColor(mSelectedNode->color, this, "Color! :o");
+    if (!newColor.isValid())
+        return;
+
+    mColorButton->setColor(newColor);
+    
+    mSelectedNode->color = newColor;
+    mRenderer->nodesChanged();
 }
