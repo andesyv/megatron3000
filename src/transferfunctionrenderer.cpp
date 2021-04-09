@@ -44,6 +44,12 @@ std::shared_ptr<Volume> TransferFunctionRenderer::getVolume() {
     return mMainWindow->mGlobalVolume;
 }
 
+unsigned int TransferFunctionRenderer::getNodeIndex(const Node& node) const {
+    auto pos{mNodes};
+    std::sort(pos.begin(), pos.end(), [](const auto& a, const auto& b){ return a.pos.x() < b.pos.x(); });
+    return std::find(pos.begin(), pos.end(), node) - pos.begin();
+}
+
 QVector4D TransferFunctionRenderer::eval(float t) const {
     return QVector4D{0.f, 0.f, 0.f, mSpline->eval(t).y()};
 }

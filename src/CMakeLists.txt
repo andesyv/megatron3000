@@ -17,6 +17,7 @@ target_sources(megatron3000 PRIVATE
     renderer3d.cpp
     renderutils.cpp
     spline.cpp
+    nodepropertywidget.ui
 )
 
 # Add target for creating embedfile helper program

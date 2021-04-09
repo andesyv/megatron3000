@@ -37,6 +37,10 @@ auto mapList(const std::vector<T>& list, F&& func) {
 struct Node {
     QVector2D pos;
     QColor color;
+
+    bool operator==(const Node& rhs) const {
+        return pos == rhs.pos && color == rhs.color;
+    }
 };
 
 class TransferFunctionRenderer : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
@@ -49,6 +53,8 @@ public:
 
     std::shared_ptr<Volume> getVolume() const;
     std::shared_ptr<Volume> getVolume();
+
+    unsigned int getNodeIndex(const Node& node) const;
 
     QVector4D eval(float t) const;
     auto operator()(float t) const { return eval(t); }

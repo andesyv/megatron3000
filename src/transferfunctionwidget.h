@@ -2,12 +2,14 @@
 #define TRANSFERFUNCTIONWIDGET_H
 
 #include <QWidget>
+#include <memory>
 
 namespace Ui {
-class TransferFunctionWidget;
+class NodePropertyWidget;
 }
 
 class TransferFunctionRenderer;
+struct Node;
 
 class TransferFunctionWidget : public QWidget
 {
@@ -19,9 +21,13 @@ public:
 
 protected:
     TransferFunctionRenderer* mRenderer{nullptr};
+    QWidget* mPropertyWidget{nullptr};
+
+    void select(Node& node);
+    void deselect();
 
 private:
-    Ui::TransferFunctionWidget *ui;
+    std::unique_ptr<Ui::NodePropertyWidget> propertyUi;
 };
 
 #endif // TRANSFERFUNCTIONWIDGET_H
