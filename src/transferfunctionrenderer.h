@@ -27,7 +27,7 @@ class MainWindow;
  */
 template <typename T, typename F>
 auto mapList(const std::vector<T>& list, F&& func) {
-    using FRetType = decltype(func(std::vector<T>::value_type{})); // This ugly line only determines the return type of func
+    using FRetType = decltype(func(typename std::vector<T>::value_type{})); // This ugly line only determines the return type of func
     std::vector<FRetType> newList{};
     newList.reserve(list.size());
     std::transform(list.begin(), list.end(), std::back_inserter(newList), func);
