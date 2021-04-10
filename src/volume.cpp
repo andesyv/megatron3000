@@ -194,9 +194,9 @@ void Volume::generateTransferFunction() {
     initializeOpenGLFunctions();
 
     const QVector4D initialValues[] = {
-        {0.f, 0.f, 0.f, 0.f},
-        {0.25f, 0.25f, 0.25f, 0.25f},
-        {0.75f, 0.75f, 0.75f, 0.75f},
+        {1.f, 1.f, 1.f, 0.f},
+        {1.f, 1.f, 1.f, 0.25f},
+        {1.f, 1.f, 1.f, 0.75f},
         {1.f, 1.f, 1.f, 1.f},
     };
 

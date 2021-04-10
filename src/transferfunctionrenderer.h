@@ -36,7 +36,7 @@ auto mapList(const std::vector<T>& list, F&& func) {
 
 struct Node {
     QVector2D pos;
-    QColor color;
+    QColor color{255, 255, 255, 255};
 
     bool operator==(const Node& rhs) const {
         return pos == rhs.pos && color == rhs.color;

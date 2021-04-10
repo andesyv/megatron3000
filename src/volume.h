@@ -14,7 +14,7 @@ public:
 
     bool loadData(const QString &fileName);
 
-    void bind(GLuint binding = 0, GLuint tfBinding = 4);
+    void bind(GLuint binding = 0, GLuint tfBinding = 1);
     void unbind();
 
     bool isValid() const {
@@ -59,7 +59,7 @@ public:
     public:
         Guard(const Guard&) = delete;
         // Default constructor
-        Guard(Volume* v = nullptr, GLuint binding = 0, GLuint tfBinding = 4)
+        Guard(Volume* v = nullptr, GLuint binding = 0, GLuint tfBinding = 1)
             : m_vol{v} {
             if (v != nullptr)
                 v->bind(binding, tfBinding);
@@ -83,7 +83,7 @@ public:
         }
     };
 
-    Guard guard(GLuint binding = 0, GLuint tfBinding = 4) { return Guard{this, binding, tfBinding}; }
+    Guard guard(GLuint binding = 0, GLuint tfBinding = 1) { return Guard{this, binding, tfBinding}; }
 
     ~Volume();
 };
