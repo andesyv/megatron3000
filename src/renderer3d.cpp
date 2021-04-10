@@ -2,8 +2,9 @@
 #include "mainwindow.h"
 #include "volume.h"
 #include <filesystem>
-#include <iostream>
 #include "renderutils.h"
+#include "shaders/shadermanager.h"
+#include <QDebug>
 
 namespace fs = std::filesystem;
 
@@ -13,22 +14,17 @@ void Renderer3D::initializeGL() {
     // Create volume shader
     if (!isShaderValid("volume")) {
         auto& shader = shaderProgram("volume");
-
-        const auto shaderpath = fs::absolute(fs::path{SHADERPATH});
-        
-        const auto vspath = QString::fromStdString((shaderpath / "screen.vs").string());
-        const auto fspath = QString::fromStdString((shaderpath / "volume.fs").string());
-        if (!shader.addSource(QOpenGLShader::Vertex, vspath)) {
+        if (!shader.addSourceRelative(QOpenGLShader::Vertex, "screen.vs")) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!shader.addSource(QOpenGLShader::Fragment, fspath)) {
+        if (!shader.addSourceRelative(QOpenGLShader::Fragment, "volume.fs")) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
 
         if (!shader.link()) {
             // throw std::runtime_error{"Failed to link shaderprogram"};
-            std::cout << "Failed to link shader!" << std::endl;
+            qDebug() << "Failed to link shader!";
         }
     }
 
@@ -45,6 +41,7 @@ void Renderer3D::paintGL() {
     const auto& viewMatrix = getViewMatrix();
     const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
     const auto& volume = getVolume();
+    Volume::Guard volumeGuard;
 
     auto& shader = shaderProgram("volume");
 #ifndef NDEBUG
@@ -53,11 +50,14 @@ void Renderer3D::paintGL() {
 
     shader.bind();
     shader.setUniformValue("MVP", MVP);
-    shader.setUniformValue("volumeScale", volume->volumeScale());
-    shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
+    
+    if (volume) {
+        shader.setUniformValue("volumeScale", volume->volumeScale());
+        shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
 
-    // Volume guard automatically binds and unbinds. :)
-    const auto volumeGuard = volume->guard(0);
+        // Volume guard automatically binds and unbinds. :)
+        volumeGuard = volume->guard();
+    }
 
     mScreenVAO->draw();
 

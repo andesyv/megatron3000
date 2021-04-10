@@ -4,8 +4,9 @@ target_sources(megatron3000 PRIVATE
     mainwindow.ui
     histogramwidget.cpp
     histogramwidget.ui
+    transferfunctionrenderer.cpp
     transferfunctionwidget.cpp
-    transferfunctionwidget.h
+    transferfunctionwidget.ui
     viewport2d.cpp
     viewport3d.cpp
     renderer.cpp
@@ -15,6 +16,8 @@ target_sources(megatron3000 PRIVATE
     renderer2d.cpp
     renderer3d.cpp
     renderutils.cpp
+    spline.cpp
+    nodepropertywidget.ui
 )
 
 # Add target for creating embedfile helper program

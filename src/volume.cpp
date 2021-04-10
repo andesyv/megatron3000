@@ -5,11 +5,7 @@
 #include <cmath>
 #include <algorithm>
 #include "mini/ini.h"
-
-Volume::Volume()
-{
-
-}
+#include <QVector4D>
 
 bool Volume::loadData(const QString &fileName)
 {
@@ -84,6 +80,13 @@ bool Volume::loadData(const QString &fileName)
 
 
 #ifndef NDEBUG
+    qDebug() << "Generate transfer function";
+#endif
+    generateTransferFunction();
+
+
+
+#ifndef NDEBUG
     qDebug() << "Done loading volume";
 #endif
     // Fire "loaded" events:
@@ -93,13 +96,22 @@ bool Volume::loadData(const QString &fileName)
     return true;
 }
 
-void Volume::bind(GLuint binding) {
+void Volume::bind(GLuint binding, GLuint tfBinding) {
     if (!m_texInitiated)
         return;
 
     m_binding = binding;
     glActiveTexture(GL_TEXTURE0 + binding);
     glBindTexture(GL_TEXTURE_3D, m_texBuffer);
+
+
+
+    if (!m_tfInitiated)
+        return;
+
+    m_tfBinding = tfBinding;
+    glActiveTexture(GL_TEXTURE0 + tfBinding);
+    glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
 }
 
 void Volume::unbind() {
@@ -109,6 +121,25 @@ void Volume::unbind() {
     glActiveTexture(GL_TEXTURE0 + *m_binding);
     glBindTexture(GL_TEXTURE_3D, 0);
     m_binding = std::nullopt;
+
+
+
+    if (!m_tfInitiated || !m_tfBinding)
+        return;
+    
+    glActiveTexture(GL_TEXTURE0 + *m_tfBinding);
+    glBindTexture(GL_TEXTURE_1D, 0);
+    m_tfBinding = std::nullopt;
+}
+
+void Volume::updateTransferFunction(const std::vector<QVector4D>& values) {
+    if (!m_tfInitiated) return;
+
+    const auto size = static_cast<GLsizei>(values.size());
+
+    glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA16F, size, 0, GL_RGBA, GL_FLOAT, values.data());
+    glBindTexture(GL_TEXTURE_1D, 0);
 }
 
 void Volume::generateTexture() {
@@ -159,7 +190,34 @@ bool Volume::loadINI(const QString &fileName) {
     return true;
 }
 
+void Volume::generateTransferFunction() {
+    initializeOpenGLFunctions();
+
+    const QVector4D initialValues[] = {
+        {1.f, 1.f, 1.f, 0.f},
+        {1.f, 1.f, 1.f, 0.25f},
+        {1.f, 1.f, 1.f, 0.75f},
+        {1.f, 1.f, 1.f, 1.f},
+    };
+
+    glGenTextures(1, &m_tfBuffer);
+    glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA16F, 4, 0, GL_RGBA, GL_FLOAT, initialValues);
+
+    // Min and mag filter: linear scaling
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_1D, 0);
+    m_tfInitiated = true;
+}
+
 Volume::~Volume() {
     if (m_texInitiated)
         glDeleteTextures(1, &m_texBuffer);
+
+    if (m_tfInitiated)
+        glDeleteTextures(1, &m_tfBuffer);
 }

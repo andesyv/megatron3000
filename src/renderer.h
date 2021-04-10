@@ -3,7 +3,6 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_4_5_Core>
-#include "shaders/shadermanager.h"
 #include <QMatrix4x4>
 #include <QElapsedTimer>
 #include <memory>
@@ -12,6 +11,7 @@ class MainWindow;
 class Volume;
 class ScreenSpacedBuffer;
 class AxisGlyph;
+class Shader;
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
