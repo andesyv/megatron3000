@@ -7,6 +7,7 @@
 #include <QDebug>
 
 namespace fs = std::filesystem;
+using namespace Slicing;
 
 void Renderer3D::initializeGL() {
     Renderer::initializeGL();
@@ -54,6 +55,11 @@ void Renderer3D::paintGL() {
     if (volume) {
         shader.setUniformValue("volumeScale", volume->volumeScale());
         shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
+        shader.setUniformValue("isSlicingEnabled", true);
+
+        // Transform slicing plane and update buffer:
+        // auto slicingGeometry = transformSlicingGeometry(MVP, volume->m_slicingGeometry);
+        // volume->updateSlicingGeometryBuffer(slicingGeometry);
 
         // Volume guard automatically binds and unbinds. :)
         volumeGuard = volume->guard();
@@ -64,4 +70,14 @@ void Renderer3D::paintGL() {
     drawAxis();
 
     ++mFrameCount;
+}
+
+Plane Renderer3D::transformSlicingGeometry(const QMatrix4x4& trans, const Plane& geometry) const {
+    auto tPos = trans * QVector4D{geometry.pos, 1.f};
+    tPos *= tPos.w();
+    auto tDir = trans * QVector4D{geometry.dir, 0.f};
+    tDir *= tDir.w();
+    tDir.normalize();
+
+    return {QVector3D{tPos}, QVector3D{tDir}};
 }

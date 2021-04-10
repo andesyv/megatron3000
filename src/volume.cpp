@@ -7,6 +7,8 @@
 #include "mini/ini.h"
 #include <QVector4D>
 
+using namespace Slicing;
+
 bool Volume::loadData(const QString &fileName)
 {
     QFile file(fileName);
@@ -80,9 +82,16 @@ bool Volume::loadData(const QString &fileName)
 
 
 #ifndef NDEBUG
-    qDebug() << "Generate transfer function";
+    qDebug() << "Generating transfer function";
 #endif
     generateTransferFunction();
+
+
+
+#ifndef NDEBUG
+    qDebug() << "Generating slicing plane";
+#endif
+    generateSlicingGeometryBuffer();
 
 
 
@@ -96,7 +105,7 @@ bool Volume::loadData(const QString &fileName)
     return true;
 }
 
-void Volume::bind(GLuint binding, GLuint tfBinding) {
+void Volume::bind(GLuint binding, GLuint tfBinding, GLuint geometryBinding) {
     if (!m_texInitiated)
         return;
 
@@ -104,14 +113,13 @@ void Volume::bind(GLuint binding, GLuint tfBinding) {
     glActiveTexture(GL_TEXTURE0 + binding);
     glBindTexture(GL_TEXTURE_3D, m_texBuffer);
 
-
-
-    if (!m_tfInitiated)
-        return;
-
     m_tfBinding = tfBinding;
     glActiveTexture(GL_TEXTURE0 + tfBinding);
     glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
+
+    m_geometryBinding = geometryBinding;
+    // glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, geometryBinding, m_slicingGeometryBuffer);
 }
 
 void Volume::unbind() {
@@ -121,15 +129,13 @@ void Volume::unbind() {
     glActiveTexture(GL_TEXTURE0 + *m_binding);
     glBindTexture(GL_TEXTURE_3D, 0);
     m_binding = std::nullopt;
-
-
-
-    if (!m_tfInitiated || !m_tfBinding)
-        return;
     
     glActiveTexture(GL_TEXTURE0 + *m_tfBinding);
     glBindTexture(GL_TEXTURE_1D, 0);
     m_tfBinding = std::nullopt;
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, *m_geometryBinding, 0);
+    m_geometryBinding = std::nullopt;
 }
 
 void Volume::updateTransferFunction(const std::vector<QVector4D>& values) {
@@ -214,10 +220,33 @@ void Volume::generateTransferFunction() {
     m_tfInitiated = true;
 }
 
+void Volume::generateSlicingGeometryBuffer() {
+    glGenBuffers(1, &m_slicingGeometryBuffer);
+    updateSlicingGeometryBuffer();
+    m_slicingGeometryBufferInitiated = true;
+}
+
+void Volume::updateSlicingGeometryBuffer() {
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Plane), &m_slicingGeometry, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void Volume::updateSlicingGeometryBuffer(const Plane& geometry) {
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Plane), &geometry, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void applyGeometryTransformation(const QMatrix4x4& trans);
+
 Volume::~Volume() {
     if (m_texInitiated)
         glDeleteTextures(1, &m_texBuffer);
 
     if (m_tfInitiated)
         glDeleteTextures(1, &m_tfBuffer);
+
+    if (m_slicingGeometryBufferInitiated)
+        glDeleteTextures(1, &m_slicingGeometryBuffer);
 }

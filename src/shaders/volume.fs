@@ -10,6 +10,19 @@ layout(binding = 0) uniform sampler3D volume;
 layout(binding = 1) uniform sampler1D transferFunction;
 uniform vec3 volumeScale;
 uniform vec3 volumeSpacing;
+uniform bool isSlicingEnabled = false;
+
+// I like to define a plane as a direction and a point in the plane.
+struct Plane
+{
+    vec3 pos;
+    vec3 dir;
+};
+
+layout(std430, binding = 4) buffer SlicingGeometry
+{
+    Plane slicingPlane;
+};
 
 
 out vec4 fragColor;
@@ -27,6 +40,24 @@ vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize)
     if( tN>tF || tF < 0.0) return vec2(-1.0); // no intersection
     // outNormal = -sign(rdd)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz);
     return vec2( tN, tF );
+}
+
+vec2 slicePlane(vec2 bounds, vec3 ro, vec3 rd) {
+    // Distance to plane
+    float dist = dot(ro - slicingPlane.pos, slicingPlane.dir);
+    // Find direction aligning with plane to see if above or below plane.
+    float denom = dot(slicingPlane.dir, rd);
+    // Divide distance by direction to get intersection point with ray
+    float intersection = -dist / denom;
+    if (0.0 < denom) {
+        // If in front of plane, set far plane to intersection
+        bounds.y = min(intersection, bounds.y);
+    } else {
+        // If behind plane, set near plane to intersection
+        bounds.x = max(intersection, bounds.x);
+    }
+
+    return bounds;
 }
 
 // Box intersection maks p in range [-1, 1]
@@ -57,9 +88,11 @@ void main() {
     vec3 rayDir = normalize(far.xyz - near.xyz);
     fragColor = vec4(0.);
 
-    // Example bounding cube:
     vec2 bounds = boxIntersection(rayOrigin, rayDir, volumeScale * volumeSpacing);
-    if (0.0 <= bounds.y) {
+    if (isSlicingEnabled)
+        bounds = slicePlane(bounds, rayOrigin, rayDir);
+        
+    if (0.0 <= bounds.y && bounds.x < bounds.y) {
         // Clamp to near plane
         bounds.x = max(bounds.x, 0.0);
 
