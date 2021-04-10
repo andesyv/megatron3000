@@ -4,6 +4,7 @@
 #include <QOpenGLFunctions_4_5_Core>
 #include <vector>
 #include <QVector2D>
+#include <memory>
 
 class Volume;
 
