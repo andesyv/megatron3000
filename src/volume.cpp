@@ -238,8 +238,6 @@ void Volume::updateSlicingGeometryBuffer(const Plane& geometry) {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-void applyGeometryTransformation(const QMatrix4x4& trans);
-
 Volume::~Volume() {
     if (m_texInitiated)
         glDeleteTextures(1, &m_texBuffer);

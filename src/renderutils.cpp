@@ -213,13 +213,13 @@ WorldPlaneGlyph::WorldPlaneGlyph() {
 
     // Pos (x,y,z)
     const GLfloat vertices[] = {
-        -1.f, -1.f, 0.f,
-        1.f, -1.f, 0.f,
-        1.f, 1.f, 0.f,
+        -1.f, 0., -1.f,
+        1.f, 0.f, -1.f,
+        1.f, 0.f, 1.f,
 
-        -1.f, -1.f, 0.f,
-        1.f, 1.f, 0.f,
-        -1.f, 1.f, 0.f
+        -1.f, 0.f, -1.f,
+        1.f, 0.f, 1.f,
+        -1.f, 0.f, 1.f
     };
 
     glGenBuffers(1, &mVBO);
@@ -260,6 +260,7 @@ void WorldPlaneGlyph::unbind() {
 }
 
 void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, QMatrix4x4 model) {
+    glEnable(GL_CULL_FACE);
     bind();
     const auto planeMat = MVP.inverted() * model;
     auto& shader = ShaderManager::get().shader("plane");
@@ -268,6 +269,7 @@ void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, QMatrix4x4 model) {
 #endif
     shader.bind();
     shader.setUniformValue("MVP", planeMat);
+    shader.setUniformValue("alpha", std::clamp(mAlpha, 0.f, 1.f));
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
     unbind();
@@ -275,7 +277,7 @@ void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, QMatrix4x4 model) {
 
 void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QVector3D& pos, const QVector3D& dir) {
     QMatrix4x4 model{MatIdentityValues};
-    const auto rot = QQuaternion::rotationTo({0.f, 0.f, 1.f}, dir).normalized();
+    const auto rot = QQuaternion::rotationTo({0.f, 0.f, -1.f}, dir).normalized();
     model.rotate(rot);
     model.translate(pos);
     draw(MVP, model);

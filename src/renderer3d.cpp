@@ -50,9 +50,20 @@ void Renderer3D::paintGL() {
 #ifndef NDEBUG
     if (!shader.isLinked()) return;
 #endif
-
-    // Render plane glyph
-    mPlane->draw(MVP, {2.f, 0.f, 0.f}, QVector3D{-1.f, 0.f, 1.f}.normalized());
+    
+    /* I'm rendering one front-facing plane and one back-facing plane
+     * in order to "simulate" the effect of a transparent two-sided
+     * on both sides of the volume rendering. The first one takes
+     * care of plane -> volume blending, and the second one takes
+     * care of volume -> plane blending.
+     */
+    // Render back plane glyph
+    if (volume) {
+        glFrontFace(GL_CW); // Reverse winding order to reverse plane direction
+        const auto& plane = volume->m_slicingGeometry;
+        mPlane->draw(MVP, plane.pos, plane.dir);
+        glFrontFace(GL_CCW);
+    }
 
     shader.bind();
     shader.setUniformValue("MVP", MVP);
@@ -71,7 +82,14 @@ void Renderer3D::paintGL() {
         volumeGuard = volume->guard();
     }
 
-    // mScreenVAO->draw();
+    glDisable(GL_CULL_FACE);
+    mScreenVAO->draw();
+
+    // Render front plane glyph
+    if (volume) {
+        const auto& plane = volume->m_slicingGeometry;
+        mPlane->draw(MVP, plane.pos, plane.dir);
+    }
 
     drawAxis();
 
