@@ -12,6 +12,7 @@ class Volume;
 class ScreenSpacedBuffer;
 class AxisGlyph;
 class Shader;
+class WorldPlaneGlyph;
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
@@ -30,7 +31,7 @@ public:
     bool mUseGlobalVolume{true};
     std::shared_ptr<Volume> mPrivateVolume;
 
-    ~Renderer();
+    ~Renderer() override;
 
     virtual void zoom(double z);
     void rotate(float dx, float dy);
@@ -53,6 +54,7 @@ protected:
     // Screen Spaced vertex array
     std::unique_ptr<ScreenSpacedBuffer> mScreenVAO;
     std::unique_ptr<AxisGlyph> mAxisGlyph;
+    std::unique_ptr<WorldPlaneGlyph> mPlane;
 
     QMatrix4x4 mPerspectiveMatrix;
 

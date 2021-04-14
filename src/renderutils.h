@@ -3,6 +3,7 @@
 
 #include <QOpenGLFunctions_4_5_Core>
 #include <QVector2D>
+#include <QMatrix4x4>
 
 /**
  * @brief Helper class to draw a screen spaced quad
@@ -58,6 +59,23 @@ public:
     ~NodeGlyphs();
 };
 
+
+constexpr float MatIdentityValues[] = {1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f};
+
+class WorldPlaneGlyph : protected QOpenGLFunctions_4_5_Core {
+private:
+    GLuint mVAO, mVBO;
+
+public:
+    void bind();
+    void unbind();
+
+    void draw(const QMatrix4x4& MVP, QMatrix4x4 model = QMatrix4x4{MatIdentityValues});
+    void draw(const QMatrix4x4& MVP, const QVector3D& pos, const QVector3D& dir);
+
+    WorldPlaneGlyph();
+    ~WorldPlaneGlyph();
+};
 
 
 

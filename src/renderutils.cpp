@@ -1,5 +1,6 @@
 #include "renderutils.h"
 #include "shaders/shadermanager.h"
+#include <QQuaternion>
 
 ScreenSpacedBuffer::ScreenSpacedBuffer() {
     initializeOpenGLFunctions();
@@ -196,6 +197,91 @@ void NodeGlyphs::updateNodeBuffer(const std::vector<QVector2D>& nodePos) {
 }
 
 NodeGlyphs::~NodeGlyphs() {
+    glDeleteBuffers(1, &mVBO);
+    glDeleteVertexArrays(1, &mVAO);
+}
+
+
+
+
+
+WorldPlaneGlyph::WorldPlaneGlyph() {
+    initializeOpenGLFunctions();
+
+    glGenVertexArrays(1, &mVAO);
+    glBindVertexArray(mVAO);
+
+    // Pos (x,y,z)
+    const GLfloat vertices[] = {
+        -1.f, -1.f, 0.f,
+        1.f, -1.f, 0.f,
+        1.f, 1.f, 0.f,
+
+        -1.f, -1.f, 0.f,
+        1.f, 1.f, 0.f,
+        -1.f, 1.f, 0.f
+    };
+
+    glGenBuffers(1, &mVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+
+
+    auto& SM = ShaderManager::get();
+
+    if (!SM.valid("plane")) {
+        auto& shader = SM.shader("plane");
+
+        if (!shader.addSourceRelative(QOpenGLShader::Vertex, "plane.vs")) {
+            throw std::runtime_error{"Failed to compile vertex shader"};
+        }
+
+        if (!shader.addSourceRelative(QOpenGLShader::Fragment, "plane.fs")) {
+            throw std::runtime_error{"Failed to compile fragment shader"};
+        }
+
+        if (!shader.link()) {
+            throw std::runtime_error{"Failed to link shaderprogram"};
+        }
+    }
+}
+
+void WorldPlaneGlyph::bind() {
+    glBindVertexArray(mVAO);
+}
+
+void WorldPlaneGlyph::unbind() {
+    glBindVertexArray(0);
+}
+
+void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, QMatrix4x4 model) {
+    bind();
+    const auto planeMat = MVP.inverted() * model;
+    auto& shader = ShaderManager::get().shader("plane");
+#ifndef NDEBUG
+    if (!shader.isLinked()) return;
+#endif
+    shader.bind();
+    shader.setUniformValue("MVP", planeMat);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    unbind();
+}
+
+void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QVector3D& pos, const QVector3D& dir) {
+    QMatrix4x4 model{MatIdentityValues};
+    const auto rot = QQuaternion::rotationTo({0.f, 0.f, 1.f}, dir).normalized();
+    model.rotate(rot);
+    model.translate(pos);
+    draw(MVP, model);
+}
+
+WorldPlaneGlyph::~WorldPlaneGlyph() {
     glDeleteBuffers(1, &mVBO);
     glDeleteVertexArrays(1, &mVAO);
 }

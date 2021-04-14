@@ -37,6 +37,8 @@ void Renderer3D::paintGL() {
     const float deltaTime = mFrameTimer.restart() * 0.001;
 
     glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.5f, 1.f, 0.f});
     const auto& viewMatrix = getViewMatrix();
@@ -49,6 +51,9 @@ void Renderer3D::paintGL() {
     if (!shader.isLinked()) return;
 #endif
 
+    // Render plane glyph
+    mPlane->draw(MVP, {2.f, 0.f, 0.f}, QVector3D{-1.f, 0.f, 1.f}.normalized());
+
     shader.bind();
     shader.setUniformValue("MVP", MVP);
     
@@ -56,6 +61,7 @@ void Renderer3D::paintGL() {
         shader.setUniformValue("volumeScale", volume->volumeScale());
         shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
         shader.setUniformValue("isSlicingEnabled", true);
+        shader.setUniformValue("time", mAliveTimer.elapsed() * 0.001f);
 
         // Transform slicing plane and update buffer:
         // auto slicingGeometry = transformSlicingGeometry(MVP, volume->m_slicingGeometry);
@@ -65,7 +71,7 @@ void Renderer3D::paintGL() {
         volumeGuard = volume->guard();
     }
 
-    mScreenVAO->draw();
+    // mScreenVAO->draw();
 
     drawAxis();
 
@@ -81,3 +87,5 @@ Plane Renderer3D::transformSlicingGeometry(const QMatrix4x4& trans, const Plane&
 
     return {QVector3D{tPos}, QVector3D{tDir}};
 }
+
+Renderer3D::~Renderer3D() {};

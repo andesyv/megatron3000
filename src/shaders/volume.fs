@@ -11,6 +11,7 @@ layout(binding = 1) uniform sampler1D transferFunction;
 uniform vec3 volumeScale;
 uniform vec3 volumeSpacing;
 uniform bool isSlicingEnabled = false;
+uniform float time = 0.0;
 
 // I like to define a plane as a direction and a point in the plane.
 struct Plane
@@ -104,7 +105,7 @@ void main() {
             vec4 tex = tf(p);
             float density = tex.a;
             vec3 g = gradient(p);
-            density *= length(g) * 100.0;
+            density *= length(g) * 10.0;
             vec3 normal = normalize(g);
             vec3 color = tex.rgb;
             vec3 phong = max(dot(normal, vec3(1.0, 0., 0.)), 0.15) * color;
@@ -118,7 +119,5 @@ void main() {
             depth += stepSize;
         }
     }
-
-    if (fragColor.a < 0.8)
-        fragColor = vec4(abs(rayDir), 1.);
+    // fragColor = vec4(fragColor.rgb * fragColor.a + (1.0 - fragColor.a) * abs(rayDir), 1.0);
 }

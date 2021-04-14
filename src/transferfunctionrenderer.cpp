@@ -235,17 +235,21 @@ void TransferFunctionRenderer::updateVolume() {
 
     bool bUpper = false;
     for (const auto& [sum, num] : valueBuckets) {
+        QVector4D val{};
         if (num != 0) {
             // Fill middle values with buckets
-            values.push_back(sum / num);
+            val = sum / num;
             bUpper = true;
         } else {
             // Fill upper values with last node:
             if (bUpper)
-                values.push_back(QVector4D{colors.back(), sortedPoints.back().pos.y()});
+                val = QVector4D{colors.back(), sortedPoints.back().pos.y()};
             else
-                values.push_back(QVector4D{colors.front(), sortedPoints.front().pos.y()});
+                val = QVector4D{colors.front(), sortedPoints.front().pos.y()};
         }
+        // [-1, 1] -> [0, 1]
+        val.setY(val.y() * 0.5f + 0.5f);
+        values.push_back(val);
     }
 
     volume->updateTransferFunction(values);
