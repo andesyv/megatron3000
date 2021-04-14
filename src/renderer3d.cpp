@@ -58,7 +58,7 @@ void Renderer3D::paintGL() {
      * care of volume -> plane blending.
      */
     // Render back plane glyph
-    if (volume) {
+    if (volume && mIsSlicePlaneEnabled) {
         glFrontFace(GL_CW); // Reverse winding order to reverse plane direction
         const auto& plane = volume->m_slicingGeometry;
         mPlane->draw(MVP, plane.pos, plane.dir);
@@ -71,7 +71,7 @@ void Renderer3D::paintGL() {
     if (volume) {
         shader.setUniformValue("volumeScale", volume->volumeScale());
         shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
-        shader.setUniformValue("isSlicingEnabled", true);
+        shader.setUniformValue("isSlicingEnabled", mIsSlicePlaneEnabled);
         shader.setUniformValue("time", mAliveTimer.elapsed() * 0.001f);
 
         // Transform slicing plane and update buffer:
@@ -85,25 +85,15 @@ void Renderer3D::paintGL() {
     glDisable(GL_CULL_FACE);
     mScreenVAO->draw();
 
-    // Render front plane glyph
-    if (volume) {
-        const auto& plane = volume->m_slicingGeometry;
-        mPlane->draw(MVP, plane.pos, plane.dir);
-    }
+    // // Render front plane glyph
+    // if (volume && mIsSlicePlaneEnabled) {
+    //     const auto& plane = volume->m_slicingGeometry;
+    //     mPlane->draw(MVP, plane.pos, plane.dir);
+    // }
 
     drawAxis();
 
     ++mFrameCount;
-}
-
-Plane Renderer3D::transformSlicingGeometry(const QMatrix4x4& trans, const Plane& geometry) const {
-    auto tPos = trans * QVector4D{geometry.pos, 1.f};
-    tPos *= tPos.w();
-    auto tDir = trans * QVector4D{geometry.dir, 0.f};
-    tDir *= tDir.w();
-    tDir.normalize();
-
-    return {QVector3D{tPos}, QVector3D{tDir}};
 }
 
 Renderer3D::~Renderer3D() {};

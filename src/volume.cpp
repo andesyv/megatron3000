@@ -6,8 +6,15 @@
 #include <algorithm>
 #include "mini/ini.h"
 #include <QVector4D>
+#include <QMatrix4x4>
 
 using namespace Slicing;
+
+QMatrix4x4 Plane::model(const QVector3D& up) const {
+    QMatrix4x4 m;
+    m.lookAt(pos, pos + dir, up);
+    return m;
+}
 
 bool Volume::loadData(const QString &fileName)
 {

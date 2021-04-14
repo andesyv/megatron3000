@@ -16,8 +16,6 @@ public:
 protected:
     void initializeGL() override;
     void paintGL() override;
-
-    Slicing::Plane transformSlicingGeometry(const QMatrix4x4& trans, const Slicing::Plane& geometry) const;
 };
 
 #endif // RENDERER3D_H

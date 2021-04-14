@@ -15,17 +15,33 @@ Viewport3D::Viewport3D(QWidget *parent) :
     // Menubar:
     auto datamenu = mMenuBar->addMenu("Data");
     auto openAction = datamenu->addAction("Open");
-    connect(openAction, &QAction::triggered, this, &Viewport3D::load);
     mRemoveVolumeAction = datamenu->addAction("Use global volume");
     mRemoveVolumeAction->setCheckable(true);
     mRemoveVolumeAction->setChecked(true);
-    connect(mRemoveVolumeAction, &QAction::triggered, this, &Viewport3D::removeVolume);
-    
+
+    // Slice menu
+    auto slicemenu = mMenuBar->addMenu("Slicing");
+    auto sliceEnable = slicemenu->addAction("Enable");
+    sliceEnable->setCheckable(true);
+    auto sliceMove = slicemenu->addAction("Linked to camera");
+    sliceMove->setCheckable(true);
+
     mLayout->addWidget(mMenuBar);
 
     // OpenGL Render Widget:
     mRenderer = new Renderer3D{this};
     mLayout->addWidget(mRenderer);
+
+    // Connections:
+    connect(openAction, &QAction::triggered, this, &Viewport3D::load);
+    connect(mRemoveVolumeAction, &QAction::triggered, this, &Viewport3D::removeVolume);
+    connect(sliceEnable, &QAction::toggled, this, [&](bool bEnabled){
+        mRenderer->mIsSlicePlaneEnabled = bEnabled;
+    });
+    connect(sliceMove, &QAction::toggled, this, [&](bool bEnabled){
+        mRenderer->mIsCameraLinkedToSlicePlane = bEnabled;
+    });
+
 
     setLayout(mLayout);
 }

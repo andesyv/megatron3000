@@ -5,12 +5,15 @@
 #include <optional>
 #include <vector>
 #include <QVector3D>
+#include <QQuaternion>
 
 namespace Slicing {
     // I like to define a plane as a direction and a point in the plane.
     struct Plane {
         QVector3D pos{0.f, 0.f, 0.f};
         QVector3D dir{0.f, 0.f, -1.f};
+
+        QMatrix4x4 model(const QVector3D& up) const;
     };
 }
 

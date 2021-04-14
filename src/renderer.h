@@ -31,6 +31,9 @@ public:
     bool mUseGlobalVolume{true};
     std::shared_ptr<Volume> mPrivateVolume;
 
+    bool mIsSlicePlaneEnabled{false};
+    bool mIsCameraLinkedToSlicePlane{false};
+
     ~Renderer() override;
 
     virtual void zoom(double z);

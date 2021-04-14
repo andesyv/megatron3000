@@ -277,8 +277,13 @@ void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, QMatrix4x4 model) {
 
 void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QVector3D& pos, const QVector3D& dir) {
     QMatrix4x4 model{MatIdentityValues};
-    const auto rot = QQuaternion::rotationTo({0.f, 0.f, -1.f}, dir).normalized();
-    model.rotate(rot);
+    model.rotate(QQuaternion::rotationTo(QVector3D{0.f, 0.f, -1.f}, dir));
+    model.translate(pos);
+    draw(MVP, model);
+}
+
+void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QVector3D& pos, const QQuaternion& rot) {
+    auto model = QMatrix4x4{rot.toRotationMatrix()};
     model.translate(pos);
     draw(MVP, model);
 }
