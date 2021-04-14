@@ -71,7 +71,9 @@ class DockWrapper : public QDockWidget {
 public:
     explicit DockWrapper(const QString &title, QWidget *parent = nullptr,
                          Qt::WindowFlags flags = Qt::WindowFlags())
-        : QDockWidget{title, parent, flags} {}
+        : QDockWidget{title, parent, flags} {
+            setFocusPolicy(Qt::StrongFocus);
+        }
 
 protected:
     void closeEvent(QCloseEvent* event) override {

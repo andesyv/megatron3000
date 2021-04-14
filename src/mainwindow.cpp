@@ -5,6 +5,7 @@
 #include "volume.h"
 #include "shaders/shadermanager.h"
 #include <QShortcut>
+#include <QApplication>
 
 // Modules:
 #include "viewport2d.h"
@@ -48,6 +49,13 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "Reloading shaders!";
         ShaderManager::get().reloadShaders();
     });
+    shortcut = new QShortcut{QKeySequence{tr("Ctrl+W", "Close Viewport")}, this};
+    mShortcuts.push_back(shortcut);
+    connect(shortcut, &QShortcut::activated, this, [](){
+        auto focus = QApplication::focusWidget();
+        if (focus)
+            focus->close();
+    });
 }
 
 void MainWindow::addWidget(DockWrapper* widget) {
@@ -66,6 +74,7 @@ void MainWindow::addWidget(DockWrapper* widget) {
 
     layoutDockWidget(widget);
     mWidgets.push_back(widget);
+    widget->setFocus();
 }
 
 DataWidget* MainWindow::loadData() {
