@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLayout">
@@ -68,10 +68,16 @@
    <property name="text">
     <string>2D Viewport</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+2</string>
+   </property>
   </action>
   <action name="action3D_Viewport">
    <property name="text">
     <string>3D Viewport</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+3</string>
    </property>
   </action>
   <action name="actionData_Manager">
@@ -90,6 +96,9 @@
   <action name="actionTransfer_function">
    <property name="text">
     <string>Transfer function</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+4</string>
    </property>
   </action>
  </widget>
