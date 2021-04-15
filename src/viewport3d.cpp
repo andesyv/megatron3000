@@ -23,8 +23,8 @@ Viewport3D::Viewport3D(QWidget *parent) :
     auto slicemenu = mMenuBar->addMenu("Slicing");
     auto sliceEnable = slicemenu->addAction("Enable");
     sliceEnable->setCheckable(true);
-    auto sliceMove = slicemenu->addAction("Linked to camera");
-    sliceMove->setCheckable(true);
+    mSliceMoveToggle = slicemenu->addAction("Linked to camera");
+    mSliceMoveToggle->setCheckable(true);
 
     mLayout->addWidget(mMenuBar);
 
@@ -38,7 +38,7 @@ Viewport3D::Viewport3D(QWidget *parent) :
     connect(sliceEnable, &QAction::toggled, this, [&](bool bEnabled){
         mRenderer->mIsSlicePlaneEnabled = bEnabled;
     });
-    connect(sliceMove, &QAction::toggled, this, [&](bool bEnabled){
+    connect(mSliceMoveToggle, &QAction::toggled, this, [&](bool bEnabled){
         mRenderer->mIsCameraLinkedToSlicePlane = bEnabled;
     });
 
@@ -63,9 +63,20 @@ void Viewport3D::mousePressEvent(QMouseEvent *ev)
     qDebug() << "Clicked in 3D viewport area";
 #endif
 
+    if (ev->button() == Qt::MouseButton::RightButton)
+        if (mRenderer && mRenderer->mIsSlicePlaneEnabled && !mRenderer->mIsCameraLinkedToSlicePlane)
+            mSliceMoveToggle->toggle();
+
     lastPoint3D = QPoint(ev->pos().x(),ev->pos().y());
 
     emit Mouse_pressed3D();
+}
+
+void Viewport3D::mouseReleaseEvent(QMouseEvent *ev)
+{
+    if (ev->button() == Qt::MouseButton::RightButton)
+        if (mRenderer && mRenderer->mIsSlicePlaneEnabled && mRenderer->mIsCameraLinkedToSlicePlane)
+            mSliceMoveToggle->toggle();
 }
 
 void Viewport3D::wheelEvent(QWheelEvent *ev)
