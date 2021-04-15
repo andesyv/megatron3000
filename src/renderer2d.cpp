@@ -42,7 +42,6 @@ void Renderer2D::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     const auto& viewMatrix = getViewMatrix();
-    const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
     const auto& volume = getVolume();
     Volume::Guard volumeGuard;
     const auto time = mFrameTimer.elapsed() * 0.001f;
@@ -53,7 +52,7 @@ void Renderer2D::paintGL() {
 #endif
 
     shader.bind();
-    shader.setUniformValue("MVP", MVP);
+    shader.setUniformValue("MVP", mMVPInverse);
     shader.setUniformValue("time", time);
     
     if (volume) {

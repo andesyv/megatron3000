@@ -42,7 +42,6 @@ void Renderer3D::paintGL() {
 
     // mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.5f, 1.f, 0.f});
     const auto& viewMatrix = getViewMatrix();
-    const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
     QMatrix4x4 planeModelMat;
     const auto& volume = getVolume();
     Volume::Guard volumeGuard;
@@ -53,7 +52,7 @@ void Renderer3D::paintGL() {
 #endif
     
     if (volume) {
-        const auto viewUp = (viewMatrix.inverted() * QVector4D{0.f, 1.f, 0.f, 0.f}).toVector3D();
+        const auto viewUp = (mViewMatrixInverse * QVector4D{0.f, 1.f, 0.f, 0.f}).toVector3D();
         planeModelMat = volume->m_slicingGeometry.model(viewUp);
     }
     /* I'm rendering one front-facing plane and one back-facing plane
@@ -66,22 +65,18 @@ void Renderer3D::paintGL() {
     if (volume && mIsSlicePlaneEnabled) {
         glFrontFace(GL_CW); // Reverse winding order to reverse plane direction
         const auto& plane = volume->m_slicingGeometry;
-        mPlane->draw(MVP, planeModelMat);
+        mPlane->draw(mPerspectiveMatrix * viewMatrix, planeModelMat);
         glFrontFace(GL_CCW);
     }
 
     shader.bind();
-    shader.setUniformValue("MVP", MVP);
+    shader.setUniformValue("MVP", mMVPInverse);
     
     if (volume) {
         shader.setUniformValue("volumeScale", volume->volumeScale());
         shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
         shader.setUniformValue("isSlicingEnabled", mIsSlicePlaneEnabled);
         shader.setUniformValue("time", mAliveTimer.elapsed() * 0.001f);
-
-        // Transform slicing plane and update buffer:
-        // auto slicingGeometry = transformSlicingGeometry(MVP, volume->m_slicingGeometry);
-        // volume->updateSlicingGeometryBuffer(slicingGeometry);
 
         // Volume guard automatically binds and unbinds. :)
         volumeGuard = volume->guard();
@@ -90,11 +85,11 @@ void Renderer3D::paintGL() {
     glDisable(GL_CULL_FACE);
     mScreenVAO->draw();
 
-    // // Render front plane glyph
-    // if (volume && mIsSlicePlaneEnabled) {
-    //     const auto& plane = volume->m_slicingGeometry;
-    //     mPlane->draw(MVP, planeModelMat);
-    // }
+    // Render front plane glyph
+    if (volume && mIsSlicePlaneEnabled) {
+        const auto& plane = volume->m_slicingGeometry;
+        mPlane->draw(mPerspectiveMatrix * viewMatrix, planeModelMat);
+    }
 
     drawAxis();
 

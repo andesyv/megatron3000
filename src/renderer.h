@@ -51,6 +51,8 @@ protected:
     // Helper function to render an axis on screen
     void drawAxis();
 
+    void viewMatrixUpdated();
+
 
     MainWindow* mMainWindow;
 
@@ -60,6 +62,10 @@ protected:
     std::unique_ptr<WorldPlaneGlyph> mPlane;
 
     QMatrix4x4 mPerspectiveMatrix;
+
+    // Cached inverse of perspective and MVP matrix for better performance
+    QMatrix4x4 mViewMatrixInverse;
+    QMatrix4x4 mMVPInverse;
 
     QElapsedTimer mFrameTimer, mAliveTimer;
     uint32_t mFrameCount{0};

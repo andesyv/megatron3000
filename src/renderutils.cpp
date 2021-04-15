@@ -262,7 +262,7 @@ void WorldPlaneGlyph::unbind() {
 void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QMatrix4x4& model) {
     glEnable(GL_CULL_FACE);
     bind();
-    const auto planeMat = MVP.inverted() * model;
+    const auto planeMat = MVP * model;
     auto& shader = ShaderManager::get().shader("plane");
 #ifndef NDEBUG
     if (!shader.isLinked()) return;
