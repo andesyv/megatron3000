@@ -9,8 +9,22 @@
 namespace fs = std::filesystem;
 
 void Renderer2D::zoom(double z) {
-    auto& trans = mPrivateViewMatrix(2,3);
-    trans = std::clamp(trans + static_cast<float>(z) * 0.02f, -1.f, 1.f);
+    auto& view = getViewMatrix();
+    const auto& origMat{view};
+
+    auto& trans = view(2,3);
+    const auto delta = std::clamp(trans + static_cast<float>(z) * 0.02f, -1.f, 1.f) - trans;
+    trans += delta;
+    viewMatrixUpdated();
+
+    auto volume = getVolume();
+    if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
+        auto& plane = volume->m_slicingGeometry;
+        const auto dir = (mViewMatrixInverse * QVector4D{0.f, 0.f, 1.f, 0.f}).toVector3D();
+        const auto newPos = plane.pos + dir * delta;
+        plane.pos = QVector3D::dotProduct(newPos, plane.dir) * plane.dir;
+        volume->updateSlicingGeometryBuffer();
+    }
 }
 
 void Renderer2D::initializeGL() {
@@ -41,7 +55,7 @@ void Renderer2D::paintGL() {
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    const auto& viewMatrix = getViewMatrix();
+    auto viewMatrix = getViewMatrix();
     const auto& volume = getVolume();
     Volume::Guard volumeGuard;
     const auto time = mFrameTimer.elapsed() * 0.001f;
@@ -58,6 +72,11 @@ void Renderer2D::paintGL() {
     if (volume) {
         shader.setUniformValue("volumeScale", volume->volumeScale());
         shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
+        if (mIsCameraLinkedToSlicePlane) {
+            auto& plane = volume->m_slicingGeometry;
+            viewMatrix.lookAt(plane.pos, plane.pos + plane.dir, {0.f, 1.f, 0.f});
+            shader.setUniformValue("MVP", (mPerspectiveMatrix * viewMatrix).inverted());
+        }
 
         // Volume guard automatically binds and unbinds. :)
         volumeGuard = volume->guard();

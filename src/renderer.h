@@ -35,7 +35,7 @@ public:
     bool mIsCameraLinkedToSlicePlane{false};
 
     std::unique_ptr<WorldPlaneGlyph> mPlane;
-    
+
     ~Renderer() override;
 
     virtual void zoom(double z);
@@ -45,6 +45,9 @@ public:
     virtual std::shared_ptr<Volume> getVolume() const;
     virtual QMatrix4x4& getViewMatrix(); 
     virtual std::shared_ptr<Volume> getVolume();
+
+    void viewMatrixUpdated();
+
 protected:
     void initializeGL() override;
     void paintGL() override;
@@ -52,8 +55,6 @@ protected:
 
     // Helper function to render an axis on screen
     void drawAxis();
-
-    void viewMatrixUpdated();
 
 
     MainWindow* mMainWindow;

@@ -152,9 +152,10 @@ void Renderer::zoom(double z)
 
     auto volume = getVolume();
     if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
+        auto& plane = volume->m_slicingGeometry;
         const auto relativeTrans = mViewMatrixInverse * origMat;
-        const auto newPos = (relativeTrans * QVector4D{volume->m_slicingGeometry.pos, 1.f}).toVector3D();
-        volume->m_slicingGeometry.pos = newPos;
+        const auto newPos = (relativeTrans * QVector4D{plane.pos, 1.f}).toVector3D();
+        plane.pos = QVector3D::dotProduct(newPos, plane.dir) * plane.dir;
         volume->updateSlicingGeometryBuffer();
     }
 }
