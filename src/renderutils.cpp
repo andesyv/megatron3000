@@ -261,9 +261,12 @@ void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QVector3D& up, const QVe
     glEnable(GL_CULL_FACE);
     bind();
 
+    // Reproject the position onto the direction to center it. (making positions orthogonal to dir = 0)
+    const QVector3D centeredPos = QVector3D::dotProduct(pos, dir) * dir;
+
     // Update buffer
     const GLfloat vals[] = {
-        pos.x(), pos.y(), pos.z(),
+        centeredPos.x(), centeredPos.y(), centeredPos.z(),
         dir.x(), dir.y(), dir.z()
     };
     glBindBuffer(GL_ARRAY_BUFFER, mVBO);
