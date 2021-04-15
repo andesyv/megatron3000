@@ -4,6 +4,10 @@
 #include "mainwindow.h"
 #include "volume.h"
 #include "datawidget.h"
+#include <QWidgetAction>
+#include <QSlider>
+#include <QLabel>
+#include "renderutils.h"
 
 Viewport3D::Viewport3D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -26,6 +30,20 @@ Viewport3D::Viewport3D(QWidget *parent) :
     mSliceMoveToggle = slicemenu->addAction("Linked to camera");
     mSliceMoveToggle->setCheckable(true);
 
+    // Opacity slider menu widget:
+    auto sliceSlider = new QWidgetAction{this};
+    auto sliderWidgetWrapper = new QWidget{};
+    auto sliderLayout = new QVBoxLayout{};
+    sliderLayout->addWidget(new QLabel{"Plane opacity:"});
+    auto slider = new QSlider{Qt::Horizontal};
+    slider->setMinimum(0);
+    slider->setMaximum(100);
+    slider->setValue(5);
+    sliderLayout->addWidget(slider);
+    sliderWidgetWrapper->setLayout(sliderLayout);
+    sliceSlider->setDefaultWidget(sliderWidgetWrapper);
+    slicemenu->addAction(sliceSlider);
+
     mLayout->addWidget(mMenuBar);
 
     // OpenGL Render Widget:
@@ -40,6 +58,10 @@ Viewport3D::Viewport3D(QWidget *parent) :
     });
     connect(mSliceMoveToggle, &QAction::toggled, this, [&](bool bEnabled){
         mRenderer->mIsCameraLinkedToSlicePlane = bEnabled;
+    });
+    connect(slider, &QAbstractSlider::valueChanged, this, [&](int value){
+        const auto percentage = value * 0.01f;
+        mRenderer->mPlane->mAlpha = percentage;
     });
 
 

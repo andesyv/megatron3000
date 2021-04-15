@@ -34,6 +34,8 @@ public:
     bool mIsSlicePlaneEnabled{false};
     bool mIsCameraLinkedToSlicePlane{false};
 
+    std::unique_ptr<WorldPlaneGlyph> mPlane;
+    
     ~Renderer() override;
 
     virtual void zoom(double z);
@@ -59,7 +61,6 @@ protected:
     // Screen Spaced vertex array
     std::unique_ptr<ScreenSpacedBuffer> mScreenVAO;
     std::unique_ptr<AxisGlyph> mAxisGlyph;
-    std::unique_ptr<WorldPlaneGlyph> mPlane;
 
     QMatrix4x4 mPerspectiveMatrix;
 

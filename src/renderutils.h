@@ -70,7 +70,7 @@ public:
     void bind();
     void unbind();
 
-    GLfloat mAlpha = 0.2f;
+    GLfloat mAlpha = 0.05f;
 
     void draw(const QMatrix4x4& MVP = QMatrix4x4{MatIdentityValues}, const QVector3D& up = {0.f, 1.f, 0.f},
               const QVector3D& pos = {0.f, 0.f, 0.f}, const QVector3D& dir = {0.f, 0.f, -1.f});
