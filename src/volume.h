@@ -6,6 +6,7 @@
 #include <vector>
 #include <QVector3D>
 #include <QQuaternion>
+#include <QMatrix3x3>
 
 namespace Slicing {
     // I like to define a plane as a direction and a point in the plane.
@@ -13,7 +14,8 @@ namespace Slicing {
         QVector3D pos{0.f, 0.f, 0.f};
         QVector3D dir{0.f, 0.f, -1.f};
 
-        QMatrix4x4 model(QVector3D up) const;
+        QMatrix3x3 rot(QVector3D up) const;
+        QMatrix4x4 model(const QVector3D& up) const;
     };
 }
 

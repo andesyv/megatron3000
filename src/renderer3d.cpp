@@ -42,7 +42,7 @@ void Renderer3D::paintGL() {
 
     // mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.5f, 1.f, 0.f});
     const auto& viewMatrix = getViewMatrix();
-    QMatrix4x4 planeModelMat;
+    QVector3D viewUp;
     const auto& volume = getVolume();
     Volume::Guard volumeGuard;
 
@@ -51,22 +51,18 @@ void Renderer3D::paintGL() {
     if (!shader.isLinked()) return;
 #endif
     
-    if (volume) {
-        const auto viewUp = (mViewMatrixInverse * QVector4D{0.f, 1.f, 0.f, 0.f}).toVector3D();
-        planeModelMat = volume->m_slicingGeometry.model(viewUp);
-    }
+    if (volume)
+        viewUp = (mViewMatrixInverse * QVector4D{0.f, 1.f, 0.f, 0.f}).toVector3D().normalized();
     /* I'm rendering one front-facing plane and one back-facing plane
      * in order to "simulate" the effect of a transparent two-sided
      * on both sides of the volume rendering. The first one takes
      * care of plane -> volume blending, and the second one takes
      * care of volume -> plane blending.
      */
-    // Render back plane glyph
+    // Render front plane glyph
     if (volume && mIsSlicePlaneEnabled) {
-        glFrontFace(GL_CW); // Reverse winding order to reverse plane direction
         const auto& plane = volume->m_slicingGeometry;
-        mPlane->draw(mPerspectiveMatrix * viewMatrix, planeModelMat);
-        glFrontFace(GL_CCW);
+        mPlane->draw(mPerspectiveMatrix * viewMatrix, viewUp, plane.pos, plane.dir);
     }
 
     shader.bind();
@@ -85,10 +81,12 @@ void Renderer3D::paintGL() {
     glDisable(GL_CULL_FACE);
     mScreenVAO->draw();
 
-    // Render front plane glyph
+    // Render back plane glyph
     if (volume && mIsSlicePlaneEnabled) {
+        glFrontFace(GL_CW); // Reverse winding order to reverse plane direction
         const auto& plane = volume->m_slicingGeometry;
-        mPlane->draw(mPerspectiveMatrix * viewMatrix, planeModelMat);
+        mPlane->draw(mPerspectiveMatrix * viewMatrix, viewUp, plane.pos, plane.dir);
+        glFrontFace(GL_CCW);
     }
 
     drawAxis();

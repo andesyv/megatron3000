@@ -211,23 +211,16 @@ WorldPlaneGlyph::WorldPlaneGlyph() {
     glGenVertexArrays(1, &mVAO);
     glBindVertexArray(mVAO);
 
-    // Pos (x,y,z)
-    const GLfloat vertices[] = {
-        -1.f, -1.f, 0.f,
-        1.f, -1.f, 0.f,
-        1.f, 1.f, 0.f,
-
-        -1.f, -1.f, 0.f,
-        1.f, 1.f, 0.f,
-        -1.f, 1.f, 0.f
-    };
+    const GLfloat posdir[] = {0.f, 0.f, 0.f, 0.f, 0.f, -1.f};
 
     glGenBuffers(1, &mVBO);
     glBindBuffer(GL_ARRAY_BUFFER, mVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferStorage(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), &posdir, GL_DYNAMIC_STORAGE_BIT);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 3 * sizeof(GLfloat), reinterpret_cast<void*>(sizeof(GLfloat) * 3));
+    glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
 
@@ -241,9 +234,14 @@ WorldPlaneGlyph::WorldPlaneGlyph() {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
+        if (!shader.addSourceRelative(QOpenGLShader::Geometry, "plane.gs")) {
+            throw std::runtime_error{"Failed to compile geometry shader"};
+        }
+
         if (!shader.addSourceRelative(QOpenGLShader::Fragment, "plane.fs")) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
+
 
         if (!shader.link()) {
             throw std::runtime_error{"Failed to link shaderprogram"};
@@ -259,34 +257,33 @@ void WorldPlaneGlyph::unbind() {
     glBindVertexArray(0);
 }
 
-void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QMatrix4x4& model) {
+void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QVector3D& up, const QVector3D& pos, const QVector3D& dir) {
     glEnable(GL_CULL_FACE);
     bind();
-    const auto planeMat = MVP * model;
+
+    // Update buffer
+    const GLfloat vals[] = {
+        pos.x(), pos.y(), pos.z(),
+        dir.x(), dir.y(), dir.z()
+    };
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 6 * sizeof(GLfloat), &vals);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 3 * sizeof(GLfloat), reinterpret_cast<void*>(sizeof(GLfloat) * 3));
+    glEnableVertexAttribArray(1);
+
     auto& shader = ShaderManager::get().shader("plane");
 #ifndef NDEBUG
     if (!shader.isLinked()) return;
 #endif
     shader.bind();
-    shader.setUniformValue("MVP", planeMat);
+    shader.setUniformValue("MVP", MVP);
+    shader.setUniformValue("up", up);
     shader.setUniformValue("alpha", std::clamp(mAlpha, 0.f, 1.f));
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_POINTS, 0, 1);
     unbind();
-}
-
-void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QVector3D& pos, const QVector3D& dir) {
-    QMatrix4x4 model{MatIdentityValues};
-    model.lookAt(pos, pos + dir, (MVP * QVector4D{0.f, 1.f, 0.f, 0.f}).toVector3D());
-    // model.rotate(QQuaternion::rotationTo(QVector3D{0.f, 0.f, -1.f}, dir));
-    // model.translate(pos);
-    draw(MVP, model);
-}
-
-void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QVector3D& pos, const QQuaternion& rot) {
-    auto model = QMatrix4x4{rot.toRotationMatrix()};
-    model.translate(pos);
-    draw(MVP, model);
 }
 
 WorldPlaneGlyph::~WorldPlaneGlyph() {

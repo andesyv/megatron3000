@@ -10,17 +10,20 @@
 
 using namespace Slicing;
 
-QMatrix4x4 Plane::model(QVector3D up) const {
+QMatrix3x3 Plane::rot(QVector3D up) const {
     // Look-at rotation:
     const auto right = QVector3D::crossProduct(dir, up).normalized();
     up = QVector3D::crossProduct(right, dir).normalized();
     const float matVals[] = {
-        right.x(), up.x(), dir.x(), 0.f,
-        right.y(), up.y(), dir.y(), 0.f,
-        right.z(), up.z(), dir.z(), 0.f,
-        0.f, 0.f, 0.f, 1.f
+        right.x(), up.x(), dir.x(),
+        right.y(), up.y(), dir.y(),
+        right.z(), up.z(), dir.z()
     };
-    QMatrix4x4 m{matVals};
+    return QMatrix3x3{matVals};
+}
+
+QMatrix4x4 Plane::model(const QVector3D& up) const {
+    QMatrix4x4 m{rot(up)};
     m.translate(pos);
     return m;
 }
@@ -134,8 +137,9 @@ void Volume::bind(GLuint binding, GLuint tfBinding, GLuint geometryBinding) {
     glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
 
     m_geometryBinding = geometryBinding;
-    // glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, geometryBinding, m_slicingGeometryBuffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void Volume::unbind() {
@@ -238,19 +242,30 @@ void Volume::generateTransferFunction() {
 
 void Volume::generateSlicingGeometryBuffer() {
     glGenBuffers(1, &m_slicingGeometryBuffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
+    glBufferStorage(GL_SHADER_STORAGE_BUFFER, 8 * sizeof(GLfloat), nullptr, GL_DYNAMIC_STORAGE_BIT);
     updateSlicingGeometryBuffer();
     m_slicingGeometryBufferInitiated = true;
 }
 
 void Volume::updateSlicingGeometryBuffer() {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Plane), &m_slicingGeometry, GL_DYNAMIC_DRAW);
+    // Note: Remember to pad to vec4's as the buffer is read like a struct
+    const GLfloat values[] {
+        m_slicingGeometry.pos.x(), m_slicingGeometry.pos.y(), m_slicingGeometry.pos.z(), 0.f,
+        m_slicingGeometry.dir.x(), m_slicingGeometry.dir.y(), m_slicingGeometry.dir.z(), 0.f
+    };
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 8 * sizeof(GLfloat), values);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void Volume::updateSlicingGeometryBuffer(const Plane& geometry) {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Plane), &geometry, GL_DYNAMIC_DRAW);
+    const GLfloat values[] {
+        geometry.pos.x(), geometry.pos.y(), geometry.pos.z(), 0.f,
+        geometry.dir.x(), geometry.dir.y(), geometry.dir.z(), 0.f
+    };
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 8 * sizeof(GLfloat), &values);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 

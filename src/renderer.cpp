@@ -142,6 +142,7 @@ Renderer::~Renderer() {}
 void Renderer::zoom(double z)
 {
     auto& view = getViewMatrix();
+    const auto origMat{view};
 #ifndef NDEBUG
     QMatrix4x4 pos = mPrivateViewMatrix;
     qDebug() << pos;
@@ -151,10 +152,10 @@ void Renderer::zoom(double z)
 
     auto volume = getVolume();
     if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
-        const auto viewUp = (mViewMatrixInverse * QVector4D{0.f, 1.f, 0.f, 0.f}).toVector3D();
-        const auto cameraToModel = (view * volume->m_slicingGeometry.model(viewUp)).inverted();
-        const auto& dir = QVector3D{cameraToModel * QVector4D{0.f, 0.f, -1.f, 0.f}};
-        volume->m_slicingGeometry.pos += dir * (z / 2);
+        const auto relativeTrans = mViewMatrixInverse * origMat;
+        const auto newPos = (relativeTrans * QVector4D{volume->m_slicingGeometry.pos, 1.f}).toVector3D();
+        volume->m_slicingGeometry.pos = newPos;
+        volume->updateSlicingGeometryBuffer();
     }
 }
 
@@ -176,6 +177,7 @@ void Renderer::rotate(float dx, float dy)
         const auto relativeTrans = mViewMatrixInverse * origMat;
         const auto newDir = (relativeTrans * QVector4D{volume->m_slicingGeometry.dir, 0.f}).toVector3D();
         volume->m_slicingGeometry.dir = newDir;
+        volume->updateSlicingGeometryBuffer();
     }
 }
 
