@@ -72,7 +72,7 @@ public:
 
     GLfloat mAlpha = 0.2f;
 
-    void draw(const QMatrix4x4& MVP, QMatrix4x4 model = QMatrix4x4{MatIdentityValues});
+    void draw(const QMatrix4x4& MVP, const QMatrix4x4& model = QMatrix4x4{MatIdentityValues});
     void draw(const QMatrix4x4& MVP, const QVector3D& pos, const QVector3D& dir);
     void draw(const QMatrix4x4& MVP, const QVector3D& pos, const QQuaternion& rot);
 

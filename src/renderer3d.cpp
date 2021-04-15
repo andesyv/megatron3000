@@ -43,6 +43,7 @@ void Renderer3D::paintGL() {
     // mPrivateViewMatrix.rotate(10.0f * deltaTime, QVector3D{0.5f, 1.f, 0.f});
     const auto& viewMatrix = getViewMatrix();
     const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
+    QMatrix4x4 planeModelMat;
     const auto& volume = getVolume();
     Volume::Guard volumeGuard;
 
@@ -51,6 +52,10 @@ void Renderer3D::paintGL() {
     if (!shader.isLinked()) return;
 #endif
     
+    if (volume) {
+        const auto viewUp = (viewMatrix.inverted() * QVector4D{0.f, 1.f, 0.f, 0.f}).toVector3D();
+        planeModelMat = volume->m_slicingGeometry.model(viewUp);
+    }
     /* I'm rendering one front-facing plane and one back-facing plane
      * in order to "simulate" the effect of a transparent two-sided
      * on both sides of the volume rendering. The first one takes
@@ -61,7 +66,7 @@ void Renderer3D::paintGL() {
     if (volume && mIsSlicePlaneEnabled) {
         glFrontFace(GL_CW); // Reverse winding order to reverse plane direction
         const auto& plane = volume->m_slicingGeometry;
-        mPlane->draw(MVP, plane.pos, plane.dir);
+        mPlane->draw(MVP, planeModelMat);
         glFrontFace(GL_CCW);
     }
 
@@ -88,7 +93,7 @@ void Renderer3D::paintGL() {
     // // Render front plane glyph
     // if (volume && mIsSlicePlaneEnabled) {
     //     const auto& plane = volume->m_slicingGeometry;
-    //     mPlane->draw(MVP, plane.pos, plane.dir);
+    //     mPlane->draw(MVP, planeModelMat);
     // }
 
     drawAxis();

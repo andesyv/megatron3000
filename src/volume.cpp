@@ -10,9 +10,18 @@
 
 using namespace Slicing;
 
-QMatrix4x4 Plane::model(const QVector3D& up) const {
-    QMatrix4x4 m;
-    m.lookAt(pos, pos + dir, up);
+QMatrix4x4 Plane::model(QVector3D up) const {
+    // Look-at rotation:
+    const auto right = QVector3D::crossProduct(dir, up).normalized();
+    up = QVector3D::crossProduct(right, dir).normalized();
+    const float matVals[] = {
+        right.x(), up.x(), dir.x(), 0.f,
+        right.y(), up.y(), dir.y(), 0.f,
+        right.z(), up.z(), dir.z(), 0.f,
+        0.f, 0.f, 0.f, 1.f
+    };
+    QMatrix4x4 m{matVals};
+    m.translate(pos);
     return m;
 }
 

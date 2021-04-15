@@ -213,13 +213,13 @@ WorldPlaneGlyph::WorldPlaneGlyph() {
 
     // Pos (x,y,z)
     const GLfloat vertices[] = {
-        -1.f, 0., -1.f,
-        1.f, 0.f, -1.f,
-        1.f, 0.f, 1.f,
+        -1.f, -1.f, 0.f,
+        1.f, -1.f, 0.f,
+        1.f, 1.f, 0.f,
 
-        -1.f, 0.f, -1.f,
-        1.f, 0.f, 1.f,
-        -1.f, 0.f, 1.f
+        -1.f, -1.f, 0.f,
+        1.f, 1.f, 0.f,
+        -1.f, 1.f, 0.f
     };
 
     glGenBuffers(1, &mVBO);
@@ -259,7 +259,7 @@ void WorldPlaneGlyph::unbind() {
     glBindVertexArray(0);
 }
 
-void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, QMatrix4x4 model) {
+void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QMatrix4x4& model) {
     glEnable(GL_CULL_FACE);
     bind();
     const auto planeMat = MVP.inverted() * model;
@@ -277,8 +277,9 @@ void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, QMatrix4x4 model) {
 
 void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QVector3D& pos, const QVector3D& dir) {
     QMatrix4x4 model{MatIdentityValues};
-    model.rotate(QQuaternion::rotationTo(QVector3D{0.f, 0.f, -1.f}, dir));
-    model.translate(pos);
+    model.lookAt(pos, pos + dir, (MVP * QVector4D{0.f, 1.f, 0.f, 0.f}).toVector3D());
+    // model.rotate(QQuaternion::rotationTo(QVector3D{0.f, 0.f, -1.f}, dir));
+    // model.translate(pos);
     draw(MVP, model);
 }
 

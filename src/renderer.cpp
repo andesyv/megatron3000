@@ -135,7 +135,9 @@ void Renderer::zoom(double z)
 
     auto volume = getVolume();
     if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
-        const auto& dir = QVector3D{mPrivateViewMatrix * QVector4D{0.f, 0.f, 1.f, 0.f}};
+        const auto viewUp = (mPrivateViewMatrix.inverted() * QVector4D{0.f, 1.f, 0.f, 0.f}).toVector3D();
+        const auto cameraToModel = (mPrivateViewMatrix * volume->m_slicingGeometry.model(viewUp)).inverted();
+        const auto& dir = QVector3D{cameraToModel * QVector4D{0.f, 0.f, -1.f, 0.f}};
         volume->m_slicingGeometry.pos += dir * (z / 2);
     }
 }
@@ -148,18 +150,15 @@ void Renderer::rotate(float dx, float dy)
     QMatrix4x4 inversePrivateView = mPrivateViewMatrix.inverted();
     QVector4D transformedAxis = inversePrivateView*QVector4D(rotVec,0.f);
 
-    const auto rotation = QQuaternion::fromAxisAndAngle(transformedAxis.toVector3D(), 0.5f*rotVec.length());
-    mPrivateViewMatrix.rotate(rotation);
+    const auto origMat{mPrivateViewMatrix};
+    mPrivateViewMatrix.rotate(0.5f*rotVec.length(), transformedAxis.toVector3D());
 
     // Rotate plane:
     auto volume = getVolume();
     if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
-        // const auto model = volume->m_slicingGeometry.model();
-        // const auto& newView = mPrivateViewMatrix.inverted();
-        // const auto& a = inversePrivateView * QVector4D{0.f, 0.f, 1.f, 0.f};
-        // const auto& b = newView * QVector4D{0.f, 0.f, 1.f, 0.f};
-        // const auto rotation = QQuaternion::rotationTo(a.toVector3D(), b.toVector3D());
-        volume->m_slicingGeometry.dir = (mPrivateViewMatrix.inverted() * QVector4D{0.f, 0.f, 1.f, 0.f}).toVector3D();
+        const auto relativeTrans = mPrivateViewMatrix.inverted() * origMat;
+        const auto newDir = (relativeTrans * QVector4D{volume->m_slicingGeometry.dir, 0.f}).toVector3D();
+        volume->m_slicingGeometry.dir = newDir;
     }
 }
 

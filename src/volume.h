@@ -13,7 +13,7 @@ namespace Slicing {
         QVector3D pos{0.f, 0.f, 0.f};
         QVector3D dir{0.f, 0.f, -1.f};
 
-        QMatrix4x4 model(const QVector3D& up) const;
+        QMatrix4x4 model(QVector3D up) const;
     };
 }
 
