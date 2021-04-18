@@ -20,54 +20,39 @@ HistogramWidget::HistogramWidget(QWidget *parent) :
         widget = widget->window();
     mMainWindow = dynamic_cast<MainWindow*>(widget);
 
-    //DEBUGGING
-    drawStdLineGraph();
-
-    qDebug() << getVolume().get();
+    drawHistogram();
 }
 
-void HistogramWidget::drawStdLineGraph()
+void HistogramWidget::drawHistogram()
 {
-    // Histogram chart:
-    QLineSeries *series = new QLineSeries();
-    for (int i = 0; i < 256; i++) {
-        series->append(i,i);
+    // TODO: Import actual data
+    unsigned long histogramData[256];
+    QList<QBarSet*> bins;
+    QBarSeries *series = new QBarSeries();
+    QChart *chart = new QChart();
+    QChartView *chartView;
+    for (int i = 0; i < 256; i++){
+        // Random data
+        histogramData[i] = (int) qrand() % 1000;
+        QBarSet *bar = new QBarSet(QString::number((i+1)));
+        *bar << histogramData[i];
+        bar->setColor(Qt::black);
+        bins.append(bar);
+        series->append(bar);
     }
 
-    QChart *chart = new QChart();
-    chart->legend()->hide();
+    QValueAxis *axisY = new QValueAxis;
+    axisY->setRange(0,1000);
     chart->addSeries(series);
     chart->createDefaultAxes();
-
-    QFont font;
-    font.setPixelSize(18);
-    chart->setTitleFont(font);
-    chart->setTitleBrush(QBrush(Qt::black));
-    chart->setTitle("Histogram");
-
-    QPen pen(QRgb(0x000000));
-    pen.setWidth(5);
-    series->setPen(pen);
-
-    chart->setAnimationOptions(QChart::AllAnimations);
-
-    QCategoryAxis *axisX = new QCategoryAxis();
-    for (int i = 0; i < 256; i++) {
-        axisX->append(QString::number(i),i);
-    }
-
-    QChartView *chartView = new QChartView(chart);
+    chart->legend()->hide();
+    chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
-
 
     mLayout->addWidget(chartView);
 }
 
 HistogramWidget::~HistogramWidget() = default;
-
-std::shared_ptr<Volume> HistogramWidget::getVolume() const {
-    return mMainWindow->mGlobalVolume;
-}
 
 std::shared_ptr<Volume> HistogramWidget::getVolume() {
     return mMainWindow->mGlobalVolume;

@@ -2,6 +2,7 @@
 #define HISTOGRAMWIDGET_H
 
 #include <QWidget>
+#include "qcustomplot.h"
 
 class QVBoxLayout;
 class MainWindow;
@@ -14,9 +15,8 @@ class HistogramWidget : public QWidget
 public:
     explicit HistogramWidget(QWidget *parent = nullptr);
     ~HistogramWidget();
-    std::shared_ptr<Volume> getVolume() const;
     std::shared_ptr<Volume> getVolume();
-    void drawStdLineGraph();
+    void drawHistogram();
 protected:
     MainWindow* mMainWindow{nullptr};
 
