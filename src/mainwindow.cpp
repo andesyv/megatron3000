@@ -58,23 +58,36 @@ MainWindow::MainWindow(QWidget *parent)
     });
 }
 
-void MainWindow::addWidget(DockWrapper* widget) {
+void MainWindow::addWidget(DockWrapper* dock) {
 #ifndef NDEBUG
     qDebug() << "Widget added!";
 #endif
 
     // If the widget has a menu, add dock controls to the menu
-    // if (auto* menuwidget = dynamic_cast<IMenu*>(widget)) {
-    //     auto action = menuwidget->mViewMenu->addAction("Toggle window bar");
-    //     action->setCheckable(true);
-    //     connect(action, &QAction::toggled, dock, [&](bool checked){
-            
-    //     });
-    // }
+    if (auto* menuwidget = dynamic_cast<IMenu*>(dock->widget())) {
+        auto action = menuwidget->mViewMenu->addAction("Toggle window bar");
+        action->setCheckable(true);
 
-    layoutDockWidget(widget);
-    mWidgets.push_back(widget);
-    widget->setFocus();
+        connect(action, &QAction::triggered, dock, [=](bool checked){
+            if (dock->isFloating()) {
+                action->setChecked(false);
+                return;
+            }
+
+            if (checked)
+                dock->setTitleBarWidget(new QWidget{this});
+            else {
+                auto old = dock->titleBarWidget();
+                dock->setTitleBarWidget(nullptr);
+                if (old)
+                    delete old;
+            }
+        });
+    }
+
+    layoutDockWidget(dock);
+    mWidgets.push_back(dock);
+    dock->setFocus();
 }
 
 DataWidget* MainWindow::loadData() {
