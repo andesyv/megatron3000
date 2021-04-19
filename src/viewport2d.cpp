@@ -154,11 +154,24 @@ void Viewport2D::setAxis(QAction* axis) {
                         viewMat.rotate(-90.f, {1.f, 0.f, 0.f});
                     
                     viewMat.translate(0.f, 0.f, zoom);
+                    mRenderer->viewMatrixUpdated();
                 }
             }
             break;
         case AxisMode::ARBITRARY:
+            break;
         case AxisMode::SLICE:
+            {
+                const auto& volume = mRenderer->getVolume();
+                if (volume) {
+                    const auto& plane = volume->m_slicingGeometry;
+                    auto& viewMat = mRenderer->getViewMatrix();
+                    viewMat.lookAt(plane.pos, plane.pos + plane.dir, {0.f, 1.f, 0.f});
+                    mRenderer->viewMatrixUpdated();
+                }
+            }
             break;
     }
+
+    mRenderer->mIsSlicePlaneEnabled = mRenderer->mIsCameraLinkedToSlicePlane = mAxisMode == AxisMode::SLICE;
 }

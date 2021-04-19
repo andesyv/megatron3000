@@ -1,5 +1,6 @@
 #include "renderutils.h"
 #include "shaders/shadermanager.h"
+#include <QQuaternion>
 
 ScreenSpacedBuffer::ScreenSpacedBuffer() {
     initializeOpenGLFunctions();
@@ -196,6 +197,99 @@ void NodeGlyphs::updateNodeBuffer(const std::vector<QVector2D>& nodePos) {
 }
 
 NodeGlyphs::~NodeGlyphs() {
+    glDeleteBuffers(1, &mVBO);
+    glDeleteVertexArrays(1, &mVAO);
+}
+
+
+
+
+
+WorldPlaneGlyph::WorldPlaneGlyph() {
+    initializeOpenGLFunctions();
+
+    glGenVertexArrays(1, &mVAO);
+    glBindVertexArray(mVAO);
+
+    const GLfloat posdir[] = {0.f, 0.f, 0.f, 0.f, 0.f, -1.f};
+
+    glGenBuffers(1, &mVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBufferStorage(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), &posdir, GL_DYNAMIC_STORAGE_BIT);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 3 * sizeof(GLfloat), reinterpret_cast<void*>(sizeof(GLfloat) * 3));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+
+    auto& SM = ShaderManager::get();
+
+    if (!SM.valid("plane")) {
+        auto& shader = SM.shader("plane");
+
+        if (!shader.addSourceRelative(QOpenGLShader::Vertex, "plane.vs")) {
+            throw std::runtime_error{"Failed to compile vertex shader"};
+        }
+
+        if (!shader.addSourceRelative(QOpenGLShader::Geometry, "plane.gs")) {
+            throw std::runtime_error{"Failed to compile geometry shader"};
+        }
+
+        if (!shader.addSourceRelative(QOpenGLShader::Fragment, "plane.fs")) {
+            throw std::runtime_error{"Failed to compile fragment shader"};
+        }
+
+
+        if (!shader.link()) {
+            throw std::runtime_error{"Failed to link shaderprogram"};
+        }
+    }
+}
+
+void WorldPlaneGlyph::bind() {
+    glBindVertexArray(mVAO);
+}
+
+void WorldPlaneGlyph::unbind() {
+    glBindVertexArray(0);
+}
+
+void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QVector3D& up, const QVector3D& pos, const QVector3D& dir) {
+    glEnable(GL_CULL_FACE);
+    bind();
+
+    // Reproject the position onto the direction to center it. (making positions orthogonal to dir = 0)
+    const QVector3D centeredPos = QVector3D::dotProduct(pos, dir) * dir;
+
+    // Update buffer
+    const GLfloat vals[] = {
+        centeredPos.x(), centeredPos.y(), centeredPos.z(),
+        dir.x(), dir.y(), dir.z()
+    };
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 6 * sizeof(GLfloat), &vals);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 3 * sizeof(GLfloat), reinterpret_cast<void*>(sizeof(GLfloat) * 3));
+    glEnableVertexAttribArray(1);
+
+    auto& shader = ShaderManager::get().shader("plane");
+#ifndef NDEBUG
+    if (!shader.isLinked()) return;
+#endif
+    shader.bind();
+    shader.setUniformValue("MVP", MVP);
+    shader.setUniformValue("up", up);
+    shader.setUniformValue("alpha", std::clamp(mAlpha, 0.f, 1.f));
+
+    glDrawArrays(GL_POINTS, 0, 1);
+    unbind();
+}
+
+WorldPlaneGlyph::~WorldPlaneGlyph() {
     glDeleteBuffers(1, &mVBO);
     glDeleteVertexArrays(1, &mVAO);
 }
