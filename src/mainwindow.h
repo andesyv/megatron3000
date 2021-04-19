@@ -41,6 +41,7 @@ public:
 
 signals:
     void loaded(std::shared_ptr<Volume>);
+    void volumesUpdated(const std::vector<std::pair<std::string, std::shared_ptr<Volume>>>& volumeList);
 
 public slots:
     /**
@@ -53,7 +54,6 @@ public slots:
      */
     DataWidget* loadData();
 
-private slots:
     // Helper slot for button.
     void load();
 

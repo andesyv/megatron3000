@@ -27,6 +27,9 @@ signals:
     void Mouse_pos3D();
     void Mouse_scroll3D();
 
+protected:
+    void volumeSwitched() final;
+
 private:
     Renderer3D* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};

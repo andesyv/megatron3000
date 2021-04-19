@@ -38,6 +38,8 @@ Viewport2D::Viewport2D(QWidget *parent) :
 
     // OpenGL Render Widget:
     mRenderer = new Renderer2D{this};
+    if (mVolume)
+        mRenderer->mPrivateVolume = mVolume;
     mLayout->addWidget(mRenderer);
 
 
@@ -79,6 +81,10 @@ void Viewport2D::wheelEvent(QWheelEvent *ev)
 
     this->mRenderer->zoom(z*speed);
     emit Mouse_scroll();
+}
+
+void Viewport2D::volumeSwitched() {
+    mRenderer->mPrivateVolume = mVolume;
 }
 
 Viewport2D::~Viewport2D() = default;

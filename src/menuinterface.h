@@ -16,13 +16,17 @@ class QWidget;
  */
 class IMenu {
 public:
-    IMenu(QWidget* widget);
+    /**
+     * @brief Construct a new IMenu object
+     * 
+     * @param widget Widget to attach interface to. Usually "this"
+     * @param bAutoLoad Whether to automatically load a volume whenever one becaomes available. Triggers volumeSwitched()
+     */
+    IMenu(QWidget* widget, bool bAutoLoad = true);
 
     QMenuBar* mMenuBar{nullptr};
     QMenu* mViewMenu{nullptr};
     QMenu* mDataMenu{nullptr};
-
-    virtual void volumeSwitched();
 
     auto getVolume() const { return mVolume; }
     
@@ -33,9 +37,16 @@ public:
 protected:
     std::shared_ptr<Volume> mVolume;
 
+    /**
+     * @brief Virtual function that can be overriden to run code on volume selection
+     * @note Does not run in constructor, only on executive calls
+     */
+    virtual void volumeSwitched() = 0;
+
 private:
     MainWindow* mMenuMainWindow;
     QWidget* mWidget;
+    bool mAutoLoad;
 
     void updateDataMenu();
 

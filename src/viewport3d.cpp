@@ -42,6 +42,8 @@ Viewport3D::Viewport3D(QWidget *parent) :
 
     // OpenGL Render Widget:
     mRenderer = new Renderer3D{this};
+    if (mVolume)
+        mRenderer->mPrivateVolume = mVolume;
     mLayout->addWidget(mRenderer);
 
     // Connections:
@@ -102,6 +104,10 @@ void Viewport3D::wheelEvent(QWheelEvent *ev)
 
     this->mRenderer->zoom(z*speed);
     emit Mouse_scroll3D();
+}
+
+void Viewport3D::volumeSwitched() {
+    mRenderer->mPrivateVolume = mVolume;
 }
 
 void Viewport3D::load() {

@@ -97,12 +97,14 @@ DataWidget* MainWindow::loadData() {
     connect(widget, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume, const std::string& identifier){
         // Make sure identifier is unique:
         auto modifiedIdentifier{identifier};
-        for (int i{0}; std::any_of(mVolumes.begin(), mVolumes.end(), [=](const auto& vol){
+        for (int i{2}; std::any_of(mVolumes.begin(), mVolumes.end(), [=](const auto& vol){
             return vol.first == modifiedIdentifier;
         }); ++i)
             modifiedIdentifier = identifier + std::to_string(i);
 
         mVolumes.emplace_back(modifiedIdentifier, volume);
+
+        volumesUpdated(mVolumes);
     });
     return widget;
 }
@@ -112,6 +114,10 @@ void MainWindow::load() {
     connect(widget, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume){
         if (1 < mVolumes.size())
             mVolumes.erase(mVolumes.begin());
+
+        // If we have multiple volumes, swap so global is first.
+        if (1 < mVolumes.size())
+            std::swap(mVolumes.front(), mVolumes.back());
 
         // Mitigate volume onwards to whatever widgets wants it
         loaded(volume);

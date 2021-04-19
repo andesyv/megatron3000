@@ -28,7 +28,7 @@ public:
     QMatrix4x4 mPrivateViewMatrix;
 
     // Whether to use widgets volume data or global volume data
-    bool mUseGlobalVolume{true};
+    bool mUseGlobalVolume{false};
     std::shared_ptr<Volume> mPrivateVolume;
 
     bool mIsSlicePlaneEnabled{false};
