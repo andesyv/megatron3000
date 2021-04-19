@@ -15,6 +15,9 @@ class DataWidget : public QWidget
     Q_OBJECT
 public:
     explicit DataWidget(QWidget *parent = nullptr);
+
+    void loadCached();
+
     ~DataWidget();
 
 signals:
@@ -29,6 +32,10 @@ private:
     Ui::DataWidget *ui;
     QFileSystemModel *dirmodel;
     QFileSystemModel *filemodel;
+
+    void load(const QString& filePath);
+
+    void cacheLast(const QString& filePath);
 };
 
 #endif // DATAWIDGET_H

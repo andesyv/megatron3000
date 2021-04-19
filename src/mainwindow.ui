@@ -54,6 +54,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpen_last_opened"/>
    </widget>
    <addaction name="menuData"/>
    <addaction name="menuLayout"/>
@@ -99,6 +100,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+4</string>
+   </property>
+  </action>
+  <action name="actionOpen_last_opened">
+   <property name="text">
+    <string>Open last opened</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
    </property>
   </action>
  </widget>

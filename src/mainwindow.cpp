@@ -34,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
         addWidget(createWrapperWidget(new TransferFunctionWidget{this}, "Transfer function"));
     });
     connect(mUi->actionOpen, &QAction::triggered, this, &MainWindow::load);
+    connect(mUi->actionOpen_last_opened, &QAction::triggered, this, [=](){ load(true); });
 
     // Manually create a rendering widget:
     // NOTE: For datawidget to be able to create a volume, a render widget must be present. Else OpenGL crashes.
@@ -109,7 +110,7 @@ DataWidget* MainWindow::loadData() {
     return widget;
 }
 
-void MainWindow::load() {
+void MainWindow::load(bool bOpenLast) {
     auto widget = loadData();
     connect(widget, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume){
         if (1 < mVolumes.size())
@@ -122,6 +123,9 @@ void MainWindow::load() {
         // Mitigate volume onwards to whatever widgets wants it
         loaded(volume);
     });
+    
+    if (bOpenLast)
+        widget->loadCached();
 }
 
 DockWrapper* MainWindow::createWrapperWidget(QWidget* widget, const QString& title) {

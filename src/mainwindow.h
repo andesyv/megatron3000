@@ -55,7 +55,7 @@ public slots:
     DataWidget* loadData();
 
     // Helper slot for button.
-    void load();
+    void load(bool bOpenLast = false);
 
 private:
     std::unique_ptr<Ui::MainWindow> mUi;
