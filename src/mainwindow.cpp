@@ -93,14 +93,25 @@ void MainWindow::addWidget(DockWrapper* dock) {
 DataWidget* MainWindow::loadData() {
     auto widget = new DataWidget{this};
     widget->setWindowFlag(Qt::Window);
-    widget->show(); 
+    widget->show();
+    connect(widget, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume, const std::string& identifier){
+        // Make sure identifier is unique:
+        auto modifiedIdentifier{identifier};
+        for (int i{0}; std::any_of(mVolumes.begin(), mVolumes.end(), [=](const auto& vol){
+            return vol.first == modifiedIdentifier;
+        }); ++i)
+            modifiedIdentifier = identifier + std::to_string(i);
+
+        mVolumes.emplace_back(modifiedIdentifier, volume);
+    });
     return widget;
 }
 
 void MainWindow::load() {
     auto widget = loadData();
     connect(widget, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume){
-        mGlobalVolume = volume;
+        if (1 < mVolumes.size())
+            mVolumes.erase(mVolumes.begin());
     });
 }
 

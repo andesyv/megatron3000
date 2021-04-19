@@ -5,6 +5,7 @@
 #include <QtCore>
 #include <QtGui>
 #include <QFileSystemModel>
+#include <filesystem>
 
 
 DataWidget::DataWidget(QWidget *parent) :
@@ -51,8 +52,9 @@ void DataWidget::on_listView_doubleClicked(const QModelIndex &index)
     if(filemodel->fileInfo(index).suffix()=="dat" && volume->loadData(filePath)) {
         qInfo() << "Successfully loaded file at " + filePath;
 
+        const auto& fileIdentifier = std::filesystem::path{filePath.toStdString()}.stem().string();
         // If we managed to load the volume, pass it as a signal for anyone to catch
-        loaded(volume);
+        loaded(volume, fileIdentifier);
         this->close();
     } else {
         //Not supported file type

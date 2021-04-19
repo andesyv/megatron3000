@@ -18,7 +18,7 @@ public:
     ~DataWidget();
 
 signals:
-    void loaded(std::shared_ptr<Volume> volume);
+    void loaded(std::shared_ptr<Volume> volume, const std::string& identifier = {});
 
 private slots:
     void on_treeView_clicked(const QModelIndex &index);

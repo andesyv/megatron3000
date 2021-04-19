@@ -57,6 +57,8 @@ private:
     DockWrapper* createWrapperWidget(QWidget* widget, const QString& title = "Dockwidget");
     // ALgorithm for finding new dock widget placements.
     void layoutDockWidget(DockWrapper* newWidget);
+
+    std::vector<std::pair<std::string, std::shared_ptr<Volume>>> mVolumes;
 };
 
 
