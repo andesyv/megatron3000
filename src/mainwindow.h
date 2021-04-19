@@ -14,6 +14,7 @@ class Volume;
 class DockWrapper;
 class QShortcut;
 class DataWidget;
+class IMenu;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -34,7 +35,12 @@ public:
     std::vector<QDockWidget*> mWidgets;
     std::vector<QShortcut*> mShortcuts;
 
+    auto volumesList() const { return mVolumes; }
+
     ~MainWindow();
+
+signals:
+    void loaded(std::shared_ptr<Volume>);
 
 public slots:
     /**

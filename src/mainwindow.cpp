@@ -112,6 +112,9 @@ void MainWindow::load() {
     connect(widget, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume){
         if (1 < mVolumes.size())
             mVolumes.erase(mVolumes.begin());
+
+        // Mitigate volume onwards to whatever widgets wants it
+        loaded(volume);
     });
 }
 

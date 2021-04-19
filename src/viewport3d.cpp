@@ -8,6 +8,7 @@
 #include <QSlider>
 #include <QLabel>
 #include "renderutils.h"
+#include <QMenuBar>
 
 Viewport3D::Viewport3D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -15,13 +16,6 @@ Viewport3D::Viewport3D(QWidget *parent) :
     // Layout:
     mLayout = new QVBoxLayout{this};
     mLayout->setContentsMargins(0, 0, 0, 0);
-
-    // Menubar:
-    auto datamenu = mMenuBar->addMenu("Data");
-    auto openAction = datamenu->addAction("Open");
-    mRemoveVolumeAction = datamenu->addAction("Use global volume");
-    mRemoveVolumeAction->setCheckable(true);
-    mRemoveVolumeAction->setChecked(true);
 
     // Slice menu
     auto slicemenu = mMenuBar->addMenu("Slicing");
@@ -51,8 +45,6 @@ Viewport3D::Viewport3D(QWidget *parent) :
     mLayout->addWidget(mRenderer);
 
     // Connections:
-    connect(openAction, &QAction::triggered, this, &Viewport3D::load);
-    connect(mRemoveVolumeAction, &QAction::triggered, this, &Viewport3D::removeVolume);
     connect(sliceEnable, &QAction::toggled, this, [&](bool bEnabled){
         mRenderer->mIsSlicePlaneEnabled = bEnabled;
     });

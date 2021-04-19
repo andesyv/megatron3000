@@ -33,16 +33,6 @@ Viewport2D::Viewport2D(QWidget *parent) :
         connect(action, &QAction::triggered, [&, action](){ setAxis(action); });
     }
     mAxisActions.front()->setChecked(true);
-
-    
-
-    auto datamenu = mMenuBar->addMenu("Data");
-    auto openAction = datamenu->addAction("Open");
-    connect(openAction, &QAction::triggered, this, &Viewport2D::load);
-    mRemoveVolumeAction = datamenu->addAction("Use global volume");
-    mRemoveVolumeAction->setCheckable(true);
-    mRemoveVolumeAction->setChecked(true);
-    connect(mRemoveVolumeAction, &QAction::triggered, this, &Viewport2D::removeVolume);
     
     mLayout->addWidget(mMenuBar);
 
