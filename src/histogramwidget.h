@@ -2,7 +2,6 @@
 #define HISTOGRAMWIDGET_H
 
 #include <QWidget>
-#include "qcustomplot.h"
 
 class QVBoxLayout;
 class MainWindow;
