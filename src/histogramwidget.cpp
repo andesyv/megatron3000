@@ -6,11 +6,14 @@
 #include "mainwindow.h"
 
 HistogramWidget::HistogramWidget(QWidget *parent) :
-    QWidget(parent)
+    QWidget(parent),
+    IMenu{this}
 {
     // Layout:
     mLayout = new QVBoxLayout{this};
     mLayout->setContentsMargins(0, 0, 0, 0);
+
+    mLayout->addWidget(mMenuBar);
 
     /** Get volume from main window:
      *  This only loads data if it is already present in main window.
@@ -55,5 +58,9 @@ void HistogramWidget::drawHistogram()
 HistogramWidget::~HistogramWidget() = default;
 
 std::shared_ptr<Volume> HistogramWidget::getVolume() {
-    return mMainWindow->mGlobalVolume;
+    return mVolume;
+}
+
+void HistogramWidget::volumeSwitched() {
+
 }

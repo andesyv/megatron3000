@@ -2,12 +2,13 @@
 #define HISTOGRAMWIDGET_H
 
 #include <QWidget>
+#include "menuinterface.h"
 
 class QVBoxLayout;
 class MainWindow;
 class Volume;
 
-class HistogramWidget : public QWidget
+class HistogramWidget : public QWidget, public IMenu
 {
     Q_OBJECT
 
@@ -18,6 +19,7 @@ public:
     void drawHistogram();
 protected:
     MainWindow* mMainWindow{nullptr};
+    void volumeSwitched() override final;
 
 private:
     QVBoxLayout* mLayout{nullptr};
