@@ -19,11 +19,6 @@ TransferFunctionRenderer::TransferFunctionRenderer(QWidget* parent)
         widget = widget->window();
     
     mMainWindow = dynamic_cast<MainWindow*>(widget);
-
-
-    /// NOTE: Can't do this because this will create race conditions with other transfer function widgets
-    // Connect event to eventually load volume:
-    // connect(mVolume.get(), &Volume::loaded, this, &TransferFunctionWidget::updateVolume);
 }
 
 void TransferFunctionRenderer::initializeGL() {
@@ -37,11 +32,11 @@ void TransferFunctionRenderer::initializeGL() {
 TransferFunctionRenderer::~TransferFunctionRenderer() = default;
 
 std::shared_ptr<Volume> TransferFunctionRenderer::getVolume() const {
-    return mMainWindow->mGlobalVolume;
+    return mVolume;
 }
 
 std::shared_ptr<Volume> TransferFunctionRenderer::getVolume() {
-    return mMainWindow->mGlobalVolume;
+    return mVolume;
 }
 
 unsigned int TransferFunctionRenderer::getNodeIndex(const Node& node) const {

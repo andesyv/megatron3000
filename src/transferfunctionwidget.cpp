@@ -6,6 +6,7 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QColorDialog>
+#include <QMenuBar>
 
 class ColorButton : public QAbstractButton {
 public:
@@ -43,14 +44,21 @@ protected:
 
 TransferFunctionWidget::TransferFunctionWidget(QWidget* parent)
     : QWidget{parent},
+    IMenu{this},
     propertyUi{std::make_unique<Ui::NodePropertyWidget>()}
 {
     // Layout:
     auto layout = new QVBoxLayout{this};
     layout->setContentsMargins(0, 0, 0, 0);
 
+    layout->addWidget(mMenuBar);
+
     // OpenGL Render Widget:
     mRenderer = new TransferFunctionRenderer{this};
+    if (mVolume) {
+        mRenderer->mVolume = mVolume;
+        mRenderer->nodesChanged();
+    }
     layout->addWidget(mRenderer);
     connect(mRenderer, &TransferFunctionRenderer::nodeSelected, this, &TransferFunctionWidget::select);
 
@@ -93,6 +101,11 @@ void TransferFunctionWidget::deselect() {
     mPropertyWidget = nullptr;
     mSelectedNode = nullptr;
     mColorButton = nullptr;
+}
+
+void TransferFunctionWidget::volumeSwitched() {
+    mRenderer->mVolume = mVolume;
+    mRenderer->nodesChanged();
 }
 
 void TransferFunctionWidget::pickColor() {
