@@ -11,6 +11,7 @@
 #include "viewport2d.h"
 #include "viewport3d.h"
 #include "datawidget.h"
+#include "histogramwidget.h"
 #include "transferfunctionwidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -32,12 +33,16 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mUi->actionTransfer_function, &QAction::triggered, this, [&](){
         addWidget(createWrapperWidget(new TransferFunctionWidget{this}, "Transfer function"));
     });
+    connect(mUi->actionHistogram_Widget, &QAction::triggered, this, [&](){
+        addWidget(createWrapperWidget(new HistogramWidget{this}, "Histogram Widget"));
+    });
     connect(mUi->actionOpen, &QAction::triggered, this, &MainWindow::load);
     connect(mUi->actionOpen_last_opened, &QAction::triggered, this, [=](){ load(true); });
 
     // Manually create a rendering widget:
     // NOTE: For datawidget to be able to create a volume, a render widget must be present. Else OpenGL crashes.
     mUi->action2D_Viewport->trigger();
+    //mUi->actionHistogram_Widget->trigger();
 
     // loadData();
 

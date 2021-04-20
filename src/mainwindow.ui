@@ -46,6 +46,7 @@
      <addaction name="action2D_Viewport"/>
      <addaction name="action3D_Viewport"/>
      <addaction name="actionTransfer_function"/>
+     <addaction name="actionHistogram_Widget"/>
     </widget>
     <addaction name="menuAdd"/>
    </widget>
@@ -100,6 +101,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+4</string>
+   </property>
+  </action>
+  <action name="actionHistogram_Widget">
+   <property name="text">
+    <string>Histogram Widget</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+5</string>
    </property>
   </action>
   <action name="actionOpen_last_opened">

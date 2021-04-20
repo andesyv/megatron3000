@@ -2,21 +2,27 @@
 #define HISTOGRAMWIDGET_H
 
 #include <QWidget>
+#include "menuinterface.h"
 
-namespace Ui {
-class HistogramWidget;
-}
+class QVBoxLayout;
+class MainWindow;
+class Volume;
 
-class HistogramWidget : public QWidget
+class HistogramWidget : public QWidget, public IMenu
 {
     Q_OBJECT
 
 public:
     explicit HistogramWidget(QWidget *parent = nullptr);
     ~HistogramWidget();
+    std::shared_ptr<Volume> getVolume();
+    void drawHistogram();
+protected:
+    MainWindow* mMainWindow{nullptr};
+    void volumeSwitched() override final;
 
 private:
-    Ui::HistogramWidget *ui;
+    QVBoxLayout* mLayout{nullptr};
 };
 
 #endif // HISTOGRAMWIDGET_H

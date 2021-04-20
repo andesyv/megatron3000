@@ -49,7 +49,6 @@ HEADERS += \
 
 FORMS += \
     src/datawidget.ui \
-    src/histogramwidget.ui \
     src/mainwindow.ui \
     src/nodepropertywidget.ui \
     src/transferfunctionwidget.ui
