@@ -99,7 +99,7 @@ const QMatrix4x4& Renderer::getViewMatrix() const {
 }
 
 std::shared_ptr<Volume> Renderer::getVolume() const {
-    return mUseGlobalVolume ? mMainWindow->mGlobalVolume : mPrivateVolume;
+    return mVolume;
 }
 
 QMatrix4x4& Renderer::getViewMatrix() {
@@ -107,7 +107,7 @@ QMatrix4x4& Renderer::getViewMatrix() {
 }
 
 std::shared_ptr<Volume> Renderer::getVolume() {
-    return mUseGlobalVolume ? mMainWindow->mGlobalVolume : mPrivateVolume;
+    return mVolume;
 }
 
 void Renderer::drawAxis() {

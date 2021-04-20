@@ -15,8 +15,7 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-    mUi{new Ui::MainWindow},
-    mGlobalVolume{}
+    mUi{new Ui::MainWindow}
 {
     mUi->setupUi(this);
     // QMainWindow requires a cental widget but we don't use it.

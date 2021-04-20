@@ -11,7 +11,7 @@
 
 TransferFunctionRenderer::TransferFunctionRenderer(QWidget* parent)
     : QOpenGLWidget{parent},
-    mNodes{{{-0.8f, 0.f}}, {{0.2f, -0.2f}}, {{0.8f, 0.8f}}} {
+    mNodes{{{-0.8f, 0.f}}, {{0.8f, 0.8f}}} {
 
     // Follow outer chain to find main window:
     auto widget = window();
@@ -30,14 +30,6 @@ void TransferFunctionRenderer::initializeGL() {
 }
 
 TransferFunctionRenderer::~TransferFunctionRenderer() = default;
-
-std::shared_ptr<Volume> TransferFunctionRenderer::getVolume() const {
-    return mVolume;
-}
-
-std::shared_ptr<Volume> TransferFunctionRenderer::getVolume() {
-    return mVolume;
-}
 
 unsigned int TransferFunctionRenderer::getNodeIndex(const Node& node) const {
     return std::find(mNodes.begin(), mNodes.end(), node) - mNodes.begin();
@@ -61,7 +53,7 @@ void TransferFunctionRenderer::paintGL() {
 
     const auto aspectRatio = width() / static_cast<float>(height());
 
-    mSpline->draw(getVolume());
+    mSpline->draw(mVolume);
     mNodeGlyphs->draw(aspectRatio, mNodeRadius, mSelectedNode);
 
     glDisable(GL_BLEND);
@@ -181,8 +173,7 @@ float findTHorizontally(const std::vector<QVector2D>& p, const QVector2D& point)
 
 
 void TransferFunctionRenderer::updateVolume() {
-    auto volume = getVolume();
-    if (!volume || mNodes.size() < 2)
+    if (!mVolume || mNodes.size() < 2)
         return;
 
     /** B(t) describes a spline that is continous for t = [0, 1],
@@ -247,7 +238,7 @@ void TransferFunctionRenderer::updateVolume() {
         values.push_back(val);
     }
 
-    volume->updateTransferFunction(values);
+    mVolume->updateTransferFunction(values);
 }
 
 void TransferFunctionRenderer::nodesChanged() {

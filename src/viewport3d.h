@@ -36,10 +36,6 @@ private:
     QPoint lastPoint3D;
     QAction* mRemoveVolumeAction{nullptr};
     QAction* mSliceMoveToggle{nullptr};
-
-private slots:
-    void load();
-    void removeVolume(bool bState);
     
 };
 

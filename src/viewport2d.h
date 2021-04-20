@@ -45,8 +45,6 @@ private:
     AxisMode mAxisMode{AxisMode::ORTHOGONAL};
 
 private slots:
-    void load();
-    void removeVolume(bool bState);
     void setAxis(QAction* axis);
 
 };

@@ -31,7 +31,6 @@ public:
 
     // Global camera matrix for all render-widgets
     QMatrix4x4 mGlobalViewMatrix;
-    std::shared_ptr<Volume> mGlobalVolume;
     std::vector<QDockWidget*> mWidgets;
     std::vector<QShortcut*> mShortcuts;
 

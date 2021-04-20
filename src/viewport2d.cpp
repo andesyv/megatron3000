@@ -39,7 +39,7 @@ Viewport2D::Viewport2D(QWidget *parent) :
     // OpenGL Render Widget:
     mRenderer = new Renderer2D{this};
     if (mVolume)
-        mRenderer->mPrivateVolume = mVolume;
+        mRenderer->mVolume = mVolume;
     mLayout->addWidget(mRenderer);
 
 
@@ -84,37 +84,10 @@ void Viewport2D::wheelEvent(QWheelEvent *ev)
 }
 
 void Viewport2D::volumeSwitched() {
-    mRenderer->mPrivateVolume = mVolume;
+    mRenderer->mVolume = mVolume;
 }
 
 Viewport2D::~Viewport2D() = default;
-
-void Viewport2D::load() {
-    if (parentWidget()) {
-        auto mainwindow = dynamic_cast<MainWindow*>(parentWidget()->parentWidget());
-        if (mainwindow) {
-            auto dataloader = mainwindow->loadData();
-            connect(dataloader, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume){
-                mRenderer->mPrivateVolume = volume;
-                mRemoveVolumeAction->setChecked(false);
-                mRenderer->mUseGlobalVolume = false;
-            });
-        }
-    }
-}
-
-void Viewport2D::removeVolume(bool bState) {
-    // If user manually toggles it off, it should'nt do anything.
-    if (!bState) {
-        // Just enable the bool again. >:)
-        mRemoveVolumeAction->setChecked(true);
-        return;
-    }
-
-    mRenderer->mUseGlobalVolume = true;
-    // Delete ptr by replacing it with nothing
-    mRenderer->mPrivateVolume = {};
-}
 
 void Viewport2D::setAxis(QAction* axis) {
     axis->setChecked(true);
