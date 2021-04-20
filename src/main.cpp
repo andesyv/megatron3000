@@ -25,6 +25,9 @@ int main(int argc, char *argv[])
     setupGlobalRenderingSettings();
 
     QApplication a(argc, argv);
+    a.setStyleSheet(R"STYLE(
+        QDockWidget::title:focus { border: 1px solid #20795C; background: #8ECAB6; }
+    )STYLE");
 
     //Main window
     MainWindow w;

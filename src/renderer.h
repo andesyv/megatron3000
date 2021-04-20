@@ -3,7 +3,6 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_4_5_Core>
-#include "shaders/shadermanager.h"
 #include <QMatrix4x4>
 #include <QElapsedTimer>
 #include <memory>
@@ -12,6 +11,8 @@ class MainWindow;
 class Volume;
 class ScreenSpacedBuffer;
 class AxisGlyph;
+class Shader;
+class WorldPlaneGlyph;
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
@@ -26,11 +27,14 @@ public:
     // Render-widgets own camera matrix. If not using global camera matrix, render-widgets use this one.
     QMatrix4x4 mPrivateViewMatrix;
 
-    // Whether to use widgets volume data or global volume data
-    bool mUseGlobalVolume{true};
-    std::shared_ptr<Volume> mPrivateVolume;
+    std::shared_ptr<Volume> mVolume;
 
-    ~Renderer();
+    bool mIsSlicePlaneEnabled{false};
+    bool mIsCameraLinkedToSlicePlane{false};
+
+    std::unique_ptr<WorldPlaneGlyph> mPlane;
+
+    ~Renderer() override;
 
     virtual void zoom(double z);
     void rotate(float dx, float dy);
@@ -39,6 +43,9 @@ public:
     virtual std::shared_ptr<Volume> getVolume() const;
     virtual QMatrix4x4& getViewMatrix(); 
     virtual std::shared_ptr<Volume> getVolume();
+
+    void viewMatrixUpdated();
+
 protected:
     void initializeGL() override;
     void paintGL() override;
@@ -55,6 +62,10 @@ protected:
     std::unique_ptr<AxisGlyph> mAxisGlyph;
 
     QMatrix4x4 mPerspectiveMatrix;
+
+    // Cached inverse of perspective and MVP matrix for better performance
+    QMatrix4x4 mViewMatrixInverse;
+    QMatrix4x4 mMVPInverse;
 
     QElapsedTimer mFrameTimer, mAliveTimer;
     uint32_t mFrameCount{0};

@@ -14,6 +14,7 @@ class Volume;
 class DockWrapper;
 class QShortcut;
 class DataWidget;
+class IMenu;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -30,25 +31,30 @@ public:
 
     // Global camera matrix for all render-widgets
     QMatrix4x4 mGlobalViewMatrix;
-    std::shared_ptr<Volume> mGlobalVolume;
     std::vector<QDockWidget*> mWidgets;
     std::vector<QShortcut*> mShortcuts;
 
+    auto volumesList() const { return mVolumes; }
+
     ~MainWindow();
+
+signals:
+    void loaded(std::shared_ptr<Volume>);
+    void volumesUpdated(const std::vector<std::pair<std::string, std::shared_ptr<Volume>>>& volumeList);
 
 public slots:
     /**
      * @brief Open up a data loading popup window
-     * Opens up a data widget as a data loading popup window
-     * that stores it's loaded data into targetVolume.
-     * @param targetVolume The target volume to load data into. If nullptr it will use the global volume.
+     * Opens up a data widget as a data loading popup window.
+     * The resulting volume loaded from this operation can
+     * be fetched by hooking up to the DataWidget::loaded signal.
+     *
      * @return DataWidget* A pointer to the created widget
      */
-    DataWidget* loadData(Volume* targetVolume = nullptr);
+    DataWidget* loadData();
 
-private slots:
     // Helper slot for button.
-    void load();
+    void load(bool bOpenLast = false);
 
 private:
     std::unique_ptr<Ui::MainWindow> mUi;
@@ -56,6 +62,8 @@ private:
     DockWrapper* createWrapperWidget(QWidget* widget, const QString& title = "Dockwidget");
     // ALgorithm for finding new dock widget placements.
     void layoutDockWidget(DockWrapper* newWidget);
+
+    std::vector<std::pair<std::string, std::shared_ptr<Volume>>> mVolumes;
 };
 
 
@@ -70,7 +78,9 @@ class DockWrapper : public QDockWidget {
 public:
     explicit DockWrapper(const QString &title, QWidget *parent = nullptr,
                          Qt::WindowFlags flags = Qt::WindowFlags())
-        : QDockWidget{title, parent, flags} {}
+        : QDockWidget{title, parent, flags} {
+            setFocusPolicy(Qt::StrongFocus);
+        }
 
 protected:
     void closeEvent(QCloseEvent* event) override {

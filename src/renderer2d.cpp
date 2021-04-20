@@ -2,14 +2,29 @@
 #include "mainwindow.h"
 #include "volume.h"
 #include <filesystem>
-#include <iostream>
 #include "renderutils.h"
+#include "shaders/shadermanager.h"
+#include <QDebug>
 
 namespace fs = std::filesystem;
 
 void Renderer2D::zoom(double z) {
-    auto& trans = mPrivateViewMatrix(2,3);
-    trans = std::clamp(trans + static_cast<float>(z) * 0.02f, -1.f, 1.f);
+    auto& view = getViewMatrix();
+    const auto& origMat{view};
+
+    auto& trans = view(2,3);
+    const auto delta = std::clamp(trans + static_cast<float>(z) * 0.02f, -1.f, 1.f) - trans;
+    trans += delta;
+    viewMatrixUpdated();
+
+    auto volume = getVolume();
+    if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
+        auto& plane = volume->m_slicingGeometry;
+        const auto dir = (mViewMatrixInverse * QVector4D{0.f, 0.f, 1.f, 0.f}).toVector3D();
+        const auto newPos = plane.pos + dir * delta;
+        plane.pos = QVector3D::dotProduct(newPos, plane.dir) * plane.dir;
+        volume->updateSlicingGeometryBuffer();
+    }
 }
 
 void Renderer2D::initializeGL() {
@@ -18,22 +33,17 @@ void Renderer2D::initializeGL() {
     // Create volume shader
     if (!isShaderValid("slice")) {
         auto& shader = shaderProgram("slice");
-
-        const auto shaderpath = fs::absolute(fs::path{SHADERPATH});
-        
-        const auto vspath = QString::fromStdString((shaderpath / "screen.vs").string());
-        const auto fspath = QString::fromStdString((shaderpath / "slice-image.fs").string());
-        if (!shader.addSource(QOpenGLShader::Vertex, vspath)) {
+        if (!shader.addSourceRelative(QOpenGLShader::Vertex, "screen.vs")) {
             throw std::runtime_error{"Failed to compile vertex shader"};
         }
 
-        if (!shader.addSource(QOpenGLShader::Fragment, fspath)) {
+        if (!shader.addSourceRelative(QOpenGLShader::Fragment, "slice-image.fs")) {
             throw std::runtime_error{"Failed to compile fragment shader"};
         }
 
         if (!shader.link()) {
             // throw std::runtime_error{"Failed to link shaderprogram"};
-            std::cout << "Failed to link shader!" << std::endl;
+            qDebug() << "Failed to link shader!";
         }
     }
 
@@ -45,9 +55,9 @@ void Renderer2D::paintGL() {
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    const auto& viewMatrix = getViewMatrix();
-    const auto MVP = (mPerspectiveMatrix * viewMatrix).inverted();
+    auto viewMatrix = getViewMatrix();
     const auto& volume = getVolume();
+    Volume::Guard volumeGuard;
     const auto time = mFrameTimer.elapsed() * 0.001f;
 
     auto& shader = shaderProgram("slice");
@@ -56,14 +66,22 @@ void Renderer2D::paintGL() {
 #endif
 
     shader.bind();
-    shader.setUniformValue("MVP", MVP);
-    shader.setUniformValue("volumeScale", volume->volumeScale());
-    shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
+    shader.setUniformValue("MVP", mMVPInverse);
     shader.setUniformValue("time", time);
+    
+    if (volume) {
+        shader.setUniformValue("volumeScale", volume->volumeScale());
+        shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
+        if (mIsCameraLinkedToSlicePlane) {
+            auto& plane = volume->m_slicingGeometry;
+            viewMatrix.lookAt(plane.pos, plane.pos + plane.dir, {0.f, 1.f, 0.f});
+            shader.setUniformValue("MVP", (mPerspectiveMatrix * viewMatrix).inverted());
+        }
 
-    // Volume guard automatically binds and unbinds. :)
-    const auto volumeGuard = volume->guard(0);
-
+        // Volume guard automatically binds and unbinds. :)
+        volumeGuard = volume->guard();
+    }
+    
     mScreenVAO->draw();
 
     drawAxis();

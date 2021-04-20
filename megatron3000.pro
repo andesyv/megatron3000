@@ -18,6 +18,7 @@ SOURCES += \
     src/main.cpp \
     src/mainwindow.cpp \
     src/renderer.cpp \
+    src/transferfunctionrenderer.cpp \
     src/transferfunctionwidget.cpp \
     src/viewport2d.cpp \
     src/viewport3d.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
     src/renderer2d.cpp \
     src/renderer3d.cpp \
     src/renderutils.cpp \
+    src/spline.cpp \
     src/shaders/shadermanager.cpp
 
 HEADERS += \
@@ -33,6 +35,7 @@ HEADERS += \
     src/histogramwidget.h \
     src/mainwindow.h \
     src/renderer.h \
+    src/transferfunctionrenderer.h \
     src/transferfunctionwidget.h \
     src/viewport2d.h \
     src/viewport3d.h \
@@ -41,11 +44,13 @@ HEADERS += \
     src/renderer2d.h \
     src/renderer3d.h \
     src/renderutils.h \
+    src/spline.h \
     src/shaders/shadermanager.h
 
 FORMS += \
     src/datawidget.ui \
     src/mainwindow.ui \
+    src/nodepropertywidget.ui \
     src/transferfunctionwidget.ui
 
 DISTFILES += \
@@ -54,4 +59,10 @@ DISTFILES += \
     src/shaders/screen.vs \
     src/shaders/screen.fs \
     src/shaders/volume.fs \
-    src/shaders/slice-image.fs
+    src/shaders/slice-image.fs \
+    src/shaders/node.vs \
+    src/shaders/node.gs \
+    src/shaders/node.fs \
+    src/shaders/spline.vs \
+    src/shaders/spline.gs \
+    src/shaders/spline.fs

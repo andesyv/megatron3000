@@ -7,8 +7,24 @@ in vec2 fragCoord;
 
 uniform mat4 MVP = mat4(1.0);
 layout(binding = 0) uniform sampler3D volume;
+layout(binding = 1) uniform sampler1D transferFunction;
 uniform vec3 volumeScale;
 uniform vec3 volumeSpacing;
+uniform bool isSlicingEnabled = false;
+uniform float time = 0.0;
+
+// I like to define a plane as a direction and a point in the plane.
+struct Plane
+{
+    vec3 pos;
+    vec3 dir;
+};
+
+layout(std430, binding = 4) buffer SlicingGeometry
+{
+    Plane slicingPlane;
+};
+
 
 out vec4 fragColor;
 
@@ -27,19 +43,38 @@ vec2 boxIntersection(vec3 ro, vec3 rd, vec3 boxSize)
     return vec2( tN, tF );
 }
 
+vec2 slicePlane(vec2 bounds, vec3 ro, vec3 rd) {
+    // Distance to plane
+    float dist = dot(ro - slicingPlane.pos, slicingPlane.dir);
+    // Find direction aligning with plane to see if above or below plane.
+    float denom = dot(slicingPlane.dir, rd);
+    // Divide distance by direction to get intersection point with ray
+    float intersection = -dist / denom;
+    if (0.0 < denom) {
+        // If in front of plane, set far plane to intersection
+        bounds.y = min(intersection, bounds.y);
+    } else {
+        // If behind plane, set near plane to intersection
+        bounds.x = max(intersection, bounds.x);
+    }
+
+    return bounds;
+}
+
 // Box intersection maks p in range [-1, 1]
-float tf(vec3 p) {
+vec4 tf(vec3 p) {
     p /= volumeScale * 2.0; // Scale p to [-scale, scale] / 2
     p /= volumeSpacing;
     p += 0.5; // Shift uv's so we go from [-0.5, 0.5] to [0, 1.0]
-    return texture(volume, p).r * 0.4;
+    float d = texture(volume, p).r;
+    return texture(transferFunction, d);
 }
 
 vec3 gradient(vec3 p) {
     return vec3(
-        tf(vec3(p.x + EPSILON, p.y, p.z)) - tf(vec3(p.x - EPSILON, p.y, p.z)),
-        tf(vec3(p.x, p.y + EPSILON, p.z)) - tf(vec3(p.x, p.y - EPSILON, p.z)),
-        tf(vec3(p.x, p.y, p.z + EPSILON)) - tf(vec3(p.x, p.y, p.z - EPSILON))
+        tf(vec3(p.x + EPSILON, p.y, p.z)).a - tf(vec3(p.x - EPSILON, p.y, p.z)).a,
+        tf(vec3(p.x, p.y + EPSILON, p.z)).a - tf(vec3(p.x, p.y - EPSILON, p.z)).a,
+        tf(vec3(p.x, p.y, p.z + EPSILON)).a - tf(vec3(p.x, p.y, p.z - EPSILON)).a
     );
 }
 
@@ -54,9 +89,11 @@ void main() {
     vec3 rayDir = normalize(far.xyz - near.xyz);
     fragColor = vec4(0.);
 
-    // Example bounding cube:
     vec2 bounds = boxIntersection(rayOrigin, rayDir, volumeScale * volumeSpacing);
-    if (0.0 <= bounds.y) {
+    if (isSlicingEnabled)
+        bounds = slicePlane(bounds, rayOrigin, rayDir);
+        
+    if (0.0 <= bounds.y && bounds.x < bounds.y) {
         // Clamp to near plane
         bounds.x = max(bounds.x, 0.0);
 
@@ -65,11 +102,12 @@ void main() {
 
         for (int i = 0; i < RAYMARCH_STEPS; ++i) {
             vec3 p = rayOrigin + rayDir * depth;
-            float density = tf(p);
+            vec4 tex = tf(p);
+            float density = tex.a;
             vec3 g = gradient(p);
-            density *= length(g) * 100.0;
+            density *= length(g) * 10.0;
             vec3 normal = normalize(g);
-            vec3 color = vec3(0.8, 0.7, 0.2); // Uniform color over volume
+            vec3 color = tex.rgb;
             vec3 phong = max(dot(normal, vec3(1.0, 0., 0.)), 0.15) * color;
             fragColor.rgb += (1.0 - fragColor.a) * phong * density;
             fragColor.a += density;
@@ -81,7 +119,5 @@ void main() {
             depth += stepSize;
         }
     }
-
-    if (fragColor.a < 0.8)
-        fragColor = vec4(abs(rayDir), 1.);
+    // fragColor = vec4(fragColor.rgb * fragColor.a + (1.0 - fragColor.a) * abs(rayDir), 1.0);
 }

@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLayout">
@@ -45,6 +45,7 @@
      </property>
      <addaction name="action2D_Viewport"/>
      <addaction name="action3D_Viewport"/>
+     <addaction name="actionTransfer_function"/>
      <addaction name="actionHistogram_Widget"/>
     </widget>
     <addaction name="menuAdd"/>
@@ -54,6 +55,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpen_last_opened"/>
    </widget>
    <addaction name="menuData"/>
    <addaction name="menuLayout"/>
@@ -68,10 +70,16 @@
    <property name="text">
     <string>2D Viewport</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+2</string>
+   </property>
   </action>
   <action name="action3D_Viewport">
    <property name="text">
     <string>3D Viewport</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+3</string>
    </property>
   </action>
   <action name="actionData_Manager">
@@ -87,9 +95,28 @@
     <string>Ctrl+O</string>
    </property>
   </action>
+  <action name="actionTransfer_function">
+   <property name="text">
+    <string>Transfer function</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+4</string>
+   </property>
+  </action>
   <action name="actionHistogram_Widget">
    <property name="text">
     <string>Histogram Widget</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+5</string>
+   </property>
+  </action>
+  <action name="actionOpen_last_opened">
+   <property name="text">
+    <string>Open last opened</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
    </property>
   </action>
  </widget>

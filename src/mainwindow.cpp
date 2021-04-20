@@ -1,21 +1,22 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <iostream>
 #include <QDockWidget>
+#include <QDebug>
 #include "volume.h"
 #include "shaders/shadermanager.h"
 #include <QShortcut>
+#include <QApplication>
 
 // Modules:
 #include "viewport2d.h"
 #include "viewport3d.h"
 #include "datawidget.h"
 #include "histogramwidget.h"
+#include "transferfunctionwidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-    mUi{new Ui::MainWindow},
-    mGlobalVolume{std::make_shared<Volume>()}
+    mUi{new Ui::MainWindow}
 {
     mUi->setupUi(this);
     // QMainWindow requires a cental widget but we don't use it.
@@ -29,56 +30,106 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mUi->action3D_Viewport, &QAction::triggered, this, [&](){
         addWidget(createWrapperWidget(new Viewport3D{this}, "3D Viewport"));
     });
+    connect(mUi->actionTransfer_function, &QAction::triggered, this, [&](){
+        addWidget(createWrapperWidget(new TransferFunctionWidget{this}, "Transfer function"));
+    });
     connect(mUi->actionHistogram_Widget, &QAction::triggered, this, [&](){
         addWidget(createWrapperWidget(new HistogramWidget{this}, "Histogram Widget"));
     });
     connect(mUi->actionOpen, &QAction::triggered, this, &MainWindow::load);
+    connect(mUi->actionOpen_last_opened, &QAction::triggered, this, [=](){ load(true); });
 
     // Manually create a rendering widget:
     // NOTE: For datawidget to be able to create a volume, a render widget must be present. Else OpenGL crashes.
     mUi->action2D_Viewport->trigger();
     //mUi->actionHistogram_Widget->trigger();
 
-    loadData();
+    // loadData();
 
     mGlobalViewMatrix.setToIdentity();
 
     auto shortcut = new QShortcut{QKeySequence{tr("F5", "Reload_Shaders")}, this};
     mShortcuts.push_back(shortcut);
     connect(shortcut, &QShortcut::activated, this, [](){
-        std::cout << "Reloading shaders!" << std::endl;
+        qDebug() << "Reloading shaders!";
         ShaderManager::get().reloadShaders();
+    });
+    shortcut = new QShortcut{QKeySequence{tr("Ctrl+W", "Close Viewport")}, this};
+    mShortcuts.push_back(shortcut);
+    connect(shortcut, &QShortcut::activated, this, [](){
+        auto focus = QApplication::focusWidget();
+        if (focus)
+            focus->close();
     });
 }
 
-void MainWindow::addWidget(DockWrapper* widget) {
+void MainWindow::addWidget(DockWrapper* dock) {
 #ifndef NDEBUG
-    std::cout << "Widget added!" << std::endl;
+    qDebug() << "Widget added!";
 #endif
 
     // If the widget has a menu, add dock controls to the menu
-    // if (auto* menuwidget = dynamic_cast<IMenu*>(widget)) {
-    //     auto action = menuwidget->mViewMenu->addAction("Toggle window bar");
-    //     action->setCheckable(true);
-    //     connect(action, &QAction::toggled, dock, [&](bool checked){
-            
-    //     });
-    // }
+    if (auto* menuwidget = dynamic_cast<IMenu*>(dock->widget())) {
+        auto action = menuwidget->mViewMenu->addAction("Toggle window bar");
+        action->setCheckable(true);
 
-    layoutDockWidget(widget);
-    mWidgets.push_back(widget);
+        connect(action, &QAction::triggered, dock, [=](bool checked){
+            if (dock->isFloating()) {
+                action->setChecked(false);
+                return;
+            }
+
+            if (checked)
+                dock->setTitleBarWidget(new QWidget{this});
+            else {
+                auto old = dock->titleBarWidget();
+                dock->setTitleBarWidget(nullptr);
+                if (old)
+                    delete old;
+            }
+        });
+    }
+
+    layoutDockWidget(dock);
+    mWidgets.push_back(dock);
+    dock->setFocus();
 }
 
-DataWidget* MainWindow::loadData(Volume* targetVolume) {
-    auto widget = new DataWidget{targetVolume != nullptr ? targetVolume : mGlobalVolume.get(), this};
-
+DataWidget* MainWindow::loadData() {
+    auto widget = new DataWidget{this};
     widget->setWindowFlag(Qt::Window);
     widget->show();
+    connect(widget, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume, const std::string& identifier){
+        // Make sure identifier is unique:
+        auto modifiedIdentifier{identifier};
+        for (int i{2}; std::any_of(mVolumes.begin(), mVolumes.end(), [=](const auto& vol){
+            return vol.first == modifiedIdentifier;
+        }); ++i)
+            modifiedIdentifier = identifier + std::to_string(i);
+
+        mVolumes.emplace_back(modifiedIdentifier, volume);
+
+        volumesUpdated(mVolumes);
+    });
     return widget;
 }
 
-void MainWindow::load() {
-    loadData();
+void MainWindow::load(bool bOpenLast) {
+    auto widget = loadData();
+    connect(widget, &DataWidget::loaded, this, [&](std::shared_ptr<Volume> volume){
+        if (1 < mVolumes.size())
+            mVolumes.erase(mVolumes.begin());
+
+        // If we have multiple volumes, swap so global is first.
+        if (1 < mVolumes.size())
+            std::swap(mVolumes.front(), mVolumes.back());
+
+        // Mitigate volume onwards to whatever widgets wants it
+        loaded(volume);
+    });
+    
+    if (bOpenLast)
+        widget->loadCached();
 }
 
 DockWrapper* MainWindow::createWrapperWidget(QWidget* widget, const QString& title) {

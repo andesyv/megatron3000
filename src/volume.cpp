@@ -5,10 +5,27 @@
 #include <cmath>
 #include <algorithm>
 #include "mini/ini.h"
+#include <QVector4D>
+#include <QMatrix4x4>
 
-Volume::Volume()
-{
+using namespace Slicing;
 
+QMatrix3x3 Plane::rot(QVector3D up) const {
+    // Look-at rotation:
+    const auto right = QVector3D::crossProduct(dir, up).normalized();
+    up = QVector3D::crossProduct(right, dir).normalized();
+    const float matVals[] = {
+        right.x(), up.x(), dir.x(),
+        right.y(), up.y(), dir.y(),
+        right.z(), up.z(), dir.z()
+    };
+    return QMatrix3x3{matVals};
+}
+
+QMatrix4x4 Plane::model(const QVector3D& up) const {
+    QMatrix4x4 m{rot(up)};
+    m.translate(pos);
+    return m;
 }
 
 bool Volume::loadData(const QString &fileName)
@@ -86,6 +103,20 @@ bool Volume::loadData(const QString &fileName)
 
 
 #ifndef NDEBUG
+    qDebug() << "Generating transfer function";
+#endif
+    generateTransferFunction();
+
+
+
+#ifndef NDEBUG
+    qDebug() << "Generating slicing plane";
+#endif
+    generateSlicingGeometryBuffer();
+
+
+
+#ifndef NDEBUG
     qDebug() << "Done loading volume";
 #endif
     // Fire "loaded" events:
@@ -95,13 +126,22 @@ bool Volume::loadData(const QString &fileName)
     return true;
 }
 
-void Volume::bind(GLuint binding) {
+void Volume::bind(GLuint binding, GLuint tfBinding, GLuint geometryBinding) {
     if (!m_texInitiated)
         return;
 
     m_binding = binding;
     glActiveTexture(GL_TEXTURE0 + binding);
     glBindTexture(GL_TEXTURE_3D, m_texBuffer);
+
+    m_tfBinding = tfBinding;
+    glActiveTexture(GL_TEXTURE0 + tfBinding);
+    glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
+
+    m_geometryBinding = geometryBinding;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, geometryBinding, m_slicingGeometryBuffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void Volume::unbind() {
@@ -111,6 +151,23 @@ void Volume::unbind() {
     glActiveTexture(GL_TEXTURE0 + *m_binding);
     glBindTexture(GL_TEXTURE_3D, 0);
     m_binding = std::nullopt;
+    
+    glActiveTexture(GL_TEXTURE0 + *m_tfBinding);
+    glBindTexture(GL_TEXTURE_1D, 0);
+    m_tfBinding = std::nullopt;
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, *m_geometryBinding, 0);
+    m_geometryBinding = std::nullopt;
+}
+
+void Volume::updateTransferFunction(const std::vector<QVector4D>& values) {
+    if (!m_tfInitiated) return;
+
+    const auto size = static_cast<GLsizei>(values.size());
+
+    glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA16F, size, 0, GL_RGBA, GL_FLOAT, values.data());
+    glBindTexture(GL_TEXTURE_1D, 0);
 }
 
 void Volume::generateTexture() {
@@ -161,7 +218,66 @@ bool Volume::loadINI(const QString &fileName) {
     return true;
 }
 
+void Volume::generateTransferFunction() {
+    initializeOpenGLFunctions();
+
+    const QVector4D initialValues[] = {
+        {1.f, 1.f, 1.f, 0.f},
+        {1.f, 1.f, 1.f, 0.25f},
+        {1.f, 1.f, 1.f, 0.75f},
+        {1.f, 1.f, 1.f, 1.f},
+    };
+
+    glGenTextures(1, &m_tfBuffer);
+    glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA16F, 4, 0, GL_RGBA, GL_FLOAT, initialValues);
+
+    // Min and mag filter: linear scaling
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_1D, 0);
+    m_tfInitiated = true;
+}
+
+void Volume::generateSlicingGeometryBuffer() {
+    glGenBuffers(1, &m_slicingGeometryBuffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
+    glBufferStorage(GL_SHADER_STORAGE_BUFFER, 8 * sizeof(GLfloat), nullptr, GL_DYNAMIC_STORAGE_BIT);
+    updateSlicingGeometryBuffer();
+    m_slicingGeometryBufferInitiated = true;
+}
+
+void Volume::updateSlicingGeometryBuffer() {
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
+    // Note: Remember to pad to vec4's as the buffer is read like a struct
+    const GLfloat values[] {
+        m_slicingGeometry.pos.x(), m_slicingGeometry.pos.y(), m_slicingGeometry.pos.z(), 0.f,
+        m_slicingGeometry.dir.x(), m_slicingGeometry.dir.y(), m_slicingGeometry.dir.z(), 0.f
+    };
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 8 * sizeof(GLfloat), values);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void Volume::updateSlicingGeometryBuffer(const Plane& geometry) {
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
+    const GLfloat values[] {
+        geometry.pos.x(), geometry.pos.y(), geometry.pos.z(), 0.f,
+        geometry.dir.x(), geometry.dir.y(), geometry.dir.z(), 0.f
+    };
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 8 * sizeof(GLfloat), &values);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
 Volume::~Volume() {
     if (m_texInitiated)
         glDeleteTextures(1, &m_texBuffer);
+
+    if (m_tfInitiated)
+        glDeleteTextures(1, &m_tfBuffer);
+
+    if (m_slicingGeometryBufferInitiated)
+        glDeleteTextures(1, &m_slicingGeometryBuffer);
 }

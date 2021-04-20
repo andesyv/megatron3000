@@ -48,11 +48,13 @@ void Renderer::initializeGL() {
 
     mScreenVAO = std::make_unique<ScreenSpacedBuffer>();
     mAxisGlyph = std::make_unique<AxisGlyph>();
+    mPlane = std::make_unique<WorldPlaneGlyph>();
 
     glClearColor(0.f, 0.3f, 0.3f, 1.f);
 
     mPrivateViewMatrix.setToIdentity();
     mPrivateViewMatrix.translate({0.f, 0.f, -10.f});
+    mViewMatrixInverse = mPrivateViewMatrix.inverted();
 
     // Check if we could find MainWindow in contructor
     if (mMainWindow == nullptr) throw std::runtime_error{"Renderwidget could'nt find MainWindow!"};
@@ -87,6 +89,9 @@ void Renderer::resizeGL(int w, int h) {
     mPerspectiveMatrix.setToIdentity();
     mPerspectiveMatrix.perspective(45.f, mAspectRatio, 0.1f, 1000.f);
     // mPerspectiveMatrix.ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
+
+    // Update cached matrix
+    mMVPInverse = (mPerspectiveMatrix * getViewMatrix()).inverted();
 }
 
 const QMatrix4x4& Renderer::getViewMatrix() const {
@@ -94,7 +99,7 @@ const QMatrix4x4& Renderer::getViewMatrix() const {
 }
 
 std::shared_ptr<Volume> Renderer::getVolume() const {
-    return mUseGlobalVolume ? mMainWindow->mGlobalVolume : mPrivateVolume;
+    return mVolume;
 }
 
 QMatrix4x4& Renderer::getViewMatrix() {
@@ -102,7 +107,7 @@ QMatrix4x4& Renderer::getViewMatrix() {
 }
 
 std::shared_ptr<Volume> Renderer::getVolume() {
-    return mUseGlobalVolume ? mMainWindow->mGlobalVolume : mPrivateVolume;
+    return mVolume;
 }
 
 void Renderer::drawAxis() {
@@ -118,6 +123,16 @@ void Renderer::drawAxis() {
     mAxisGlyph->draw();
 }
 
+void Renderer::viewMatrixUpdated() {
+    const auto& view = getViewMatrix();
+
+    // Update inverse
+    mViewMatrixInverse = view.inverted();
+
+    // Update MVP inverse
+    mMVPInverse = (mPerspectiveMatrix * view).inverted();
+}
+
 void Renderer::scheduleRender() {
     update();
 }
@@ -126,22 +141,45 @@ Renderer::~Renderer() {}
 
 void Renderer::zoom(double z)
 {
-    QMatrix4x4 pos = mPrivateViewMatrix;
+    auto& view = getViewMatrix();
+    const auto origMat{view};
 #ifndef NDEBUG
+    QMatrix4x4 pos = mPrivateViewMatrix;
     qDebug() << pos;
 #endif
-    mPrivateViewMatrix(2,3) += z/2;
+    view(2,3) += z/2;
+    viewMatrixUpdated();
+
+    auto volume = getVolume();
+    if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
+        auto& plane = volume->m_slicingGeometry;
+        const auto relativeTrans = mViewMatrixInverse * origMat;
+        const auto newPos = (relativeTrans * QVector4D{plane.pos, 1.f}).toVector3D();
+        plane.pos = QVector3D::dotProduct(newPos, plane.dir) * plane.dir;
+        volume->updateSlicingGeometryBuffer();
+    }
 }
 
 
 void Renderer::rotate(float dx, float dy)
 {  
     QVector3D rotVec = QVector3D(dy,dx,0.f);
+    auto& view = getViewMatrix();
 
-    QMatrix4x4 inversePrivateView = mPrivateViewMatrix.inverted();
-    QVector4D transformedAxis = inversePrivateView*QVector4D(rotVec,0.f);
+    QVector4D transformedAxis = mViewMatrixInverse*QVector4D(rotVec,0.f);
 
-    mPrivateViewMatrix.rotate(0.5f*rotVec.length(),transformedAxis.toVector3D());
+    const auto origMat{view};
+    view.rotate(0.5f*rotVec.length(), transformedAxis.toVector3D());
+    viewMatrixUpdated();
+
+    // Rotate plane:
+    auto volume = getVolume();
+    if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
+        const auto relativeTrans = mViewMatrixInverse * origMat;
+        const auto newDir = (relativeTrans * QVector4D{volume->m_slicingGeometry.dir, 0.f}).toVector3D();
+        volume->m_slicingGeometry.dir = newDir;
+        volume->updateSlicingGeometryBuffer();
+    }
 }
 
 Shader& Renderer::shaderProgram(const std::string& name) {

@@ -53,6 +53,8 @@ endif()
 # Add project sources
 target_include_directories(megatron3000 PRIVATE lib/mINI/src)
 add_subdirectory(src)
-target_link_libraries(megatron3000 PRIVATE Qt::Widgets Qt::Gui)
+
+find_package(Qt5Charts)
+target_link_libraries(megatron3000 PRIVATE Qt::Core Qt::Widgets Qt::Gui Qt::Charts)
 
 add_compile_definitions(SHADERPATH="${CMAKE_SOURCE_DIR}/src/shaders")

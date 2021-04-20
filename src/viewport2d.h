@@ -33,6 +33,9 @@ signals:
     void Mouse_pos();
     void Mouse_scroll();
 
+protected:
+    void volumeSwitched() final;
+
 private:
     Renderer2D* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
@@ -42,8 +45,6 @@ private:
     AxisMode mAxisMode{AxisMode::ORTHOGONAL};
 
 private slots:
-    void load();
-    void removeVolume(bool bState);
     void setAxis(QAction* axis);
 
 };

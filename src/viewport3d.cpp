@@ -3,6 +3,12 @@
 #include <QVBoxLayout>
 #include "mainwindow.h"
 #include "volume.h"
+#include "datawidget.h"
+#include <QWidgetAction>
+#include <QSlider>
+#include <QLabel>
+#include "renderutils.h"
+#include <QMenuBar>
 
 Viewport3D::Viewport3D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -11,20 +17,47 @@ Viewport3D::Viewport3D(QWidget *parent) :
     mLayout = new QVBoxLayout{this};
     mLayout->setContentsMargins(0, 0, 0, 0);
 
-    // Menubar:
-    auto datamenu = mMenuBar->addMenu("Data");
-    auto openAction = datamenu->addAction("Open");
-    connect(openAction, &QAction::triggered, this, &Viewport3D::load);
-    mRemoveVolumeAction = datamenu->addAction("Use global volume");
-    mRemoveVolumeAction->setCheckable(true);
-    mRemoveVolumeAction->setChecked(true);
-    connect(mRemoveVolumeAction, &QAction::triggered, this, &Viewport3D::removeVolume);
-    
+    // Slice menu
+    auto slicemenu = mMenuBar->addMenu("Slicing");
+    auto sliceEnable = slicemenu->addAction("Enable");
+    sliceEnable->setCheckable(true);
+    mSliceMoveToggle = slicemenu->addAction("Linked to camera");
+    mSliceMoveToggle->setCheckable(true);
+
+    // Opacity slider menu widget:
+    auto sliceSlider = new QWidgetAction{this};
+    auto sliderWidgetWrapper = new QWidget{};
+    auto sliderLayout = new QVBoxLayout{};
+    sliderLayout->addWidget(new QLabel{"Plane opacity:"});
+    auto slider = new QSlider{Qt::Horizontal};
+    slider->setMinimum(0);
+    slider->setMaximum(100);
+    slider->setValue(5);
+    sliderLayout->addWidget(slider);
+    sliderWidgetWrapper->setLayout(sliderLayout);
+    sliceSlider->setDefaultWidget(sliderWidgetWrapper);
+    slicemenu->addAction(sliceSlider);
+
     mLayout->addWidget(mMenuBar);
 
     // OpenGL Render Widget:
     mRenderer = new Renderer3D{this};
+    if (mVolume)
+        mRenderer->mVolume = mVolume;
     mLayout->addWidget(mRenderer);
+
+    // Connections:
+    connect(sliceEnable, &QAction::toggled, this, [&](bool bEnabled){
+        mRenderer->mIsSlicePlaneEnabled = bEnabled;
+    });
+    connect(mSliceMoveToggle, &QAction::toggled, this, [&](bool bEnabled){
+        mRenderer->mIsCameraLinkedToSlicePlane = bEnabled;
+    });
+    connect(slider, &QAbstractSlider::valueChanged, this, [&](int value){
+        const auto percentage = value * 0.01f;
+        mRenderer->mPlane->mAlpha = percentage;
+    });
+
 
     setLayout(mLayout);
 }
@@ -46,9 +79,20 @@ void Viewport3D::mousePressEvent(QMouseEvent *ev)
     qDebug() << "Clicked in 3D viewport area";
 #endif
 
+    if (ev->button() == Qt::MouseButton::RightButton)
+        if (mRenderer && mRenderer->mIsSlicePlaneEnabled && !mRenderer->mIsCameraLinkedToSlicePlane)
+            mSliceMoveToggle->toggle();
+
     lastPoint3D = QPoint(ev->pos().x(),ev->pos().y());
 
     emit Mouse_pressed3D();
+}
+
+void Viewport3D::mouseReleaseEvent(QMouseEvent *ev)
+{
+    if (ev->button() == Qt::MouseButton::RightButton)
+        if (mRenderer && mRenderer->mIsSlicePlaneEnabled && mRenderer->mIsCameraLinkedToSlicePlane)
+            mSliceMoveToggle->toggle();
 }
 
 void Viewport3D::wheelEvent(QWheelEvent *ev)
@@ -62,31 +106,8 @@ void Viewport3D::wheelEvent(QWheelEvent *ev)
     emit Mouse_scroll3D();
 }
 
-void Viewport3D::load() {
-    if (parentWidget()) {
-        auto mainwindow = dynamic_cast<MainWindow*>(parentWidget()->parentWidget());
-        if (mainwindow) {
-            mRenderer->mPrivateVolume = std::make_shared<Volume>();
-            mainwindow->loadData(mRenderer->mPrivateVolume.get());
-            connect(mRenderer->mPrivateVolume.get(), &Volume::loaded, this, [&](){
-                mRemoveVolumeAction->setChecked(false);
-                mRenderer->mUseGlobalVolume = false;
-            });
-        }
-    }
-}
-
-void Viewport3D::removeVolume(bool bState) {
-    // If user manually toggles it off, it should'nt do anything.
-    if (!bState) {
-        // Just enable the bool again. >:)
-        mRemoveVolumeAction->setChecked(true);
-        return;
-    }
-
-    mRenderer->mUseGlobalVolume = true;
-    // Delete ptr by replacing it with nothing
-    mRenderer->mPrivateVolume = {};
+void Viewport3D::volumeSwitched() {
+    mRenderer->mVolume = mVolume;
 }
 
 Viewport3D::~Viewport3D() = default;

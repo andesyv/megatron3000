@@ -1,13 +1,11 @@
 #include "viewport2d.h"
 #include "renderer2d.h"
-#include <iostream>
 #include <QVBoxLayout>
 #include <QMenuBar>
-#include <QSizePolicy>
-#include <QDockWidget>
 #include <QDebug>
 #include "mainwindow.h"
 #include "volume.h"
+#include "datawidget.h"
 
 Viewport2D::Viewport2D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -35,21 +33,13 @@ Viewport2D::Viewport2D(QWidget *parent) :
         connect(action, &QAction::triggered, [&, action](){ setAxis(action); });
     }
     mAxisActions.front()->setChecked(true);
-
-    
-
-    auto datamenu = mMenuBar->addMenu("Data");
-    auto openAction = datamenu->addAction("Open");
-    connect(openAction, &QAction::triggered, this, &Viewport2D::load);
-    mRemoveVolumeAction = datamenu->addAction("Use global volume");
-    mRemoveVolumeAction->setCheckable(true);
-    mRemoveVolumeAction->setChecked(true);
-    connect(mRemoveVolumeAction, &QAction::triggered, this, &Viewport2D::removeVolume);
     
     mLayout->addWidget(mMenuBar);
 
     // OpenGL Render Widget:
     mRenderer = new Renderer2D{this};
+    if (mVolume)
+        mRenderer->mVolume = mVolume;
     mLayout->addWidget(mRenderer);
 
 
@@ -93,34 +83,11 @@ void Viewport2D::wheelEvent(QWheelEvent *ev)
     emit Mouse_scroll();
 }
 
+void Viewport2D::volumeSwitched() {
+    mRenderer->mVolume = mVolume;
+}
+
 Viewport2D::~Viewport2D() = default;
-
-void Viewport2D::load() {
-    if (parentWidget()) {
-        auto mainwindow = dynamic_cast<MainWindow*>(parentWidget()->parentWidget());
-        if (mainwindow) {
-            mRenderer->mPrivateVolume = std::make_shared<Volume>();
-            mainwindow->loadData(mRenderer->mPrivateVolume.get());
-            connect(mRenderer->mPrivateVolume.get(), &Volume::loaded, this, [&](){
-                mRemoveVolumeAction->setChecked(false);
-                mRenderer->mUseGlobalVolume = false;
-            });
-        }
-    }
-}
-
-void Viewport2D::removeVolume(bool bState) {
-    // If user manually toggles it off, it should'nt do anything.
-    if (!bState) {
-        // Just enable the bool again. >:)
-        mRemoveVolumeAction->setChecked(true);
-        return;
-    }
-
-    mRenderer->mUseGlobalVolume = true;
-    // Delete ptr by replacing it with nothing
-    mRenderer->mPrivateVolume = {};
-}
 
 void Viewport2D::setAxis(QAction* axis) {
     axis->setChecked(true);
@@ -156,11 +123,24 @@ void Viewport2D::setAxis(QAction* axis) {
                         viewMat.rotate(-90.f, {1.f, 0.f, 0.f});
                     
                     viewMat.translate(0.f, 0.f, zoom);
+                    mRenderer->viewMatrixUpdated();
                 }
             }
             break;
         case AxisMode::ARBITRARY:
+            break;
         case AxisMode::SLICE:
+            {
+                const auto& volume = mRenderer->getVolume();
+                if (volume) {
+                    const auto& plane = volume->m_slicingGeometry;
+                    auto& viewMat = mRenderer->getViewMatrix();
+                    viewMat.lookAt(plane.pos, plane.pos + plane.dir, {0.f, 1.f, 0.f});
+                    mRenderer->viewMatrixUpdated();
+                }
+            }
             break;
     }
+
+    mRenderer->mIsSlicePlaneEnabled = mRenderer->mIsCameraLinkedToSlicePlane = mAxisMode == AxisMode::SLICE;
 }

@@ -17,24 +17,25 @@ class Viewport3D : public QWidget, public IMenu
 public:
     explicit Viewport3D(QWidget *parent = nullptr);
     ~Viewport3D();
-    void mouseMoveEvent(QMouseEvent *ev);
-    void mousePressEvent(QMouseEvent *ev);
-    void wheelEvent(QWheelEvent *ev);
+    void mouseMoveEvent(QMouseEvent *ev) override;
+    void mousePressEvent(QMouseEvent *ev) override;
+    void mouseReleaseEvent(QMouseEvent *ev) override;
+    void wheelEvent(QWheelEvent *ev) override;
 
 signals:
     void Mouse_pressed3D();
     void Mouse_pos3D();
     void Mouse_scroll3D();
 
+protected:
+    void volumeSwitched() final;
+
 private:
     Renderer3D* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
     QPoint lastPoint3D;
     QAction* mRemoveVolumeAction{nullptr};
-
-private slots:
-    void load();
-    void removeVolume(bool bState);
+    QAction* mSliceMoveToggle{nullptr};
     
 };
 
