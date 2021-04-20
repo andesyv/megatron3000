@@ -51,9 +51,6 @@ public:
     TransferFunctionRenderer(QWidget *parent = nullptr);
     ~TransferFunctionRenderer();
 
-    std::shared_ptr<Volume> getVolume() const;
-    std::shared_ptr<Volume> getVolume();
-
     unsigned int getNodeIndex(const Node& node) const;
     unsigned int getSortedNodeIndex(const Node& node) const;
 

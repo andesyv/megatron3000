@@ -27,16 +27,15 @@ signals:
     void Mouse_pos3D();
     void Mouse_scroll3D();
 
+protected:
+    void volumeSwitched() final;
+
 private:
     Renderer3D* mRenderer{nullptr};
     QVBoxLayout* mLayout{nullptr};
     QPoint lastPoint3D;
     QAction* mRemoveVolumeAction{nullptr};
     QAction* mSliceMoveToggle{nullptr};
-
-private slots:
-    void load();
-    void removeVolume(bool bState);
     
 };
 

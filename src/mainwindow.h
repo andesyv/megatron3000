@@ -14,6 +14,7 @@ class Volume;
 class DockWrapper;
 class QShortcut;
 class DataWidget;
+class IMenu;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -30,11 +31,16 @@ public:
 
     // Global camera matrix for all render-widgets
     QMatrix4x4 mGlobalViewMatrix;
-    std::shared_ptr<Volume> mGlobalVolume;
     std::vector<QDockWidget*> mWidgets;
     std::vector<QShortcut*> mShortcuts;
 
+    auto volumesList() const { return mVolumes; }
+
     ~MainWindow();
+
+signals:
+    void loaded(std::shared_ptr<Volume>);
+    void volumesUpdated(const std::vector<std::pair<std::string, std::shared_ptr<Volume>>>& volumeList);
 
 public slots:
     /**
@@ -47,9 +53,8 @@ public slots:
      */
     DataWidget* loadData();
 
-private slots:
     // Helper slot for button.
-    void load();
+    void load(bool bOpenLast = false);
 
 private:
     std::unique_ptr<Ui::MainWindow> mUi;
@@ -57,6 +62,8 @@ private:
     DockWrapper* createWrapperWidget(QWidget* widget, const QString& title = "Dockwidget");
     // ALgorithm for finding new dock widget placements.
     void layoutDockWidget(DockWrapper* newWidget);
+
+    std::vector<std::pair<std::string, std::shared_ptr<Volume>>> mVolumes;
 };
 
 

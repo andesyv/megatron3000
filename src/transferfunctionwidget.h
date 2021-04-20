@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <memory>
+#include "menuinterface.h"
 
 namespace Ui {
 class NodePropertyWidget;
@@ -13,7 +14,7 @@ class QColorDialog;
 class ColorButton;
 struct Node;
 
-class TransferFunctionWidget : public QWidget
+class TransferFunctionWidget : public QWidget, public IMenu
 {
     Q_OBJECT
 
@@ -30,6 +31,8 @@ protected:
 
     void select(Node& node);
     void deselect();
+
+    void volumeSwitched() override final;
 
 protected slots:
     void pickColor();

@@ -27,9 +27,7 @@ public:
     // Render-widgets own camera matrix. If not using global camera matrix, render-widgets use this one.
     QMatrix4x4 mPrivateViewMatrix;
 
-    // Whether to use widgets volume data or global volume data
-    bool mUseGlobalVolume{true};
-    std::shared_ptr<Volume> mPrivateVolume;
+    std::shared_ptr<Volume> mVolume;
 
     bool mIsSlicePlaneEnabled{false};
     bool mIsCameraLinkedToSlicePlane{false};

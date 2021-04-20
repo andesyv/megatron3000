@@ -22,3 +22,6 @@ ui_*.h
 
 # Data files
 data/
+
+# Cached program files
+lastopened
