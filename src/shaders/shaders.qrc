@@ -1,0 +1,21 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/shaders">
+    <file>axis.fs</file>
+    <file>axis.vs</file>
+    <file>default.fs</file>
+    <file>default.vs</file>
+    <file>node.fs</file>
+    <file>node.gs</file>
+    <file>node.vs</file>
+    <file>plane.fs</file>
+    <file>plane.gs</file>
+    <file>plane.vs</file>
+    <file>screen.fs</file>
+    <file>screen.vs</file>
+    <file>slice-image.fs</file>
+    <file>spline.fs</file>
+    <file>spline.gs</file>
+    <file>spline.vs</file>
+    <file>volume.fs</file>
+</qresource>
+</RCC>

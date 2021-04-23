@@ -12,7 +12,7 @@ set(CMAKE_AUTOUIC ON)
 find_package(Qt5 COMPONENTS Widgets Gui REQUIRED)
 
 add_executable(megatron3000)
-
+add_compile_definitions(CMAKE)
 
 
 

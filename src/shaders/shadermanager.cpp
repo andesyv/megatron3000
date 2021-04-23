@@ -4,6 +4,7 @@
 #include <iostream>
 
 #ifdef EMBEDDED_SHADERS
+#ifdef CMAKE
 static char DEFAULT_VS[] = {R"MSTR(@default.vs@)MSTR"};
 static char DEFAULT_FS[] = {R"MSTR(@default.fs@)MSTR"};
 static char SCREEN_VS[] = {R"MSTR(@screen.vs@)MSTR"};
@@ -20,13 +21,47 @@ static char PLANE_GS[] = {R"MSTR(@plane.gs@)MSTR"};
 static char PLANE_FS[] = {R"MSTR(@plane.fs@)MSTR"};
 static char SPLINE_GS[] = {R"MSTR(@spline.gs@)MSTR"};
 static char SPLINE_FS[] = {R"MSTR(@spline.fs@)MSTR"};
-#endif
+#elif QMAKE
+#include <QFile>
 
-#pragma message(SHADERPATH)
+#define DEFAULT_VS fetchStrFromFile(":/shaders/default.vs")
+#define DEFAULT_FS fetchStrFromFile(":/shaders/default.fs")
+#define SCREEN_VS fetchStrFromFile(":/shaders/screen.vs")
+#define SCREEN_FS fetchStrFromFile(":/shaders/screen.fs")
+#define SLICE_IMAGE_FS fetchStrFromFile(":/shaders/slice-image.fs")
+#define VOLUME_FS fetchStrFromFile(":/shaders/volume.fs")
+#define AXIS_VS fetchStrFromFile(":/shaders/axis.vs")
+#define AXIS_FS fetchStrFromFile(":/shaders/axis.fs")
+#define NODE_VS fetchStrFromFile(":/shaders/node.vs")
+#define NODE_GS fetchStrFromFile(":/shaders/node.gs")
+#define NODE_FS fetchStrFromFile(":/shaders/node.fs")
+#define PLANE_VS fetchStrFromFile(":/shaders/plane.vs")
+#define PLANE_GS fetchStrFromFile(":/shaders/plane.gs")
+#define PLANE_FS fetchStrFromFile(":/shaders/plane.fs")
+#define SPLINE_GS fetchStrFromFile(":/shaders/spline.gs")
+#define SPLINE_FS fetchStrFromFile(":/shaders/spline.fs")
+
+#endif
+#endif
 
 namespace fs = std::filesystem;
 
 ShaderManager::ShaderManager() {
+    #ifdef QMAKE
+        std::string shaderFileContent;
+        const auto fetchStrFromFile = [&](const auto& fileName) -> const char* {
+            QFile file{fileName};
+            if (file.open(QIODevice::ReadOnly)) {
+                QTextStream in{&file};
+                shaderFileContent = QString{in.readAll()}.toStdString();
+                return shaderFileContent.c_str();
+            }
+            return nullptr;
+        };
+
+        Q_INIT_RESOURCE(shaders);
+    #endif
+
     const auto shaderpath = fs::absolute(fs::path{SHADERPATH});
 
     // Compile default shader (if it doesn't exist)
@@ -35,21 +70,17 @@ ShaderManager::ShaderManager() {
 
         // Note: While throwing from a constructor is bad practice, I don't know many other better alternatives here.
         #ifdef EMBEDDED_SHADERS
-            if (!shaderProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, DEFAULT_VS)) {
+            if (!shaderProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, DEFAULT_VS))
                 throw std::runtime_error{"Failed to compile vertex shader"};
-            }
 
-            if (!shaderProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, DEFAULT_FS)) {
+            if (!shaderProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, DEFAULT_FS))
                 throw std::runtime_error{"Failed to compile fragment shader"};
-            }
         #else
-            if (!shaderProgram.addSourceRelative(QOpenGLShader::Vertex, "default.vs")) {
+            if (!shaderProgram.addSourceRelative(QOpenGLShader::Vertex, "default.vs"))
                 throw std::runtime_error{"Failed to compile vertex shader"};
-            }
 
-            if (!shaderProgram.addSourceRelative(QOpenGLShader::Fragment, "default.fs")) {
+            if (!shaderProgram.addSourceRelative(QOpenGLShader::Fragment, "default.fs"))
                 throw std::runtime_error{"Failed to compile fragment shader"};
-            }
         #endif
 
         if (!shaderProgram.link())
@@ -66,6 +97,7 @@ ShaderManager::ShaderManager() {
 
             if (!shaderProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, SCREEN_FS))
                 throw std::runtime_error{"Failed to compile fragment shader"};
+
         #else
             if (!shaderProgram.addSourceRelative(QOpenGLShader::Vertex, "screen.vs"))
                 throw std::runtime_error{"Failed to compile vertex shader"};
