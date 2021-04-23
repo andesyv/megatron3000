@@ -20,7 +20,4 @@ target_sources(megatron3000 PRIVATE
     nodepropertywidget.ui
 )
 
-# Add target for creating embedfile helper program
-add_executable(embedfile embedfile.cpp)
-
 add_subdirectory(shaders)

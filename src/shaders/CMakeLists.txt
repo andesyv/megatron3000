@@ -4,7 +4,6 @@ if(EMBEDDED_SHADERS)
         foreach(shaderfile IN LISTS SHADERFILES)
             # Need CMake 3.20 for cmake_path
             cmake_path(GET shaderfile FILENAME varName)
-            message(${varName})
             file(READ ${shaderfile} ${varName})
         endforeach()
 
