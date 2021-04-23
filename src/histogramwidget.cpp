@@ -4,6 +4,9 @@
 #include <QVBoxLayout>
 #include "volume.h"
 #include "mainwindow.h"
+#include <QChartView>
+
+using namespace QtCharts;
 
 HistogramWidget::HistogramWidget(QWidget *parent) :
     QWidget(parent),
@@ -33,7 +36,6 @@ void HistogramWidget::drawHistogram()
     QList<QBarSet*> bins;
     QBarSeries *series = new QBarSeries();
     QChart *chart = new QChart();
-    QChartView *chartView;
     for (int i = 0; i < 256; i++){
         // Random data
         histogramData[i] = (int) qrand() % 1000;
@@ -49,10 +51,19 @@ void HistogramWidget::drawHistogram()
     chart->addSeries(series);
     chart->createDefaultAxes();
     chart->legend()->hide();
-    chartView = new QChartView(chart);
+    
+    auto chartView = new QChartView{chart, this};
     chartView->setRenderHint(QPainter::Antialiasing);
 
-    mLayout->addWidget(chartView);
+    // If there was already a previous chartview, replace it. Otherwise just add it.
+    if (mChartView) {
+        const auto old = mLayout->replaceWidget(mChartView, chartView);
+        delete old;
+    } else
+        mLayout->addWidget(chartView);
+
+    // Set new chartview:
+    mChartView = chartView;
 }
 
 HistogramWidget::~HistogramWidget() = default;

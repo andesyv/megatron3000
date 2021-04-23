@@ -8,6 +8,10 @@ class QVBoxLayout;
 class MainWindow;
 class Volume;
 
+namespace QtCharts {
+    class QChartView;
+}
+
 class HistogramWidget : public QWidget, public IMenu
 {
     Q_OBJECT
@@ -23,6 +27,7 @@ protected:
 
 private:
     QVBoxLayout* mLayout{nullptr};
+    QtCharts::QChartView* mChartView{nullptr};
 };
 
 #endif // HISTOGRAMWIDGET_H
