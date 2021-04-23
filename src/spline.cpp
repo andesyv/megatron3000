@@ -43,6 +43,8 @@ Spline::Spline(const std::vector<QVector2D>& points, unsigned int segments)
 
     // Create shader
     auto& SM = ShaderManager::get();
+
+#ifndef EMBEDDED_SHADERS
     if (!SM.valid("spline")) {
         auto& shader = SM.shader("spline");
 
@@ -62,6 +64,7 @@ Spline::Spline(const std::vector<QVector2D>& points, unsigned int segments)
             throw std::runtime_error{"Failed to link shaderprogram"};
         }
     }
+#endif
 }
 
 void Spline::update(std::vector<QVector2D> points) {

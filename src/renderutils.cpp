@@ -83,6 +83,7 @@ AxisGlyph::AxisGlyph() {
     // Check for shader and create if it doesn't exist
     auto& SM = ShaderManager::get();
 
+#ifndef EMBEDDED_SHADERS
     if (!SM.valid("axis")) {
         auto& shader = SM.shader("axis");
 
@@ -98,6 +99,7 @@ AxisGlyph::AxisGlyph() {
             throw std::runtime_error{"Failed to link shader!"};
         }
     }
+#endif
 }
 
 void AxisGlyph::bind() {
@@ -137,6 +139,7 @@ NodeGlyphs::NodeGlyphs(const std::vector<QVector2D>& nodePos) {
 
     auto& SM = ShaderManager::get();
 
+#ifndef EMBEDDED_SHADERS
     if (!SM.valid("node")) {
         auto& shader = SM.shader("node");
 
@@ -157,6 +160,7 @@ NodeGlyphs::NodeGlyphs(const std::vector<QVector2D>& nodePos) {
         }
     }
 
+#endif
 }
 
 void NodeGlyphs::draw(float aspectRatio, float radius, int selectedNode) {
@@ -227,6 +231,7 @@ WorldPlaneGlyph::WorldPlaneGlyph() {
 
     auto& SM = ShaderManager::get();
 
+#ifndef EMBEDDED_SHADERS
     if (!SM.valid("plane")) {
         auto& shader = SM.shader("plane");
 
@@ -247,6 +252,7 @@ WorldPlaneGlyph::WorldPlaneGlyph() {
             throw std::runtime_error{"Failed to link shaderprogram"};
         }
     }
+#endif
 }
 
 void WorldPlaneGlyph::bind() {
