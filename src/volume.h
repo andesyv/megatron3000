@@ -36,6 +36,7 @@ public:
 
     QVector3D volumeScale() const { return m_scale; }
     QVector3D volumeSpacing() const { return m_spacing; }
+    auto data() const { return m_volumeData; }
 
     void updateTransferFunction(const std::vector<QVector4D>& values);
 

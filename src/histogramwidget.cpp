@@ -18,33 +18,41 @@ HistogramWidget::HistogramWidget(QWidget *parent) :
 
     mLayout->addWidget(mMenuBar);
 
-    /** Get volume from main window:
-     *  This only loads data if it is already present in main window.
-     */
-    auto widget = window();
-    while (widget != nullptr && !widget->isWindow())
-        widget = widget->window();
-    mMainWindow = dynamic_cast<MainWindow*>(widget);
-
-    drawHistogram();
+    // Render histogram if we have data for it:
+    if (mVolume)
+        drawHistogram();
 }
 
 void HistogramWidget::drawHistogram()
 {
-    // TODO: Import actual data
-    unsigned long histogramData[256];
-    QList<QBarSet*> bins;
+    // If volume is empty, exit early.
+    if (!mVolume)
+        return;
+    
+    const unsigned int BIN_COUNT = 256;
+    const unsigned int VALUE_COUNT = static_cast<unsigned int>(mVolume->data().size());
+
+    // Note: Using QVector because QList is apparantly a linked list and doesn't have random access.
+    // Not sure why Qt decided it was a good idea to therefore implement everything using QLists...
+    QVector<qreal> bins;
+    bins.resize(BIN_COUNT);
+
+    // Inject data into bins:
+    for (auto value : mVolume->data()) {
+        // Data should already be normalized so index can be found with floor(value * BIN_COUNT)
+        // (clamp just in case)
+        const int binIndex = std::clamp(static_cast<int>(value * BIN_COUNT), 0, static_cast<int>(BIN_COUNT) - 1);
+        // Increment bins voxel count
+        // Sum of all bins should be 1, so divide by value count.
+        bins[binIndex] += 1.0 / VALUE_COUNT;
+    }
+
     QBarSeries *series = new QBarSeries();
     QChart *chart = new QChart();
-    for (int i = 0; i < 256; i++){
-        // Random data
-        histogramData[i] = (int) qrand() % 1000;
-        QBarSet *bar = new QBarSet(QString::number((i+1)));
-        *bar << histogramData[i];
-        bar->setColor(Qt::black);
-        bins.append(bar);
-        series->append(bar);
-    }
+    QBarSet* bars = new QBarSet{"Densities"};
+    bars->setColor(Qt::black);
+    bars->append(QList<qreal>::fromVector(bins));
+    series->append(bars);
 
     QValueAxis *axisY = new QValueAxis;
     axisY->setRange(0,1000);
@@ -73,5 +81,6 @@ std::shared_ptr<Volume> HistogramWidget::getVolume() {
 }
 
 void HistogramWidget::volumeSwitched() {
-
+    // Redraw histogram if data changed
+    drawHistogram();
 }
