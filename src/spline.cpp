@@ -17,10 +17,10 @@ QVector2D piecewiseSpline(const std::vector<QVector2D>& p, double t) {
 
     const auto& a = p[i];
     const auto& b = p[i+1];
-    const auto at = QVector2D{0.75f * a.x() + 0.25f * b.x(), a.y()};
-    const auto bt = QVector2D{0.25f * a.x() + 0.75f * b.x(), b.y()};
+    const auto& at = QVector2D{b.x() - a.x(), 0.f};
+    const auto& bt = at;
 
-    return bezier(std::vector{a, at, bt, b}, f);
+    return hermite({a, b, at, bt}, f);
 }
 
 Spline::Spline(const std::vector<QVector2D>& points, unsigned int segments)
