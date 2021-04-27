@@ -30,6 +30,7 @@ void Renderer2D::zoom(double z) {
 void Renderer2D::initializeGL() {
     Renderer::initializeGL();
 
+#ifndef EMBEDDED_SHADERS
     // Create volume shader
     if (!isShaderValid("slice")) {
         auto& shader = shaderProgram("slice");
@@ -46,6 +47,7 @@ void Renderer2D::initializeGL() {
             qDebug() << "Failed to link shader!";
         }
     }
+#endif
 
     mPrivateViewMatrix.setToIdentity();
 }

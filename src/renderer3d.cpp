@@ -12,6 +12,7 @@ using namespace Slicing;
 void Renderer3D::initializeGL() {
     Renderer::initializeGL();
 
+#ifndef EMBEDDED_SHADERS
     // Create volume shader
     if (!isShaderValid("volume")) {
         auto& shader = shaderProgram("volume");
@@ -28,6 +29,7 @@ void Renderer3D::initializeGL() {
             qDebug() << "Failed to link shader!";
         }
     }
+#endif
 
     mPrivateViewMatrix.setToIdentity();
     mPrivateViewMatrix.translate({0.f, 0.f, -4.f});
