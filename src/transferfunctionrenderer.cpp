@@ -27,6 +27,10 @@ void TransferFunctionRenderer::initializeGL() {
     const auto positions = mapList(mNodes, [](const auto& n){ return n.pos; });
     mNodeGlyphs = std::make_unique<NodeGlyphs>(positions);
     mSpline = std::make_unique<Spline>(positions, 30);
+
+    // Call event AFTER initialization is finished 
+    if (mVolume)
+        nodesChanged();
 }
 
 TransferFunctionRenderer::~TransferFunctionRenderer() = default;
