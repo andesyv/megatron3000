@@ -8,6 +8,7 @@
 #include <QVector4D>
 #include <algorithm>
 #include <utility>
+#include "math.h"
 
 TransferFunctionRenderer::TransferFunctionRenderer(QWidget* parent)
     : QOpenGLWidget{parent},
@@ -211,7 +212,7 @@ void TransferFunctionRenderer::updateVolume() {
     for (int i {0}; i < evalResolution; ++i) {
         const double t = i / dres;
         const auto val = mSpline->eval(t);
-        const auto color = bezier(colors, t);
+        const auto color = megamath::bezier(colors, t);
         const auto x = findTHorizontally(sortedPos, val);
         const auto bucketI = static_cast<unsigned int>(x * (resolution - 1));
         auto& [bval, bcount] = valueBuckets.at(bucketI);
