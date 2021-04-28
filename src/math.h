@@ -117,6 +117,30 @@ auto hermite(T (&& p)[4], double t) {
 }
 
 QVector2D piecewiseSpline(const std::vector<QVector2D>& p, double t);
+template <typename T>
+T piecewiseLerp(const std::vector<T>& p, double t) {
+    if (p.size() < 2)
+        return T{};
+    else if (t < 0.0)
+        return p.front();
+    else if (1.0 <= t)
+        return p.back();
+
+    auto f = (p.size()-1) * t;
+    const auto i = static_cast<unsigned int>(f);
+    f -= i;
+
+    return (1.0 - f) * p[i] + f * p[i+1];
+}
+
+/**
+ * @brief Uses Newton-Raphson method to partially solve one root of
+ * a cubic equation defined with coefficients a, b, c and d.
+ * 
+ * @param coefficients array of 4 floats depicting the a, b, c and d coefficients
+ * @return First approximated root
+ */
+float partialCubicSolve(float (&& coefficients)[4], float initialGuess);
 
 }
 

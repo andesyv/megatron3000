@@ -103,9 +103,9 @@ void main() {
         for (int i = 0; i < RAYMARCH_STEPS; ++i) {
             vec3 p = rayOrigin + rayDir * depth;
             vec4 tex = tf(p);
-            float density = tex.a;
+            float density = tex.a / 10.0;
             vec3 g = gradient(p);
-            density *= length(g) * 10.0;
+            // density *= length(g);
             vec3 normal = normalize(g);
             vec3 color = tex.rgb;
             vec3 phong = max(dot(normal, vec3(1.0, 0., 0.)), 0.15) * color;

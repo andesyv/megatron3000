@@ -211,8 +211,9 @@ void TransferFunctionRenderer::updateVolume() {
 
     for (int i {0}; i < evalResolution; ++i) {
         const double t = i / dres;
-        const auto val = mSpline->eval(t);
-        const auto color = megamath::bezier(colors, t);
+        // Divide by 1 - radius to account for node radius
+        const auto val = mSpline->eval(t) / (1.f - mNodeRadius);
+        const auto color = megamath::piecewiseLerp(colors, t);
         const auto x = findTHorizontally(sortedPos, val);
         const auto bucketI = static_cast<unsigned int>(x * (resolution - 1));
         auto& [bval, bcount] = valueBuckets.at(bucketI);
@@ -234,12 +235,12 @@ void TransferFunctionRenderer::updateVolume() {
         } else {
             // Fill upper values with last node:
             if (bUpper)
-                val = QVector4D{colors.back(), sortedPoints.back().pos.y()};
+                val = QVector4D{colors.back(), sortedPoints.back().pos.y() / (1.f - mNodeRadius)};
             else
-                val = QVector4D{colors.front(), sortedPoints.front().pos.y()};
+                val = QVector4D{colors.front(), sortedPoints.front().pos.y() / (1.f - mNodeRadius)};
         }
         // [-1, 1] -> [0, 1]
-        val.setY(val.y() * 0.5f + 0.5f);
+        val.setW(val.w() * 0.5f + 0.5f);
         values.push_back(val);
     }
 

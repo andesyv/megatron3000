@@ -22,4 +22,27 @@ QVector2D piecewiseSpline(const std::vector<QVector2D>& p, double t) {
 
     return hermite({a, b, at, bt}, f);
 }
+
+float partialCubicSolve(float (&& coefficients)[4], float initialGuess) {
+    constexpr unsigned int MAX_ITERATIONS = 64;
+    constexpr float EPSILON = 0.001f;
+    const auto [a, b, c, d] = coefficients;
+    float x = initialGuess;
+    const auto f = [=](float x){ return coefficients[0] * x * x * x + coefficients[1] * x * x + coefficients[2] * x + coefficients[3]; };
+    const auto fd = [=](float x){ return 3 * coefficients[0] * x * x + 2 * coefficients[1] * x + coefficients[2]; };
+
+    for (unsigned int n{0}; n < MAX_ITERATIONS; ++n) {
+        const float y = f(x);
+        const float d = fd(x);
+        if (d < EPSILON)
+            return x;
+        const float xn = x - y / d;
+        if (y < EPSILON)
+            return xn;
+        
+        x = xn;
+    }
+
+    return x;
+}
 }
