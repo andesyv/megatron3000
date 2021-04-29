@@ -31,6 +31,8 @@ public:
 protected:
     void initializeGL() override;
     void paintGL() override;
+
+    void drawGlobe();
 };
 
 #endif // RENDERER3D_H

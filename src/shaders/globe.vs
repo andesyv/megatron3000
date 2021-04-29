@@ -18,6 +18,6 @@ void main() {
     3. Offset with sceen scale multiplied by aspect ratio to always center in corner
     */
     vec2 offset = vec2(-1.0, -3.0);
-    pos.xy = pos.xy * radius + 1.0 + offset * radius * aspectRatio;
+    pos.xy = /*pos.xy * radius*/ + 1.0 + offset * radius * aspectRatio;
     gl_Position = vec4(pos, 1.0);
 }

@@ -5,12 +5,11 @@ in vec2 fragCoords;
 
 uniform vec2 aspectRatio = vec2(1.0, 1.0);
 uniform float radius = 0.1;
+uniform vec3 lightDir = vec3(0., 0., -1.);
 
 out vec4 fragColor;
 
 void main() {
-    const vec3 lightDir = normalize(vec3(0.5, -0.5, 1.0));
-
     const vec2 nodeScale = vec2(radius, radius) * aspectRatio;
 
     // "Simulate" a sphere projection
@@ -23,7 +22,5 @@ void main() {
     const vec3 color = vec3(1.0, 0., 0.);
     const vec3 phong = color * max(dot(-lightDir, normal), 0.15);
     
-    fragColor = vec4(phong, 1.0);
-
-    // fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    fragColor = vec4(phong, 0.9);
 }

@@ -1,6 +1,7 @@
 #include "renderutils.h"
 #include "shaders/shadermanager.h"
 #include <QQuaternion>
+#include <QPoint>
 
 ScreenSpacedBuffer::ScreenSpacedBuffer() {
     initializeOpenGLFunctions();
@@ -354,22 +355,19 @@ void LightGlobeGlyph::unbind() {
     glBindVertexArray(0);
 }
 
-void LightGlobeGlyph::draw(const QMatrix4x4& view, const float aspectRatio) {
-
-    const QVector2D ratio = {1.0 < aspectRatio ? 1.f / aspectRatio : 1.f, 1.0 < aspectRatio ? 1.f : aspectRatio};
-
-    auto& shader = ShaderManager::get().shader("globe");
-    if (!shader.isLinked()) return;
-    shader.bind();
-    shader.setUniformValue("viewMatrix", view);
-    shader.setUniformValue("aspectRatio", ratio);
-
-    bind();
-    glDrawArrays(GL_POINTS, 0, 1);
-    unbind();
-}
-
 LightGlobeGlyph::~LightGlobeGlyph() {
     glDeleteBuffers(1, &mVBO);
     glDeleteVertexArrays(1, &mVAO);
+}
+
+
+
+
+QVector2D screenPointToNormalizedCoordinates(const QPoint& point, int width, int height) {
+    const auto x = point.x() / static_cast<double>(width);
+    const auto y = point.y() / static_cast<double>(height);
+    return {
+        static_cast<float>(x * 2.0 - 1.0),
+        -static_cast<float>(y * 2.0 - 1.0)
+    };
 }

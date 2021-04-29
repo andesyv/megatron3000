@@ -12,6 +12,7 @@ uniform vec3 volumeScale;
 uniform vec3 volumeSpacing;
 uniform bool isSlicingEnabled = false;
 uniform float time = 0.0;
+uniform vec3 lightDir = vec3(1.0, 0.0, 0.0);
 
 // I like to define a plane as a direction and a point in the plane.
 struct Plane
@@ -108,7 +109,7 @@ void main() {
             density *= length(g) * 10.0;
             vec3 normal = normalize(g);
             vec3 color = tex.rgb;
-            vec3 phong = max(dot(normal, vec3(1.0, 0., 0.)), 0.15) * color;
+            vec3 phong = max(dot(normal, -lightDir), 0.15) * color;
             fragColor.rgb += (1.0 - fragColor.a) * phong * density;
             fragColor.a += density;
 

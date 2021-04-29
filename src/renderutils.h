@@ -87,7 +87,6 @@ private:
 public:
     void bind();
     void unbind();
-    void draw(const QMatrix4x4& view = QMatrix4x4{MatIdentityValues}, const float aspectRatio = 1.f);
 
     LightGlobeGlyph();
     ~LightGlobeGlyph();
