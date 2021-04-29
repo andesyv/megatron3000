@@ -14,6 +14,8 @@ struct LightGlobe {
     float mRadius{0.12f};
     QVector2D mOffset{-1.f, -3.f};
     QQuaternion mRotation{1.f, 0.f, 0.f, 0.f};
+    QVector2D mRotationSpeed{0.f, 0.f};
+    const float mRotationFalloff = 3.f;
 
     void rotate(float dx, float fy);
     QVector3D dir() const;

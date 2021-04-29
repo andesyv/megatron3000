@@ -116,6 +116,11 @@ void Renderer3D::paintGL() {
 
     drawAxis();
 
+    // Update globe rotation
+    if (0.001f < mGlobe.mRotationSpeed.lengthSquared()) {
+        mGlobe.rotate(mGlobe.mRotationSpeed.x() * deltaTime, mGlobe.mRotationSpeed.y() * deltaTime);
+        mGlobe.mRotationSpeed -= mGlobe.mRotationSpeed * mGlobe.mRotationFalloff * deltaTime;
+    }
     drawGlobe();
 
     ++mFrameCount;

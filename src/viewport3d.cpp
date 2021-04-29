@@ -69,7 +69,7 @@ void Viewport3D::mouseMoveEvent(QMouseEvent *ev)
     int dy = currentPoint.y()-lastPoint3D.y();
 
     if (mMovingGlobe)
-        mRenderer->mGlobe.rotate(dx, dy);
+        mRenderer->mGlobe.mRotationSpeed += QVector2D{static_cast<float>(dx), static_cast<float>(dy)};
     else
         mRenderer->rotate(dx,dy);
     lastPoint3D = QPoint(ev->pos().x(),ev->pos().y());
