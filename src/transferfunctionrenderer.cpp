@@ -12,7 +12,7 @@
 
 TransferFunctionRenderer::TransferFunctionRenderer(QWidget* parent)
     : QOpenGLWidget{parent},
-    mNodes{{{-0.8f, 0.f}}, {{0.8f, 0.8f}}} {
+    mNodes{{{-0.9f, -1.f}}, {{0.9f, 1.f}}} {
 
     // Follow outer chain to find main window:
     auto widget = window();
@@ -65,7 +65,37 @@ void TransferFunctionRenderer::paintGL() {
 }
 
 void TransferFunctionRenderer::resizeGL(int w, int h) {
-    update();
+    const auto aspectRatio = width() / static_cast<float>(height());
+    const auto scrScale = aspectScale(aspectRatio);
+    const auto nodeRadius = scrScale * mNodeRadius;
+    bool bChanged = false;
+
+    // Clamp nodes inside view:
+    for (auto& [pos, color] : mNodes) {
+        if (pos.x() < -1.f + nodeRadius.x()) {
+            pos.setX(-1.f + nodeRadius.x());
+            bChanged = true;
+        }
+        if (1.f - nodeRadius.x() < pos.x()) {
+            pos.setX(1.f - nodeRadius.x());
+            bChanged = true;
+        }
+        if (pos.y() < -1.f + nodeRadius.y()) {
+            pos.setY(-1.f + nodeRadius.y());
+            bChanged = true;
+        }
+        if (1.f - nodeRadius.y() < pos.y()) {
+            pos.setY(1.f - nodeRadius.y());
+            bChanged = true;
+        }
+    }
+
+    if (bChanged)
+        nodesChanged();
+    else
+        // Update get's called from nodesChanged(), and two calls to it on the same frame won't
+        // do anything, but it still doesn't hurt preemtively stopping it from running twice anyway.
+        update();
 }
 
 void TransferFunctionRenderer::mouseMoveEvent(QMouseEvent *event) {
