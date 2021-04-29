@@ -305,21 +305,19 @@ WorldPlaneGlyph::~WorldPlaneGlyph() {
 
 
 
-LightGlobeGlyph::LightGlobeGlyph() {
+LightGlobeGlyph::LightGlobeGlyph(const QVector2D& pos) {
     initializeOpenGLFunctions();
 
     glGenVertexArrays(1, &mVAO);
     glBindVertexArray(mVAO);
 
-    const GLfloat pos[] = {
-        0.f, 0.f
-    };
+    const GLfloat params[] = { pos[0], pos[1] };
 
     glGenBuffers(1, &mVBO);
     glBindBuffer(GL_ARRAY_BUFFER, mVBO);
-    glBufferStorage(GL_ARRAY_BUFFER, 2 * sizeof(GLfloat), pos, 0);
+    glBufferStorage(GL_ARRAY_BUFFER, 2 * sizeof(GLfloat), params, 0);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), nullptr);
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);

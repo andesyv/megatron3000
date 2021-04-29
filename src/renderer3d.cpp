@@ -52,6 +52,8 @@ void Renderer3D::initializeGL() {
 
     mPrivateViewMatrix.setToIdentity();
     mPrivateViewMatrix.translate({0.f, 0.f, -4.f});
+
+    mLightGlobe = std::make_unique<LightGlobeGlyph>(mGlobe.mOffset);
 }
 
 void Renderer3D::paintGL() {
@@ -127,9 +129,8 @@ void Renderer3D::drawGlobe() {
     shader.bind();
     shader.setUniformValue("viewMatrix", getViewMatrix());
     shader.setUniformValue("aspectRatio", ratio);
-    shader.setUniformValue("radius", 0.12f);
+    shader.setUniformValue("radius", mGlobe.mRadius);
     shader.setUniformValue("lightDir", mGlobe.dir().normalized());
-    qDebug() << mGlobe.dir();
 
     mLightGlobe->bind();
     glDrawArrays(GL_POINTS, 0, 1);

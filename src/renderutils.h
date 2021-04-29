@@ -88,7 +88,7 @@ public:
     void bind();
     void unbind();
 
-    LightGlobeGlyph();
+    LightGlobeGlyph(const QVector2D& pos = {});
     ~LightGlobeGlyph();
 };
 

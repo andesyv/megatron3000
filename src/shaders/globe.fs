@@ -19,8 +19,8 @@ void main() {
     const float z = -sqrt(1.0 - dir.x * dir.x - dir.y * dir.y);
     const vec3 normal = normalize(vec3(dir, z));
 
-    const vec3 color = vec3(1.0, 0., 0.);
+    const vec3 color = vec3(1.0, 0.5, 0.);
     const vec3 phong = color * max(dot(-lightDir, normal), 0.15);
     
-    fragColor = vec4(phong, 0.9);
+    fragColor = vec4(phong, 0.6);
 }

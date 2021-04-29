@@ -49,7 +49,6 @@ void Renderer::initializeGL() {
     mScreenVAO = std::make_unique<ScreenSpacedBuffer>();
     mAxisGlyph = std::make_unique<AxisGlyph>();
     mPlane = std::make_unique<WorldPlaneGlyph>();
-    mLightGlobe = std::make_unique<LightGlobeGlyph>();
 
     glClearColor(0.f, 0.3f, 0.3f, 1.f);
 
