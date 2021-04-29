@@ -299,3 +299,77 @@ WorldPlaneGlyph::~WorldPlaneGlyph() {
     glDeleteBuffers(1, &mVBO);
     glDeleteVertexArrays(1, &mVAO);
 }
+
+
+
+
+
+LightGlobeGlyph::LightGlobeGlyph() {
+    initializeOpenGLFunctions();
+
+    glGenVertexArrays(1, &mVAO);
+    glBindVertexArray(mVAO);
+
+    const GLfloat pos[] = {
+        0.f, 0.f
+    };
+
+    glGenBuffers(1, &mVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBufferStorage(GL_ARRAY_BUFFER, 2 * sizeof(GLfloat), pos, 0);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+
+
+    auto& SM = ShaderManager::get();
+
+#ifndef EMBEDDED_SHADERS
+    if (!SM.valid("globe")) {
+        auto& shader = SM.shader("globe");
+
+        if (!shader.addSourceRelative(QOpenGLShader::Vertex, "globe.vs"))
+            throw std::runtime_error{"Failed to compile vertex shader"};
+
+        if (!shader.addSourceRelative(QOpenGLShader::Geometry, "globe.gs"))
+            throw std::runtime_error{"Failed to compile geometry shader"};
+
+        if (!shader.addSourceRelative(QOpenGLShader::Fragment, "globe.fs"))
+            throw std::runtime_error{"Failed to compile fragment shader"};
+
+
+        if (!shader.link())
+            throw std::runtime_error{"Failed to link shaderprogram"};
+    }
+#endif
+}
+
+void LightGlobeGlyph::bind() {
+    glBindVertexArray(mVAO);
+}
+
+void LightGlobeGlyph::unbind() {
+    glBindVertexArray(0);
+}
+
+void LightGlobeGlyph::draw(const QMatrix4x4& view, const float aspectRatio) {
+
+    const QVector2D ratio = {1.0 < aspectRatio ? 1.f / aspectRatio : 1.f, 1.0 < aspectRatio ? 1.f : aspectRatio};
+
+    auto& shader = ShaderManager::get().shader("globe");
+    if (!shader.isLinked()) return;
+    shader.bind();
+    shader.setUniformValue("viewMatrix", view);
+    shader.setUniformValue("aspectRatio", ratio);
+
+    bind();
+    glDrawArrays(GL_POINTS, 0, 1);
+    unbind();
+}
+
+LightGlobeGlyph::~LightGlobeGlyph() {
+    glDeleteBuffers(1, &mVBO);
+    glDeleteVertexArrays(1, &mVAO);
+}

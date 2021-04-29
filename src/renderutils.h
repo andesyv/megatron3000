@@ -80,6 +80,20 @@ public:
 };
 
 
+class LightGlobeGlyph : protected QOpenGLFunctions_4_5_Core {
+private:
+    GLuint mVAO, mVBO;
+
+public:
+    void bind();
+    void unbind();
+    void draw(const QMatrix4x4& view = QMatrix4x4{MatIdentityValues}, const float aspectRatio = 1.f);
+
+    LightGlobeGlyph();
+    ~LightGlobeGlyph();
+};
+
+
 
 inline QVector2D aspectScale(float aspectRatio = 1.f) {
     return {1.0 < aspectRatio ? 1.f / aspectRatio : 1.f, 1.0 < aspectRatio ? 1.f : aspectRatio};

@@ -91,7 +91,9 @@ void Renderer3D::paintGL() {
         glFrontFace(GL_CCW);
     }
 
-    drawAxis();
+    // drawAxis();
+
+    mLightGlobe->draw(getViewMatrix(), mAspectRatio);
 
     ++mFrameCount;
 }
