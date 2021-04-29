@@ -9,6 +9,23 @@
 namespace fs = std::filesystem;
 using namespace Slicing;
 
+void LightGlobe::rotate(float dx, float fy) {
+
+}
+
+QVector3D LightGlobe::dir() const {
+    return mRotation.rotatedVector(QVector3D{0.f, 0.f, 1.f});
+}
+
+QVector2D Renderer3D::globePosition() const {
+    const QVector2D ratio = aspectScale(mAspectRatio);
+    return QVector2D{1.f, 1.f} + mGlobe.mOffset * mGlobe.mRadius * ratio;
+}
+
+bool Renderer3D::isGlobeIntersecting(const QVector2D& p) const {
+    return (p - globePosition()).length() <= mGlobe.mRadius;
+}
+
 void Renderer3D::initializeGL() {
     Renderer::initializeGL();
 
@@ -91,9 +108,9 @@ void Renderer3D::paintGL() {
         glFrontFace(GL_CCW);
     }
 
-    // drawAxis();
+    drawAxis();
 
-    mLightGlobe->draw(getViewMatrix(), mAspectRatio);
+    mLightGlobe->draw(QVector3D{0.f, 0.f, 1.f}, getViewMatrix(), mAspectRatio);
 
     ++mFrameCount;
 }

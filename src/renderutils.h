@@ -99,4 +99,6 @@ inline QVector2D aspectScale(float aspectRatio = 1.f) {
     return {1.0 < aspectRatio ? 1.f / aspectRatio : 1.f, 1.0 < aspectRatio ? 1.f : aspectRatio};
 }
 
+QVector2D screenPointToNormalizedCoordinates(const QPoint& point, int width, int height);
+
 #endif // RENDERUTILS_H
