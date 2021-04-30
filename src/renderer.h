@@ -13,6 +13,7 @@ class ScreenSpacedBuffer;
 class AxisGlyph;
 class Shader;
 class WorldPlaneGlyph;
+class LightGlobeGlyph;
 
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
@@ -60,6 +61,7 @@ protected:
     // Screen Spaced vertex array
     std::unique_ptr<ScreenSpacedBuffer> mScreenVAO;
     std::unique_ptr<AxisGlyph> mAxisGlyph;
+    std::unique_ptr<LightGlobeGlyph> mLightGlobe;
 
     QMatrix4x4 mPerspectiveMatrix;
 

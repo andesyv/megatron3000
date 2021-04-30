@@ -68,7 +68,10 @@ void Viewport3D::mouseMoveEvent(QMouseEvent *ev)
     int dx = currentPoint.x()-lastPoint3D.x();
     int dy = currentPoint.y()-lastPoint3D.y();
 
-    this->mRenderer->rotate(dx,dy);
+    if (mMovingGlobe)
+        mRenderer->mGlobe.mRotationSpeed += QVector2D{static_cast<float>(dx), static_cast<float>(dy)};
+    else
+        mRenderer->rotate(dx,dy);
     lastPoint3D = QPoint(ev->pos().x(),ev->pos().y());
     emit Mouse_pos3D();
 }
@@ -85,6 +88,11 @@ void Viewport3D::mousePressEvent(QMouseEvent *ev)
 
     lastPoint3D = QPoint(ev->pos().x(),ev->pos().y());
 
+    const auto renderMousePos = mRenderer->mapFromParent(lastPoint3D);
+    const auto mousePosNormalizedCoordinates = screenPointToNormalizedCoordinates(renderMousePos, mRenderer->width(), mRenderer->height());
+    if (mRenderer->isGlobeIntersecting(mousePosNormalizedCoordinates))
+        mMovingGlobe = true;
+
     emit Mouse_pressed3D();
 }
 
@@ -93,6 +101,8 @@ void Viewport3D::mouseReleaseEvent(QMouseEvent *ev)
     if (ev->button() == Qt::MouseButton::RightButton)
         if (mRenderer && mRenderer->mIsSlicePlaneEnabled && mRenderer->mIsCameraLinkedToSlicePlane)
             mSliceMoveToggle->toggle();
+
+    mMovingGlobe = false;
 }
 
 void Viewport3D::wheelEvent(QWheelEvent *ev)

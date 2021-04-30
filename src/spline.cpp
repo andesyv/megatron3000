@@ -1,27 +1,7 @@
 #include "spline.h"
 #include "shaders/shadermanager.h"
-#include <QVector2D>
 #include "volume.h"
-
-QVector2D piecewiseSpline(const std::vector<QVector2D>& p, double t) {
-    if (p.size() < 2)
-        return {};
-    else if (t < 0.0)
-        return p.front();
-    else if (1.0 <= t)
-        return p.back();
-
-    auto f = (p.size()-1) * t;
-    const auto i = static_cast<unsigned int>(f);
-    f -= i;
-
-    const auto& a = p[i];
-    const auto& b = p[i+1];
-    const auto at = QVector2D{0.75f * a.x() + 0.25f * b.x(), a.y()};
-    const auto bt = QVector2D{0.25f * a.x() + 0.75f * b.x(), b.y()};
-
-    return bezier(std::vector{a, at, bt, b}, f);
-}
+#include "math.h"
 
 Spline::Spline(const std::vector<QVector2D>& points, unsigned int segments)
     : mSplinePoints{points}, mSplineSegments{0} {
@@ -43,6 +23,8 @@ Spline::Spline(const std::vector<QVector2D>& points, unsigned int segments)
 
     // Create shader
     auto& SM = ShaderManager::get();
+
+#ifndef EMBEDDED_SHADERS
     if (!SM.valid("spline")) {
         auto& shader = SM.shader("spline");
 
@@ -62,6 +44,11 @@ Spline::Spline(const std::vector<QVector2D>& points, unsigned int segments)
             throw std::runtime_error{"Failed to link shaderprogram"};
         }
     }
+#endif
+}
+
+QVector2D Spline::eval(double t) const {
+    return megamath::piecewiseSpline(mSplinePoints, t);
 }
 
 void Spline::update(std::vector<QVector2D> points) {
@@ -123,12 +110,12 @@ void Spline::discretizeSpline() {
     // Draw points between1
     for (unsigned int i{0}; i < mSplineSegments; ++i) {
         const auto t = i / static_cast<double>(mSplineSegments);
-        const auto p = piecewiseSpline(mSplinePoints, t);
+        const auto p = megamath::piecewiseSpline(mSplinePoints, t);
         linePoints.push_back(p);
     }
 
     // last point on spline:
-    linePoints.push_back(piecewiseSpline(mSplinePoints, 1.0));
+    linePoints.push_back(megamath::piecewiseSpline(mSplinePoints, 1.0));
 
     // Draw end point (from last node to screen edge):
     linePoints.emplace_back(1.f, mSplinePoints.back().y());

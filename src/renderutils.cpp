@@ -1,6 +1,7 @@
 #include "renderutils.h"
 #include "shaders/shadermanager.h"
 #include <QQuaternion>
+#include <QPoint>
 
 ScreenSpacedBuffer::ScreenSpacedBuffer() {
     initializeOpenGLFunctions();
@@ -83,6 +84,7 @@ AxisGlyph::AxisGlyph() {
     // Check for shader and create if it doesn't exist
     auto& SM = ShaderManager::get();
 
+#ifndef EMBEDDED_SHADERS
     if (!SM.valid("axis")) {
         auto& shader = SM.shader("axis");
 
@@ -98,6 +100,7 @@ AxisGlyph::AxisGlyph() {
             throw std::runtime_error{"Failed to link shader!"};
         }
     }
+#endif
 }
 
 void AxisGlyph::bind() {
@@ -137,6 +140,7 @@ NodeGlyphs::NodeGlyphs(const std::vector<QVector2D>& nodePos) {
 
     auto& SM = ShaderManager::get();
 
+#ifndef EMBEDDED_SHADERS
     if (!SM.valid("node")) {
         auto& shader = SM.shader("node");
 
@@ -157,6 +161,7 @@ NodeGlyphs::NodeGlyphs(const std::vector<QVector2D>& nodePos) {
         }
     }
 
+#endif
 }
 
 void NodeGlyphs::draw(float aspectRatio, float radius, int selectedNode) {
@@ -227,6 +232,7 @@ WorldPlaneGlyph::WorldPlaneGlyph() {
 
     auto& SM = ShaderManager::get();
 
+#ifndef EMBEDDED_SHADERS
     if (!SM.valid("plane")) {
         auto& shader = SM.shader("plane");
 
@@ -247,6 +253,7 @@ WorldPlaneGlyph::WorldPlaneGlyph() {
             throw std::runtime_error{"Failed to link shaderprogram"};
         }
     }
+#endif
 }
 
 void WorldPlaneGlyph::bind() {
@@ -292,4 +299,73 @@ void WorldPlaneGlyph::draw(const QMatrix4x4& MVP, const QVector3D& up, const QVe
 WorldPlaneGlyph::~WorldPlaneGlyph() {
     glDeleteBuffers(1, &mVBO);
     glDeleteVertexArrays(1, &mVAO);
+}
+
+
+
+
+
+LightGlobeGlyph::LightGlobeGlyph(const QVector2D& pos) {
+    initializeOpenGLFunctions();
+
+    glGenVertexArrays(1, &mVAO);
+    glBindVertexArray(mVAO);
+
+    const GLfloat params[] = { pos[0], pos[1] };
+
+    glGenBuffers(1, &mVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBufferStorage(GL_ARRAY_BUFFER, 2 * sizeof(GLfloat), params, 0);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), nullptr);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+
+
+    auto& SM = ShaderManager::get();
+
+#ifndef EMBEDDED_SHADERS
+    if (!SM.valid("globe")) {
+        auto& shader = SM.shader("globe");
+
+        if (!shader.addSourceRelative(QOpenGLShader::Vertex, "globe.vs"))
+            throw std::runtime_error{"Failed to compile vertex shader"};
+
+        if (!shader.addSourceRelative(QOpenGLShader::Geometry, "globe.gs"))
+            throw std::runtime_error{"Failed to compile geometry shader"};
+
+        if (!shader.addSourceRelative(QOpenGLShader::Fragment, "globe.fs"))
+            throw std::runtime_error{"Failed to compile fragment shader"};
+
+
+        if (!shader.link())
+            throw std::runtime_error{"Failed to link shaderprogram"};
+    }
+#endif
+}
+
+void LightGlobeGlyph::bind() {
+    glBindVertexArray(mVAO);
+}
+
+void LightGlobeGlyph::unbind() {
+    glBindVertexArray(0);
+}
+
+LightGlobeGlyph::~LightGlobeGlyph() {
+    glDeleteBuffers(1, &mVBO);
+    glDeleteVertexArrays(1, &mVAO);
+}
+
+
+
+
+QVector2D screenPointToNormalizedCoordinates(const QPoint& point, int width, int height) {
+    const auto x = point.x() / static_cast<double>(width);
+    const auto y = point.y() / static_cast<double>(height);
+    return {
+        static_cast<float>(x * 2.0 - 1.0),
+        -static_cast<float>(y * 2.0 - 1.0)
+    };
 }

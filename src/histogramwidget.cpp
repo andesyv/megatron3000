@@ -1,5 +1,4 @@
 #include "histogramwidget.h"
-#include "ui_histogramwidget.h"
 #include <QtCharts>
 #include <QVBoxLayout>
 #include "volume.h"

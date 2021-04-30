@@ -8,10 +8,11 @@
 #include <QVector4D>
 #include <algorithm>
 #include <utility>
+#include "math.h"
 
 TransferFunctionRenderer::TransferFunctionRenderer(QWidget* parent)
     : QOpenGLWidget{parent},
-    mNodes{{{-0.8f, 0.f}}, {{0.8f, 0.8f}}} {
+    mNodes{{{-0.9f, -1.f}}, {{0.9f, 1.f}}} {
 
     // Follow outer chain to find main window:
     auto widget = window();
@@ -27,6 +28,10 @@ void TransferFunctionRenderer::initializeGL() {
     const auto positions = mapList(mNodes, [](const auto& n){ return n.pos; });
     mNodeGlyphs = std::make_unique<NodeGlyphs>(positions);
     mSpline = std::make_unique<Spline>(positions, 30);
+
+    // Call event AFTER initialization is finished 
+    if (mVolume)
+        nodesChanged();
 }
 
 TransferFunctionRenderer::~TransferFunctionRenderer() = default;
@@ -60,7 +65,37 @@ void TransferFunctionRenderer::paintGL() {
 }
 
 void TransferFunctionRenderer::resizeGL(int w, int h) {
-    update();
+    const auto aspectRatio = width() / static_cast<float>(height());
+    const auto scrScale = aspectScale(aspectRatio);
+    const auto nodeRadius = scrScale * mNodeRadius;
+    bool bChanged = false;
+
+    // Clamp nodes inside view:
+    for (auto& [pos, color] : mNodes) {
+        if (pos.x() < -1.f + nodeRadius.x()) {
+            pos.setX(-1.f + nodeRadius.x());
+            bChanged = true;
+        }
+        if (1.f - nodeRadius.x() < pos.x()) {
+            pos.setX(1.f - nodeRadius.x());
+            bChanged = true;
+        }
+        if (pos.y() < -1.f + nodeRadius.y()) {
+            pos.setY(-1.f + nodeRadius.y());
+            bChanged = true;
+        }
+        if (1.f - nodeRadius.y() < pos.y()) {
+            pos.setY(1.f - nodeRadius.y());
+            bChanged = true;
+        }
+    }
+
+    if (bChanged)
+        nodesChanged();
+    else
+        // Update get's called from nodesChanged(), and two calls to it on the same frame won't
+        // do anything, but it still doesn't hurt preemtively stopping it from running twice anyway.
+        update();
 }
 
 void TransferFunctionRenderer::mouseMoveEvent(QMouseEvent *event) {
@@ -146,12 +181,7 @@ std::optional<unsigned int> TransferFunctionRenderer::isNodeIntersecting(const Q
 }
 
 QVector2D TransferFunctionRenderer::screenToNormalizedCoordinates(const QPoint& point) const {
-    const auto x = point.x() / static_cast<double>(width());
-    const auto y = point.y() / static_cast<double>(height());
-    return {
-        static_cast<float>(x * 2.0 - 1.0),
-        -static_cast<float>(y * 2.0 - 1.0)
-    };
+    return screenPointToNormalizedCoordinates(point, width(), height());
 }
 
 float linearBetween(float a, float b, float p) {
@@ -206,8 +236,9 @@ void TransferFunctionRenderer::updateVolume() {
 
     for (int i {0}; i < evalResolution; ++i) {
         const double t = i / dres;
-        const auto val = mSpline->eval(t);
-        const auto color = bezier(colors, t);
+        // Divide by 1 - radius to account for node radius
+        const auto val = mSpline->eval(t) / (1.f - mNodeRadius);
+        const auto color = megamath::piecewiseLerp(colors, t);
         const auto x = findTHorizontally(sortedPos, val);
         const auto bucketI = static_cast<unsigned int>(x * (resolution - 1));
         auto& [bval, bcount] = valueBuckets.at(bucketI);
@@ -229,12 +260,12 @@ void TransferFunctionRenderer::updateVolume() {
         } else {
             // Fill upper values with last node:
             if (bUpper)
-                val = QVector4D{colors.back(), sortedPoints.back().pos.y()};
+                val = QVector4D{colors.back(), sortedPoints.back().pos.y() / (1.f - mNodeRadius)};
             else
-                val = QVector4D{colors.front(), sortedPoints.front().pos.y()};
+                val = QVector4D{colors.front(), sortedPoints.front().pos.y() / (1.f - mNodeRadius)};
         }
         // [-1, 1] -> [0, 1]
-        val.setY(val.y() * 0.5f + 0.5f);
+        val.setW(val.w() * 0.5f + 0.5f);
         values.push_back(val);
     }
 

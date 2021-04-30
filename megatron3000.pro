@@ -10,7 +10,10 @@ CONFIG += c++17
 INCLUDEPATH += lib/mINI/src
 
 SHADER_PATH = $${PWD}/src/shaders
-DEFINES += "SHADERPATH=\\\"$$SHADER_PATH\\\""
+DEFINES += "SHADERPATH=\\\"$$SHADER_PATH\\\"" QMAKE EMBEDDED_SHADERS
+DEFINES_RELEASE += NDEBUG
+
+RESOURCES = src/shaders/shaders.qrc
 
 SOURCES += \
     src/datawidget.cpp \
@@ -28,6 +31,7 @@ SOURCES += \
     src/renderer3d.cpp \
     src/renderutils.cpp \
     src/spline.cpp \
+    src/math.cpp \
     src/shaders/shadermanager.cpp
 
 HEADERS += \
@@ -45,6 +49,7 @@ HEADERS += \
     src/renderer3d.h \
     src/renderutils.h \
     src/spline.h \
+    src/math.h \
     src/shaders/shadermanager.h
 
 FORMS += \
@@ -65,4 +70,10 @@ DISTFILES += \
     src/shaders/node.fs \
     src/shaders/spline.vs \
     src/shaders/spline.gs \
-    src/shaders/spline.fs
+    src/shaders/spline.fs \
+    src/shaders/globe.vs \
+    src/shaders/globe.gs \
+    src/shaders/globe.fs
+
+RESOURCES += \
+    src/shaders/shaders.qrc
