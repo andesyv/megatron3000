@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 COMPONENTS Widgets Gui REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Gui Concurrent REQUIRED)
 
 add_executable(megatron3000)
 add_compile_definitions(CMAKE)
@@ -28,6 +28,6 @@ target_include_directories(megatron3000 PRIVATE lib/mINI/src)
 add_subdirectory(src)
 
 find_package(Qt5Charts)
-target_link_libraries(megatron3000 PRIVATE Qt::Core Qt::Widgets Qt::Gui Qt::Charts)
+target_link_libraries(megatron3000 PRIVATE Qt::Core Qt::Widgets Qt::Gui Qt::Charts Qt::Concurrent)
 
 add_compile_definitions(SHADERPATH="${CMAKE_SOURCE_DIR}/src/shaders")
