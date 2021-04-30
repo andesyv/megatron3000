@@ -18,6 +18,7 @@ target_sources(megatron3000 PRIVATE
     renderutils.cpp
     spline.cpp
     nodepropertywidget.ui
+    math.cpp
 )
 
 add_subdirectory(shaders)

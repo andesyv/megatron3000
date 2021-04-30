@@ -55,10 +55,8 @@ TransferFunctionWidget::TransferFunctionWidget(QWidget* parent)
 
     // OpenGL Render Widget:
     mRenderer = new TransferFunctionRenderer{this};
-    if (mVolume) {
+    if (mVolume)
         mRenderer->mVolume = mVolume;
-        mRenderer->nodesChanged();
-    }
     layout->addWidget(mRenderer);
     connect(mRenderer, &TransferFunctionRenderer::nodeSelected, this, &TransferFunctionWidget::select);
 
