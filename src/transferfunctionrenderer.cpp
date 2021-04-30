@@ -181,12 +181,7 @@ std::optional<unsigned int> TransferFunctionRenderer::isNodeIntersecting(const Q
 }
 
 QVector2D TransferFunctionRenderer::screenToNormalizedCoordinates(const QPoint& point) const {
-    const auto x = point.x() / static_cast<double>(width());
-    const auto y = point.y() / static_cast<double>(height());
-    return {
-        static_cast<float>(x * 2.0 - 1.0),
-        -static_cast<float>(y * 2.0 - 1.0)
-    };
+    return screenPointToNormalizedCoordinates(point, width(), height());
 }
 
 float linearBetween(float a, float b, float p) {

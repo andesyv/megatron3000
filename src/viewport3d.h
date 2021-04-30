@@ -36,6 +36,8 @@ private:
     QPoint lastPoint3D;
     QAction* mRemoveVolumeAction{nullptr};
     QAction* mSliceMoveToggle{nullptr};
+
+    bool mMovingGlobe{false};
     
 };
 

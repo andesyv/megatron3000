@@ -80,9 +80,24 @@ public:
 };
 
 
+class LightGlobeGlyph : protected QOpenGLFunctions_4_5_Core {
+private:
+    GLuint mVAO, mVBO;
+
+public:
+    void bind();
+    void unbind();
+
+    LightGlobeGlyph(const QVector2D& pos = {});
+    ~LightGlobeGlyph();
+};
+
+
 
 inline QVector2D aspectScale(float aspectRatio = 1.f) {
     return {1.0 < aspectRatio ? 1.f / aspectRatio : 1.f, 1.0 < aspectRatio ? 1.f : aspectRatio};
 }
+
+QVector2D screenPointToNormalizedCoordinates(const QPoint& point, int width, int height);
 
 #endif // RENDERUTILS_H

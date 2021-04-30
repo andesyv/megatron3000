@@ -21,6 +21,9 @@ static char PLANE_GS[] = {R"MSTR(@plane.gs@)MSTR"};
 static char PLANE_FS[] = {R"MSTR(@plane.fs@)MSTR"};
 static char SPLINE_GS[] = {R"MSTR(@spline.gs@)MSTR"};
 static char SPLINE_FS[] = {R"MSTR(@spline.fs@)MSTR"};
+static char GLOBE_VS[] = {R"MSTR(@globe.vs@)MSTR"};
+static char GLOBE_GS[] = {R"MSTR(@globe.gs@)MSTR"};
+static char GLOBE_FS[] = {R"MSTR(@globe.fs@)MSTR"};
 #elif QMAKE
 #include <QFile>
 
@@ -40,6 +43,9 @@ static char SPLINE_FS[] = {R"MSTR(@spline.fs@)MSTR"};
 #define PLANE_FS fetchStrFromFile(":/shaders/plane.fs")
 #define SPLINE_GS fetchStrFromFile(":/shaders/spline.gs")
 #define SPLINE_FS fetchStrFromFile(":/shaders/spline.fs")
+#define GLOBE_VS fetchStrFromFile(":/shaders/globe.vs")
+#define GLOBE_GS fetchStrFromFile(":/shaders/globe.gs")
+#define GLOBE_FS fetchStrFromFile(":/shaders/globe.fs")
 
 #endif
 #endif
@@ -194,6 +200,23 @@ ShaderManager::ShaderManager() {
 
         if (!sh.addShaderFromSourceCode(QOpenGLShader::Fragment, SPLINE_FS))
             throw std::runtime_error{"Failed to compile fragment shader"};
+
+        if (!sh.link())
+            throw std::runtime_error{"Failed to link shaderprogram"};
+    }
+
+    if (!valid("globe")) {
+        auto& sh = shader("globe");
+
+        if (!sh.addShaderFromSourceCode(QOpenGLShader::Vertex, GLOBE_VS))
+            throw std::runtime_error{"Failed to compile vertex shader"};
+
+        if (!sh.addShaderFromSourceCode(QOpenGLShader::Geometry, GLOBE_GS))
+            throw std::runtime_error{"Failed to compile geometry shader"};
+
+        if (!sh.addShaderFromSourceCode(QOpenGLShader::Fragment, GLOBE_FS))
+            throw std::runtime_error{"Failed to compile fragment shader"};
+
 
         if (!sh.link())
             throw std::runtime_error{"Failed to link shaderprogram"};

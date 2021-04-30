@@ -17,5 +17,8 @@
     <file>spline.gs</file>
     <file>spline.vs</file>
     <file>volume.fs</file>
+    <file>globe.vs</file>
+    <file>globe.gs</file>
+    <file>globe.fs</file>
 </qresource>
 </RCC>

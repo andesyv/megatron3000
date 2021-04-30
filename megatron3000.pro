@@ -70,7 +70,10 @@ DISTFILES += \
     src/shaders/node.fs \
     src/shaders/spline.vs \
     src/shaders/spline.gs \
-    src/shaders/spline.fs
+    src/shaders/spline.fs \
+    src/shaders/globe.vs \
+    src/shaders/globe.gs \
+    src/shaders/globe.fs
 
 RESOURCES += \
     src/shaders/shaders.qrc
