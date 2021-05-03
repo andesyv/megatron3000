@@ -28,14 +28,16 @@ protected:
     MainWindow* mMainWindow{nullptr};
     void volumeSwitched() override final;
     void createView();
-    static QVector<qreal> generateHistogram(std::shared_ptr<Volume> volume);
+    static QVector<qreal> generateHistogram(std::shared_ptr<Volume> volume, std::vector<QVector4D> tfValues);
 
 private:
     QVBoxLayout* mLayout{nullptr};
+    bool mMapToTransferFunction{false};
     QtCharts::QChartView* mChartView{nullptr};
     QtCharts::QChart* mChart{nullptr};
     QFuture<QVector<qreal>> mFuture;
     QFutureWatcher<QVector<qreal>> mWatcher;
+    QMetaObject::Connection mTransferFunctionWatcher;
 
 private slots:
     void finishHistogramGeneration();

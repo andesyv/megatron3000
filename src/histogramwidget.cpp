@@ -4,6 +4,7 @@
 #include "volume.h"
 #include "mainwindow.h"
 #include <QChartView>
+#include "math.h"
 
 #include <QtConcurrentRun>
 
@@ -17,12 +18,23 @@ HistogramWidget::HistogramWidget(QWidget *parent) :
     mLayout = new QVBoxLayout{this};
     mLayout->setContentsMargins(0, 0, 0, 0);
 
+    auto tfMapAction = mViewMenu->addAction("Map to transfer function");
+    tfMapAction->setCheckable(true);
+
     mLayout->addWidget(mMenuBar);
 
     createView();
 
     // Connect future watcher (concurrency)
     connect(&mWatcher, &QFutureWatcher<QChart*>::finished, this, &HistogramWidget::finishHistogramGeneration);
+    connect(tfMapAction, &QAction::toggled, [&](bool checked){
+        mMapToTransferFunction = checked;
+        drawHistogram();
+    });
+    mTransferFunctionWatcher = connect(mVolume.get(), &Volume::transferFunctionUpdated, this, [&](){
+        if (mMapToTransferFunction)
+            drawHistogram();
+    });
 
     // Render histogram if we have data for it:
     if (mVolume)
@@ -31,8 +43,16 @@ HistogramWidget::HistogramWidget(QWidget *parent) :
 
 void HistogramWidget::drawHistogram()
 {
+    if (!mVolume)
+        return;
+    
     // Initialize async func:
-    mFuture = QtConcurrent::run(&HistogramWidget::generateHistogram, mVolume);
+
+    const auto tfValues = mMapToTransferFunction ? mVolume->transferFunctionValues() : std::vector<QVector4D>{};
+
+    // Note to self: There's apparantly no easy way to pass gui objects between threads,
+    // so can only really manipulate widgets with other threads.
+    mFuture = QtConcurrent::run(&HistogramWidget::generateHistogram, mVolume, tfValues);
     mWatcher.setFuture(mFuture);
 }
 
@@ -45,6 +65,12 @@ std::shared_ptr<Volume> HistogramWidget::getVolume() {
 void HistogramWidget::volumeSwitched() {
     // Redraw histogram if data changed
     drawHistogram();
+    
+    disconnect(mTransferFunctionWatcher);
+    mTransferFunctionWatcher = connect(mVolume.get(), &Volume::transferFunctionUpdated, this, [&](){
+        if (mMapToTransferFunction)
+            drawHistogram();
+    });
 }
 
 void HistogramWidget::createView() {
@@ -59,7 +85,7 @@ void HistogramWidget::createView() {
     mLayout->addWidget(mChartView);
 }
 
-QVector<qreal> HistogramWidget::generateHistogram(std::shared_ptr<Volume> volume) {
+QVector<qreal> HistogramWidget::generateHistogram(std::shared_ptr<Volume> volume, std::vector<QVector4D> tfValues) {
     // If volume is empty, exit early.
     if (!volume)
         return {};
@@ -80,6 +106,15 @@ QVector<qreal> HistogramWidget::generateHistogram(std::shared_ptr<Volume> volume
         // Increment bins voxel count
         // Sum of all bins should be 1, so divide by value count.
         bins[binIndex] += 1.0 / VALUE_COUNT;
+    }
+
+    if (!tfValues.empty()) {
+        const auto SIZE = bins.size();
+        for (int i{0}; i < SIZE; ++i) {
+            const auto t = i / static_cast<double>(SIZE - 1);
+            const auto a = megamath::piecewiseLerp(tfValues, t).w();
+            bins[i] *= a;
+        }
     }
 
     return bins;

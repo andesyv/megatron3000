@@ -69,6 +69,7 @@ bool Volume::loadData(const QString &fileName)
     qDebug() << "Converting and normalizing data";
 #endif
 
+    /// TODO: upgrade to double precision
     // Convert data to floating points in range [0,1]
     m_volumeData.reserve(volumeSize);
     for (const auto& val : volumeRaw) {
@@ -163,11 +164,14 @@ void Volume::unbind() {
 void Volume::updateTransferFunction(const std::vector<QVector4D>& values) {
     if (!m_tfInitiated) return;
 
+    m_tfValues = values;
     const auto size = static_cast<GLsizei>(values.size());
 
     glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA16F, size, 0, GL_RGBA, GL_FLOAT, values.data());
     glBindTexture(GL_TEXTURE_1D, 0);
+
+    transferFunctionUpdated();
 }
 
 void Volume::generateTexture() {
@@ -240,6 +244,8 @@ void Volume::generateTransferFunction() {
 
     glBindTexture(GL_TEXTURE_1D, 0);
     m_tfInitiated = true;
+
+    transferFunctionUpdated();
 }
 
 void Volume::generateSlicingGeometryBuffer() {

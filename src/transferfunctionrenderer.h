@@ -74,6 +74,8 @@ protected:
 
     void updateVolume();
 
+    unsigned int mVolumeResolution = 256;
+
     QMatrix4x4 mPerspMat;
     std::vector<Node> mNodes;
     std::unique_ptr<NodeGlyphs> mNodeGlyphs;

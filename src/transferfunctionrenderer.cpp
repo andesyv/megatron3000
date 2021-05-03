@@ -216,8 +216,7 @@ void TransferFunctionRenderer::updateVolume() {
      * average pos.
      * TODO: Calculate this shit and use that instead
      */
-    const auto resolution = 64;
-    const auto evalResolution = 10 * resolution;
+    const auto evalResolution = 10 * mVolumeResolution;
     const auto dres = static_cast<double>(evalResolution - 1);
     auto sortedPoints{mNodes};
     std::sort(sortedPoints.begin(), sortedPoints.end(), [](const auto& a, const auto& b){ return a.pos.x() < b.pos.x(); });
@@ -232,15 +231,15 @@ void TransferFunctionRenderer::updateVolume() {
     });
     
     std::vector<std::pair<QVector4D, unsigned int>> valueBuckets;
-    valueBuckets.resize(resolution, {QVector4D{}, 0});
+    valueBuckets.resize(mVolumeResolution, {QVector4D{}, 0});
 
-    for (int i {0}; i < evalResolution; ++i) {
+    for (unsigned int i {0}; i < evalResolution; ++i) {
         const double t = i / dres;
         // Divide by 1 - radius to account for node radius
         const auto val = mSpline->eval(t) / (1.f - mNodeRadius);
         const auto color = megamath::piecewiseLerp(colors, t);
         const auto x = findTHorizontally(sortedPos, val);
-        const auto bucketI = static_cast<unsigned int>(x * (resolution - 1));
+        const auto bucketI = static_cast<unsigned int>(x * (mVolumeResolution - 1));
         auto& [bval, bcount] = valueBuckets.at(bucketI);
         bval += QVector4D{color, val.y()};
         ++bcount;
@@ -248,7 +247,7 @@ void TransferFunctionRenderer::updateVolume() {
 
     // Average values:
     std::vector<QVector4D> values;
-    values.reserve(resolution);
+    values.reserve(mVolumeResolution);
 
     bool bUpper = false;
     for (const auto& [sum, num] : valueBuckets) {

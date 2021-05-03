@@ -37,6 +37,7 @@ public:
     QVector3D volumeScale() const { return m_scale; }
     QVector3D volumeSpacing() const { return m_spacing; }
     auto data() const { return m_volumeData; }
+    auto transferFunctionValues() const { return m_tfValues; }
 
     void updateTransferFunction(const std::vector<QVector4D>& values);
 
@@ -53,6 +54,7 @@ public:
 
 signals:
     void loaded();
+    void transferFunctionUpdated();
 
 private:
     unsigned short m_width{0}, m_height{0}, m_depth{0};
@@ -69,6 +71,7 @@ private:
     bool loadINI(const QString &fileName);
 
 
+    std::vector<QVector4D> m_tfValues;
     GLuint m_tfBuffer;
     bool m_tfInitiated{false};
     std::optional<GLuint> m_tfBinding{std::nullopt};
