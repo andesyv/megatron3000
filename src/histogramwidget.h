@@ -5,10 +5,14 @@
 #include "menuinterface.h"
 #include <QFutureWatcher>
 #include <QFuture>
+#include <QRunnable>
+#include <memory>
+#include <QFutureInterface>
 
 class QVBoxLayout;
 class MainWindow;
 class Volume;
+class HistogramRunner;
 
 namespace QtCharts {
     class QChartView;
@@ -28,7 +32,6 @@ protected:
     MainWindow* mMainWindow{nullptr};
     void volumeSwitched() override final;
     void createView();
-    static QVector<qreal> generateHistogram(std::shared_ptr<Volume> volume, std::vector<QVector4D> tfValues);
 
 private:
     QVBoxLayout* mLayout{nullptr};
@@ -38,9 +41,38 @@ private:
     QFuture<QVector<qreal>> mFuture;
     QFutureWatcher<QVector<qreal>> mWatcher;
     QMetaObject::Connection mTransferFunctionWatcher;
+    std::unique_ptr<HistogramRunner> mRunner;
 
 private slots:
     void finishHistogramGeneration();
+};
+
+
+/**
+ * @brief Helper class to wrap the histogram generation in a separate thread
+ * This class is used by the global QThreadPool, which puts these runners in
+ * a queue for them to wait their turn in order for a thread to become avilable
+ * for them. When a thread is available, the HistogramRunners generates
+ * a histogram, which after finished is inserted into the widget.
+ * 
+ * HistogramRunners can be cancelled mid-generation by setting mCancelled = true,
+ * which will early return the connected future. 
+ */
+class HistogramRunner : public QRunnable {
+public:
+    HistogramRunner(std::shared_ptr<Volume> volume = {}, std::vector<QVector4D> tfValues = {});
+    ~HistogramRunner() {}
+
+    void run() override;
+    QFuture<QVector<qreal>> future();
+
+    bool mCancelled{false};
+
+private:
+    // https://stackoverflow.com/questions/59197694/qt-how-to-create-a-qfuture-from-a-thread
+    QFutureInterface<QVector<qreal>> mFutureInterface;
+    std::shared_ptr<Volume> mVolume;
+    std::vector<QVector4D> mTfValues;
 };
 
 #endif // HISTOGRAMWIDGET_H
