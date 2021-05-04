@@ -1,6 +1,10 @@
 #include "histogramwidget.h"
 #include <QtCharts>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QSpinBox>
+#include <QLabel>
+#include <QWidgetAction>
 #include "volume.h"
 #include "mainwindow.h"
 #include <QChartView>
@@ -21,6 +25,22 @@ HistogramWidget::HistogramWidget(QWidget *parent) :
 
     auto tfMapAction = mViewMenu->addAction("Map to transfer function");
     tfMapAction->setCheckable(true);
+    
+    // Bin customization menu widget:
+    const auto binSizeContainerLayout = new QHBoxLayout{};
+    binSizeContainerLayout->setContentsMargins(0, 0, 0, 0);
+    const auto label = new QLabel{"Bins:"};
+    label->setAlignment(Qt::AlignCenter);
+    binSizeContainerLayout->addWidget(label);
+    auto spinner = new QSpinBox{this};
+    spinner->setRange(10, 256);
+    spinner->setValue(mBinCount);
+    binSizeContainerLayout->addWidget(spinner);
+    const auto binSizeContainerWidget = new QWidget{this};
+    binSizeContainerWidget->setLayout(binSizeContainerLayout);
+    const auto binSizeAction = new QWidgetAction{this};
+    binSizeAction->setDefaultWidget(binSizeContainerWidget);
+    mViewMenu->addAction(binSizeAction);
 
     mLayout->addWidget(mMenuBar);
 
@@ -31,6 +51,11 @@ HistogramWidget::HistogramWidget(QWidget *parent) :
     connect(tfMapAction, &QAction::toggled, [&](bool checked){
         mMapToTransferFunction = checked;
         drawHistogram();
+    });
+    connect(spinner, qOverload<int>(&QSpinBox::valueChanged), this, [&](int val){
+        mBinCount = val;
+        if (mVolume)
+            drawHistogram();
     });
 
     // Render histogram if we have data for it:
@@ -59,7 +84,7 @@ void HistogramWidget::drawHistogram()
     auto oldFuture = std::move(mFuture);
 
     // Make new runner
-    mRunner = std::make_unique<HistogramRunner>(mVolume, tfValues);
+    mRunner = std::make_unique<HistogramRunner>(mBinCount, mVolume, tfValues);
     
     // Assign new future
     mFuture = mRunner->future();
@@ -142,8 +167,8 @@ void HistogramWidget::finishHistogramGeneration() {
  */
 Q_DECLARE_METATYPE( QFutureInterface<QVector<qreal>> );
 
-HistogramRunner::HistogramRunner(std::shared_ptr<Volume> volume, std::vector<QVector4D> tfValues)
-    : QRunnable{}, mVolume{volume}, mTfValues{tfValues} {
+HistogramRunner::HistogramRunner(unsigned int binCount, std::shared_ptr<Volume> volume, std::vector<QVector4D> tfValues)
+    : QRunnable{}, mBinCount{binCount}, mVolume{volume}, mTfValues{tfValues} {
     // Need to call this line once, hence why it's static.
     static const auto typeId{qRegisterMetaType<QFutureInterface<QVector<qreal>>>()};
 
@@ -170,13 +195,12 @@ void HistogramRunner::run() {
         return;
     }
     
-    const unsigned int BIN_COUNT = 256;
     const unsigned int VALUE_COUNT = static_cast<unsigned int>(mVolume->data().size());
 
     // Note: Using QVector because QList is apparantly a linked list and doesn't have random access.
     // Not sure why Qt decided it was a good idea to therefore implement everything using QLists...
     QVector<qreal> bins;
-    bins.resize(BIN_COUNT);
+    bins.resize(mBinCount);
 
     if (mCancelled) {
         mFutureInterface.reportResult(bins);
@@ -193,7 +217,7 @@ void HistogramRunner::run() {
         }
         // Data should already be normalized so index can be found with floor(value * BIN_COUNT)
         // (clamp just in case)
-        const int binIndex = std::clamp(static_cast<int>(value * BIN_COUNT), 0, static_cast<int>(BIN_COUNT) - 1);
+        const int binIndex = std::clamp(static_cast<int>(value * mBinCount), 0, static_cast<int>(mBinCount) - 1);
         // Increment bins voxel count
         // Sum of all bins should be 1, so divide by value count.
         bins[binIndex] += 1.0 / VALUE_COUNT;

@@ -30,6 +30,7 @@ public:
     void drawHistogram();
 protected:
     MainWindow* mMainWindow{nullptr};
+    unsigned int mBinCount = 30;
     void volumeSwitched() override final;
     void createView();
 
@@ -60,13 +61,14 @@ private slots:
  */
 class HistogramRunner : public QRunnable {
 public:
-    HistogramRunner(std::shared_ptr<Volume> volume = {}, std::vector<QVector4D> tfValues = {});
+    HistogramRunner(unsigned int binCount = 256, std::shared_ptr<Volume> volume = {}, std::vector<QVector4D> tfValues = {});
     ~HistogramRunner() {}
 
     void run() override;
     QFuture<QVector<qreal>> future();
 
     bool mCancelled{false};
+    const unsigned int mBinCount{30};
     std::unique_ptr<HistogramRunner> mPrevRunner;
     QFuture<QVector<qreal>> mPrevFuture;
 
