@@ -135,16 +135,27 @@ void HistogramWidget::finishHistogramGeneration() {
     auto bins = mWatcher.result();
     auto chart = new QChart{};
 
-    auto series = new QBarSeries();
-    auto bars = new QBarSet{"Densities"};
+    auto bars = new QBarSet{"Density"};
     bars->setColor(Qt::black);
+    bars->setBorderColor(Qt::black);
+    auto barPen = bars->pen();
+    barPen.setWidth(0);
+    bars->setPen(barPen);
     bars->append(QList<qreal>::fromVector(bins));
+       
+    auto series = new QBarSeries();
+    series->setBarWidth(1.0);
+    series->setLabelsVisible(false);
     series->append(bars);
 
-    auto axisY = new QValueAxis;
-    axisY->setRange(0,1000);
     chart->addSeries(series);
-    chart->createDefaultAxes();
+    auto yaxis = new QValueAxis{this};
+    yaxis->setRange(*std::min_element(bins.begin(), bins.end()), *std::max_element(bins.begin(), bins.end()));
+    chart->addAxis(yaxis, Qt::AlignLeft);
+    
+    auto xaxis = new QValueAxis{this};
+    xaxis->setRange(0.0, 1.0);
+    chart->addAxis(xaxis, Qt::AlignBottom);
     chart->legend()->hide();
     // Set new chart
     mChartView->setChart(chart);
