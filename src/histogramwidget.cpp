@@ -65,15 +65,14 @@ void HistogramWidget::drawHistogram()
     mFuture = mRunner->future();
     mWatcher.setFuture(mFuture);
 
+    mRunner->mPrevRunner = std::move(oldRunner);
+    mRunner->mPrevFuture = oldFuture;
+
     // Mark last runner for stopping:
-    oldRunner->mCancelled = true;
+    mRunner->mPrevRunner->mCancelled = true;
 
     // Start new thread (add it to queue)
     QThreadPool::globalInstance()->start(mRunner.get());
-
-    // Catch up to other thread by just waiting
-    // We need to destroy old runner after it's finished
-    oldFuture.waitForFinished();
 }
 
 HistogramWidget::~HistogramWidget() = default;
@@ -154,6 +153,16 @@ HistogramRunner::HistogramRunner(std::shared_ptr<Volume> volume, std::vector<QVe
 }
 
 void HistogramRunner::run() {
+    // If a previous runner is still running,
+    // wait for that one before starting to cleanup after it.
+    if (mPrevRunner) {
+        // Catch up to other thread by just waiting
+        mPrevFuture.waitForFinished();
+        // Delete old thread
+        mPrevRunner.reset();
+    }
+
+
     // If volume is empty, exit early.
     if (!mVolume || mCancelled) {
         mFutureInterface.reportResult({});

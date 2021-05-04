@@ -67,6 +67,8 @@ public:
     QFuture<QVector<qreal>> future();
 
     bool mCancelled{false};
+    std::unique_ptr<HistogramRunner> mPrevRunner;
+    QFuture<QVector<qreal>> mPrevFuture;
 
 private:
     // https://stackoverflow.com/questions/59197694/qt-how-to-create-a-qfuture-from-a-thread
