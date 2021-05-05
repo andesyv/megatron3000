@@ -13,6 +13,48 @@
 /// It's like megatron3000-math, but shorted down
 namespace megamath {
 
+/**
+ * @brief Implementation of javascript / pythons map
+ * Converts a list into another list via a transformation function.
+ * @param list Input list
+ * @param func Function object that will be applied on each element of list
+ * @return std::vector<U> where U is return type of func
+ * 
+ * Example usage:
+ * std::vector<int> intList = {1, 2, 3, 1, 2};
+ * floatList = mapList(intList, [](auto v){ return static_cast<float>(v); });
+ */
+template <typename T, typename F>
+auto mapList(const std::vector<T>& list, F&& func) {
+    using FRetType = decltype(func(typename std::vector<T>::value_type{})); // This ugly line only determines the return type of func
+    std::vector<FRetType> newList{};
+    newList.reserve(list.size());
+    std::transform(list.begin(), list.end(), std::back_inserter(newList), func);
+    return newList;
+}
+
+// template <typename T, std::size_t N, typename F>
+// auto mapList(T (&& list)[N], F&& func) {
+//     using FRetType = decltype(func(T{})); // This ugly line only determines the return type of func
+//     std::array<FRetType, N> newArr{};
+//     std::transform(list.begin(), list.end(), newArr.begin(), func);
+//     return newList;
+// }
+
+template <typename T, std::size_t N, typename F>
+auto mapList(const std::array<T, N>& list, F&& func) {
+    using FRetType = decltype(func(T{})); // This ugly line only determines the return type of func
+    std::array<FRetType, N> newArr{};
+    std::transform(list.begin(), list.end(), newArr.begin(), func);
+    return newArr;
+}
+
+// https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
+template <typename T>
+int sign(T val) {
+    return (T{0} < val) - (val < T{0});
+}
+
 // de Casteljau interpolation algorithm
 template <typename T>
 T bezier(std::vector<T> p, double t) {
@@ -141,6 +183,9 @@ T piecewiseLerp(const std::vector<T>& p, double t) {
  * @return First approximated root
  */
 float partialCubicSolve(float (&& coefficients)[4], float initialGuess);
+
+float signedDistToPlane(const QVector3D& ppos, const QVector3D& pdir, const QVector3D& point);
+bool boxPlaneIntersect(const QVector3D& bpos, const QVector3D& bsize, const QVector3D& ppos, const QVector3D& pdir);
 
 }
 

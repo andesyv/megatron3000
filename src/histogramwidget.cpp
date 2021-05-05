@@ -42,6 +42,33 @@ HistogramWidget::HistogramWidget(QWidget *parent) :
     binSizeAction->setDefaultWidget(binSizeContainerWidget);
     mViewMenu->addAction(binSizeAction);
 
+    auto sourceMenu = mViewMenu->addMenu("Histogram source: ");
+    mSourceOptionActions = {
+        new QAction{"All volume", this},
+        new QAction{"Cutting plane aligned", this}
+    };
+    for (auto action : mSourceOptionActions) {
+        action->setCheckable(true);
+        if (action == mSourceOptionActions.front())
+            action->setChecked(true);
+        
+        connect(action, &QAction::triggered, this, [&, action](bool bChecked){
+            for (auto a : mSourceOptionActions)
+                if (a != action)
+                    a->setChecked(false);
+
+            const auto sourceActionPos = std::find(mSourceOptionActions.begin(), mSourceOptionActions.end(), action);
+#ifndef NDEBUG
+            if (sourceActionPos == mSourceOptionActions.end())
+                throw std::logic_error{"Action not in list. >:("};
+#endif
+            const auto index = sourceActionPos - mSourceOptionActions.begin();
+            mHistogramSource = static_cast<HistogramWidget::Source>(index);
+            drawHistogram();
+        });
+    }
+    sourceMenu->addActions(mSourceOptionActions); 
+
     mLayout->addWidget(mMenuBar);
 
     createView();
@@ -76,6 +103,7 @@ void HistogramWidget::drawHistogram()
     // Initialize async func:
 
     const auto tfValues = mMapToTransferFunction ? mVolume->transferFunctionValues() : std::vector<QVector4D>{};
+    const auto& cuttingPlane = mHistogramSource == Source::Plane ? mVolume->m_slicingGeometry : Slicing::Plane{};
 
     // Note to self: There's apparantly no easy way to pass gui objects between threads,
     // so can only really manipulate widgets with other threads.
@@ -84,7 +112,7 @@ void HistogramWidget::drawHistogram()
     auto oldFuture = std::move(mFuture);
 
     // Make new runner
-    mRunner = std::make_unique<HistogramRunner>(mBinCount, mVolume, tfValues);
+    mRunner = std::make_unique<HistogramRunner>(mBinCount, mHistogramSource, mVolume, tfValues, cuttingPlane);
     
     // Assign new future
     mFuture = mRunner->future();
@@ -178,8 +206,13 @@ void HistogramWidget::finishHistogramGeneration() {
  */
 Q_DECLARE_METATYPE( QFutureInterface<QVector<qreal>> );
 
-HistogramRunner::HistogramRunner(unsigned int binCount, std::shared_ptr<Volume> volume, std::vector<QVector4D> tfValues)
-    : QRunnable{}, mBinCount{binCount}, mVolume{volume}, mTfValues{tfValues} {
+HistogramRunner::HistogramRunner(
+    unsigned int binCount,
+    HistogramWidget::Source source,
+    std::shared_ptr<Volume> volume,
+    std::vector<QVector4D> tfValues,
+    const Slicing::Plane& plane)
+    : QRunnable{}, mBinCount{binCount}, mSource{source}, mVolume{volume}, mTfValues{tfValues} {
     // Need to call this line once, hence why it's static.
     static const auto typeId{qRegisterMetaType<QFutureInterface<QVector<qreal>>>()};
 
@@ -205,8 +238,6 @@ void HistogramRunner::run() {
         mFutureInterface.reportFinished();
         return;
     }
-    
-    const unsigned int VALUE_COUNT = static_cast<unsigned int>(mVolume->data().size());
 
     // Note: Using QVector because QList is apparantly a linked list and doesn't have random access.
     // Not sure why Qt decided it was a good idea to therefore implement everything using QLists...
@@ -219,20 +250,36 @@ void HistogramRunner::run() {
         return;
     }
 
+    std::size_t valueCount = 0;
+
     // Inject data into bins:
-    for (auto value : mVolume->data()) {
+    const auto& data = mVolume->data();
+    for (auto i{0}; i < data.size(); ++i) {
+        const auto& value = data[i];
+
         if (mCancelled) {
             mFutureInterface.reportResult(bins);
             mFutureInterface.reportFinished();
             return;
         }
+
+        if (mSource == HistogramWidget::Source::Plane) {
+            const auto box = mVolume->getVoxelBounds(mVolume->getVoxelIndex(i));
+            if (!megamath::boxPlaneIntersect(box.pos, box.size, mPlane.pos, mPlane.dir))
+                continue;
+        }
+
         // Data should already be normalized so index can be found with floor(value * BIN_COUNT)
         // (clamp just in case)
         const int binIndex = std::clamp(static_cast<int>(value * mBinCount), 0, static_cast<int>(mBinCount) - 1);
         // Increment bins voxel count
-        // Sum of all bins should be 1, so divide by value count.
-        bins[binIndex] += 1.0 / VALUE_COUNT;
+        bins[binIndex] += 1.0;
+        ++valueCount;
     }
+
+    // Sum of all bins should be 1, so divide by value count.
+    for (auto& bin : bins)
+        bin /= valueCount;
 
     if (!mTfValues.empty()) {
         const auto SIZE = bins.size();

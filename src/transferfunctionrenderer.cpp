@@ -25,7 +25,7 @@ TransferFunctionRenderer::TransferFunctionRenderer(QWidget* parent)
 void TransferFunctionRenderer::initializeGL() {
     initializeOpenGLFunctions();
 
-    const auto positions = mapList(mNodes, [](const auto& n){ return n.pos; });
+    const auto positions = megamath::mapList(mNodes, [](const auto& n){ return n.pos; });
     mNodeGlyphs = std::make_unique<NodeGlyphs>(positions);
     mSpline = std::make_unique<Spline>(positions, 30);
 
@@ -220,9 +220,9 @@ void TransferFunctionRenderer::updateVolume() {
     const auto dres = static_cast<double>(evalResolution - 1);
     auto sortedPoints{mNodes};
     std::sort(sortedPoints.begin(), sortedPoints.end(), [](const auto& a, const auto& b){ return a.pos.x() < b.pos.x(); });
-    const auto sortedPos = mapList(mNodes, [](const auto& n){ return n.pos; });
+    const auto sortedPos = megamath::mapList(mNodes, [](const auto& n){ return n.pos; });
 
-    const auto colors = mapList(sortedPoints, [](const auto& n){
+    const auto colors = megamath::mapList(sortedPoints, [](const auto& n){
         return QVector3D{
             static_cast<float>(n.color.redF()),
             static_cast<float>(n.color.greenF()),
@@ -272,7 +272,7 @@ void TransferFunctionRenderer::updateVolume() {
 }
 
 void TransferFunctionRenderer::nodesChanged() {
-    const auto positions = mapList(mNodes, [](const auto& n){ return n.pos; });
+    const auto positions = megamath::mapList(mNodes, [](const auto& n){ return n.pos; });
 
     mNodeGlyphs->updateNodeBuffer(positions);
     mSpline->update(positions);

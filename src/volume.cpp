@@ -7,6 +7,7 @@
 #include "mini/ini.h"
 #include <QVector4D>
 #include <QMatrix4x4>
+#include <array>
 
 using namespace Slicing;
 
@@ -159,6 +160,46 @@ void Volume::unbind() {
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, *m_geometryBinding, 0);
     m_geometryBinding = std::nullopt;
+}
+
+QVector3D Volume::voxelScale() const {
+    const QVector3D volumeDimemsion{
+        static_cast<float>(m_width),
+        static_cast<float>(m_height),
+        static_cast<float>(m_depth)
+    };
+    return (QVector3D{1.f, 1.f, 1.f} / volumeDimemsion) * volumeSpacing();
+}
+
+float Volume::data(unsigned int i, unsigned int j, unsigned int k) const {
+    if (m_width <= i || m_height <= j || m_depth <= k)
+        return 0.f;
+    
+    return m_volumeData.at(i + j * m_width + k * (m_width + m_height));
+}
+
+std::array<unsigned int, 3> Volume::getVoxelIndex(unsigned int i) const {
+    // width -> height -> depth
+    const auto k = i / (m_width + m_height);
+    const auto j = (i - k * (m_width + m_height)) / m_width;
+    return {i - j * m_width + k * (m_height + m_width), j, k};
+}
+
+Volume::VoxelBounds Volume::getVoxelBounds(unsigned int i, unsigned int j, unsigned int k) const {
+    if (m_width <= i || m_height <= j || m_depth <= k)
+        return {};
+        
+    const QVector3D pos{
+        i / static_cast<float>(m_width),
+        j / static_cast<float>(m_height),
+        k / static_cast<float>(m_depth)
+    };
+
+    return {pos, voxelScale()};
+}
+
+Volume::VoxelBounds Volume::getVoxelBounds(const std::array<unsigned int, 3>& index) const {
+    return getVoxelBounds(index[0], index[1], index[2]);
 }
 
 void Volume::updateTransferFunction(const std::vector<QVector4D>& values) {

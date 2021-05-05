@@ -36,8 +36,18 @@ public:
 
     QVector3D volumeScale() const { return m_scale; }
     QVector3D volumeSpacing() const { return m_spacing; }
+    QVector3D voxelScale() const;
     auto data() const { return m_volumeData; }
+    float data(unsigned int i, unsigned int j, unsigned int k) const;
     auto transferFunctionValues() const { return m_tfValues; }
+
+    std::array<unsigned int, 3> getVoxelIndex(unsigned int i) const;
+    struct VoxelBounds {
+        QVector3D pos;
+        QVector3D size;
+    };
+    VoxelBounds getVoxelBounds(unsigned int i, unsigned int j, unsigned int k) const;
+    VoxelBounds getVoxelBounds(const std::array<unsigned int, 3>& index) const;
 
     void updateTransferFunction(const std::vector<QVector4D>& values);
 
