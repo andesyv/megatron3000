@@ -1,5 +1,6 @@
 #ifndef VOLUME_H
 #define VOLUME_H
+
 #include <QObject>
 #include <QOpenGLFunctions_4_5_Core>
 #include <optional>
@@ -19,13 +20,16 @@ namespace Slicing {
     };
 }
 
+class QOpenGLContext;
+class QOffscreenSurface;
+
 class Volume : public QObject, protected QOpenGLFunctions_4_5_Core
 {
     Q_OBJECT
 public:
-    Volume() = default;
+    Volume(QOpenGLContext* context = nullptr, QOffscreenSurface* surface = nullptr);
 
-    bool loadData(const QString &fileName);
+    bool loadData(const QString &fileName, const bool& cancel = false);
 
     void bind(GLuint binding = 0, GLuint tfBinding = 1, GLuint geometryBinding = 4);
     void unbind();
@@ -93,6 +97,8 @@ private:
     bool m_slicingGeometryBufferInitiated{false};
     void generateSlicingGeometryBuffer();
 
+    QOpenGLContext* mContext{nullptr};
+    QOffscreenSurface* mSurface{nullptr};
 public:
     /**
      * @brief Helper class that binds the texture on construction and unbinds on destruction.

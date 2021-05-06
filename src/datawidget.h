@@ -2,6 +2,8 @@
 #define DATAWIDGET_H
 
 #include <QWidget>
+#include "runners.h"
+#include <QFutureWatcher>
 
 class Volume;
 class QFileSystemModel;
@@ -28,10 +30,19 @@ private slots:
 
     void on_listView_doubleClicked(const QModelIndex &index);
 
+    void finishLoading();
+
 private:
     Ui::DataWidget *ui;
     QFileSystemModel *dirmodel;
     QFileSystemModel *filemodel;
+
+    std::unique_ptr<QOpenGLContext> mThreadContext;
+    std::unique_ptr<QOffscreenSurface> mThreadSurface;
+
+    std::unique_ptr<DataReaderRunner> mRunner;
+    DataReaderRunner::FType mFuture;
+    QFutureWatcher<DataReaderRunner::RetType> mWatcher;
 
     void load(const QString& filePath);
 
