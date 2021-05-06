@@ -50,6 +50,94 @@ QVector4D TransferFunctionRenderer::eval(float t) const {
     return QVector4D{0.f, 0.f, 0.f, mSpline->eval(t).y()};
 }
 
+float linearBetween(float a, float b, float p) {
+    if (p < a)
+        return 0.0;
+    else if (b < p)
+        return 1.0;
+    
+    return (p - a) / (b - a);
+}
+
+// Assumes points are sorted
+float findTHorizontally(const std::vector<QVector2D>& p, const QVector2D& point) {
+    if (p.size() < 2)
+        return 0.0;
+
+    return linearBetween(0.f, 1.f, point.x());
+}
+
+std::vector<QVector4D> TransferFunctionRenderer::calculateTransferFunctionValues(
+    const std::vector<Node>& nodes,
+    unsigned int volumeResolution)
+{
+    if (nodes.size() < 2)
+        return {};
+
+    /** B(t) describes a spline that is continous for t = [0, 1],
+     * but the segments ( B(t) dt ) have no guarantee being
+     * similar / consistently spaced. Thus finding the t that
+     * gives a point B on a spline is a difficult task. See
+     * https://math.stackexchange.com/questions/527005/find-value-of-t-at-a-point-on-a-cubic-bezier-curve
+     * for an actual solution. I'm not that smart so instead
+     * I just calculate 10 times the integrals and take the
+     * average pos.
+     * TODO: Calculate this shit and use that instead
+     */
+    const auto evalResolution = 10 * volumeResolution;
+    const auto dres = static_cast<double>(evalResolution - 1);
+    auto sortedPoints{nodes};
+    std::sort(sortedPoints.begin(), sortedPoints.end(), [](const auto& a, const auto& b){ return a.pos.x() < b.pos.x(); });
+    const auto sortedPos = megamath::mapList(sortedPoints, [](const auto& n){ return n.pos; });
+
+    const auto colors = megamath::mapList(sortedPoints, [](const auto& n){
+        return QVector3D{
+            static_cast<float>(n.color.redF()),
+            static_cast<float>(n.color.greenF()),
+            static_cast<float>(n.color.blueF())
+        };
+    });
+
+    std::vector<std::pair<QVector4D, unsigned int>> valueBuckets;
+    valueBuckets.resize(volumeResolution, {QVector4D{}, 0});
+
+    for (unsigned int i {0}; i < evalResolution; ++i) {
+        const double t = i / dres;
+        // Divide by 1 - radius to account for node radius
+        const auto val = megamath::piecewiseSpline(sortedPos, t);
+        const auto color = megamath::piecewiseLerp(colors, t);
+        const auto x = findTHorizontally(sortedPos, val);
+        const auto bucketI = static_cast<unsigned int>(x * (volumeResolution - 1));
+        auto& [bval, bcount] = valueBuckets.at(bucketI);
+        bval += QVector4D{color, val.y()};
+        ++bcount;
+    }
+
+    // Average values:
+    std::vector<QVector4D> values;
+    values.reserve(volumeResolution);
+
+    bool bUpper = false;
+    for (const auto& [sum, num] : valueBuckets) {
+        QVector4D val{};
+        if (num != 0) {
+            // Fill middle values with buckets
+            val = sum / num;
+            bUpper = true;
+        } else {
+            // Fill upper values with last node:
+            if (bUpper)
+                val = QVector4D{colors.back(), sortedPoints.back().pos.y()};
+            else
+                val = QVector4D{colors.front(), sortedPoints.front().pos.y()};
+        }
+        
+        values.push_back(val);
+    }
+
+    return values;
+}
+
 void TransferFunctionRenderer::paintGL() {
     glClearColor(0.7f, 0.7f, 0.7f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -184,89 +272,28 @@ QVector2D TransferFunctionRenderer::screenToNormalizedCoordinates(const QPoint& 
     return screenPointToNormalizedCoordinates(point, width(), height());
 }
 
-float linearBetween(float a, float b, float p) {
-    if (p < a)
-        return 0.0;
-    else if (b < p)
-        return 1.0;
-    
-    return (p - a) / (b - a);
-}
-
-// Assumes points are sorted
-float findTHorizontally(const std::vector<QVector2D>& p, const QVector2D& point) {
-    if (p.size() < 2)
-        return 0.0;
-
-    return linearBetween(-1.f, 1.f, point.x());
-}
-
-
 void TransferFunctionRenderer::updateVolume() {
     if (!mVolume || mNodes.size() < 2)
         return;
 
-    /** B(t) describes a spline that is continous for t = [0, 1],
-     * but the segments ( B(t) dt ) have no guarantee being
-     * similar / consistently spaced. Thus finding the t that
-     * gives a point B on a spline is a difficult task. See
-     * https://math.stackexchange.com/questions/527005/find-value-of-t-at-a-point-on-a-cubic-bezier-curve
-     * for an actual solution. I'm not that smart so instead
-     * I just calculate 10 times the integrals and take the
-     * average pos.
-     * TODO: Calculate this shit and use that instead
-     */
-    const auto evalResolution = 10 * mVolumeResolution;
-    const auto dres = static_cast<double>(evalResolution - 1);
-    auto sortedPoints{mNodes};
-    std::sort(sortedPoints.begin(), sortedPoints.end(), [](const auto& a, const auto& b){ return a.pos.x() < b.pos.x(); });
-    const auto sortedPos = megamath::mapList(mNodes, [](const auto& n){ return n.pos; });
+    const auto aspectRatio = width() / static_cast<float>(height());
+    const auto scrScale = aspectScale(aspectRatio);
+    const auto nodeRadius = scrScale * mNodeRadius;
 
-    const auto colors = megamath::mapList(sortedPoints, [](const auto& n){
-        return QVector3D{
-            static_cast<float>(n.color.redF()),
-            static_cast<float>(n.color.greenF()),
-            static_cast<float>(n.color.blueF())
-        };
+    const QVector2D a = {1.f / (2.f - 2.f * nodeRadius.x()), 1.f / (2.f - 2.f * nodeRadius.y())};
+    const QVector2D b = {
+        (1.f - nodeRadius.x()) / (2.f - 2.f * nodeRadius.x()),
+        (1.f - nodeRadius.y()) / (2.f - 2.f * nodeRadius.y())
+    }; 
+
+    const auto nodes = megamath::mapList(mNodes, [=](const Node& n){
+        QVector2D pos{n.pos};
+        // [-1 + r, 1 - r] -> [0, 1]
+        pos = pos * a + b;
+        return Node{ pos, n.color };
     });
-    
-    std::vector<std::pair<QVector4D, unsigned int>> valueBuckets;
-    valueBuckets.resize(mVolumeResolution, {QVector4D{}, 0});
 
-    for (unsigned int i {0}; i < evalResolution; ++i) {
-        const double t = i / dres;
-        // Divide by 1 - radius to account for node radius
-        const auto val = mSpline->eval(t) / (1.f - mNodeRadius);
-        const auto color = megamath::piecewiseLerp(colors, t);
-        const auto x = findTHorizontally(sortedPos, val);
-        const auto bucketI = static_cast<unsigned int>(x * (mVolumeResolution - 1));
-        auto& [bval, bcount] = valueBuckets.at(bucketI);
-        bval += QVector4D{color, val.y()};
-        ++bcount;
-    }
-
-    // Average values:
-    std::vector<QVector4D> values;
-    values.reserve(mVolumeResolution);
-
-    bool bUpper = false;
-    for (const auto& [sum, num] : valueBuckets) {
-        QVector4D val{};
-        if (num != 0) {
-            // Fill middle values with buckets
-            val = sum / num;
-            bUpper = true;
-        } else {
-            // Fill upper values with last node:
-            if (bUpper)
-                val = QVector4D{colors.back(), sortedPoints.back().pos.y() / (1.f - mNodeRadius)};
-            else
-                val = QVector4D{colors.front(), sortedPoints.front().pos.y() / (1.f - mNodeRadius)};
-        }
-        // [-1, 1] -> [0, 1]
-        val.setW(val.w() * 0.5f + 0.5f);
-        values.push_back(val);
-    }
+    const auto values = calculateTransferFunctionValues(nodes, mVolumeResolution);
 
     mVolume->updateTransferFunction(values);
 }

@@ -28,6 +28,8 @@ class TransferFunctionRenderer : public QOpenGLWidget, protected QOpenGLFunction
     Q_OBJECT
 
 public:
+    static constexpr unsigned int VOLUME_RESOLUTION_DEFAULT = 256;
+
     TransferFunctionRenderer(QWidget *parent = nullptr);
     ~TransferFunctionRenderer();
 
@@ -38,6 +40,11 @@ public:
     auto operator()(float t) const { return eval(t); }
 
     std::shared_ptr<Volume> mVolume;
+
+    static std::vector<QVector4D> calculateTransferFunctionValues(
+        const std::vector<Node>& nodes,
+        unsigned int volumeResolution = VOLUME_RESOLUTION_DEFAULT
+    );
 
 protected:
     void initializeGL() override;
@@ -54,7 +61,7 @@ protected:
 
     void updateVolume();
 
-    unsigned int mVolumeResolution = 256;
+    unsigned int mVolumeResolution = VOLUME_RESOLUTION_DEFAULT;
 
     QMatrix4x4 mPerspMat;
     std::vector<Node> mNodes;
