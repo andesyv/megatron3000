@@ -7,6 +7,10 @@
 #include "mini/ini.h"
 #include <QVector4D>
 #include <QMatrix4x4>
+#include <array>
+#include <QVector3D>
+#include "math.h"
+#include "transferfunctionrenderer.h"
 
 using namespace Slicing;
 
@@ -69,6 +73,7 @@ bool Volume::loadData(const QString &fileName)
     qDebug() << "Converting and normalizing data";
 #endif
 
+    /// TODO: upgrade to double precision
     // Convert data to floating points in range [0,1]
     m_volumeData.reserve(volumeSize);
     for (const auto& val : volumeRaw) {
@@ -160,14 +165,57 @@ void Volume::unbind() {
     m_geometryBinding = std::nullopt;
 }
 
+QVector3D Volume::voxelScale() const {
+    const QVector3D volumeDimemsion{
+        static_cast<float>(m_width),
+        static_cast<float>(m_height),
+        static_cast<float>(m_depth)
+    };
+    return (QVector3D{1.f, 1.f, 1.f} / volumeDimemsion) * volumeSpacing();
+}
+
+float Volume::data(unsigned int i, unsigned int j, unsigned int k) const {
+    if (m_width <= i || m_height <= j || m_depth <= k)
+        return 0.f;
+    
+    return m_volumeData.at(i + j * m_width + k * (m_width + m_height));
+}
+
+std::array<unsigned int, 3> Volume::getVoxelIndex(unsigned int i) const {
+    // width -> height -> depth
+    const auto k = i / (m_width + m_height);
+    const auto j = (i - k * (m_width + m_height)) / m_width;
+    return {i - j * m_width + k * (m_height + m_width), j, k};
+}
+
+Volume::VoxelBounds Volume::getVoxelBounds(unsigned int i, unsigned int j, unsigned int k) const {
+    if (m_width <= i || m_height <= j || m_depth <= k)
+        return {};
+        
+    const QVector3D pos{
+        i / static_cast<float>(m_width),
+        j / static_cast<float>(m_height),
+        k / static_cast<float>(m_depth)
+    };
+
+    return {pos, voxelScale()};
+}
+
+Volume::VoxelBounds Volume::getVoxelBounds(const std::array<unsigned int, 3>& index) const {
+    return getVoxelBounds(index[0], index[1], index[2]);
+}
+
 void Volume::updateTransferFunction(const std::vector<QVector4D>& values) {
     if (!m_tfInitiated) return;
 
+    m_tfValues = values;
     const auto size = static_cast<GLsizei>(values.size());
 
     glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA16F, size, 0, GL_RGBA, GL_FLOAT, values.data());
     glBindTexture(GL_TEXTURE_1D, 0);
+
+    transferFunctionUpdated();
 }
 
 void Volume::generateTexture() {
@@ -221,16 +269,20 @@ bool Volume::loadINI(const QString &fileName) {
 void Volume::generateTransferFunction() {
     initializeOpenGLFunctions();
 
-    const QVector4D initialValues[] = {
-        {1.f, 1.f, 1.f, 0.f},
-        {1.f, 1.f, 1.f, 0.25f},
-        {1.f, 1.f, 1.f, 0.75f},
-        {1.f, 1.f, 1.f, 1.f},
+    // Generate some initial transfer function values:
+    const std::vector<Node> initialNodes{
+        {QVector2D{0.f, 0.f}},
+        {QVector2D{0.05f, 0.f}},
+        {QVector2D{0.95f, 1.f}},
+        {QVector2D{1.f, 1.f}}
     };
 
+    constexpr unsigned int INITIAL_VALUE_COUNT = 10;
+    m_tfValues = TransferFunctionRenderer::calculateTransferFunctionValues(initialNodes, INITIAL_VALUE_COUNT);
+    
     glGenTextures(1, &m_tfBuffer);
     glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA16F, 4, 0, GL_RGBA, GL_FLOAT, initialValues);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA16F, INITIAL_VALUE_COUNT, 0, GL_RGBA, GL_FLOAT, m_tfValues.data());
 
     // Min and mag filter: linear scaling
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -240,6 +292,8 @@ void Volume::generateTransferFunction() {
 
     glBindTexture(GL_TEXTURE_1D, 0);
     m_tfInitiated = true;
+
+    transferFunctionUpdated();
 }
 
 void Volume::generateSlicingGeometryBuffer() {

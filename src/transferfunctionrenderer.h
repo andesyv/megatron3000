@@ -14,26 +14,6 @@ class Volume;
 class QVector4D;
 class MainWindow;
 
-/**
- * @brief Implementation of javascript / pythons map
- * Converts a list into another list via a transformation function.
- * @param list Input list
- * @param func Function object that will be applied on each element of list
- * @return std::vector<U> where U is return type of func
- * 
- * Example usage:
- * std::vector<int> intList = {1, 2, 3, 1, 2};
- * floatList = mapList(intList, [](auto v){ return static_cast<float>(v); });
- */
-template <typename T, typename F>
-auto mapList(const std::vector<T>& list, F&& func) {
-    using FRetType = decltype(func(typename std::vector<T>::value_type{})); // This ugly line only determines the return type of func
-    std::vector<FRetType> newList{};
-    newList.reserve(list.size());
-    std::transform(list.begin(), list.end(), std::back_inserter(newList), func);
-    return newList;
-}
-
 struct Node {
     QVector2D pos;
     QColor color{255, 255, 255, 255};
@@ -48,6 +28,8 @@ class TransferFunctionRenderer : public QOpenGLWidget, protected QOpenGLFunction
     Q_OBJECT
 
 public:
+    static constexpr unsigned int VOLUME_RESOLUTION_DEFAULT = 256;
+
     TransferFunctionRenderer(QWidget *parent = nullptr);
     ~TransferFunctionRenderer();
 
@@ -58,6 +40,11 @@ public:
     auto operator()(float t) const { return eval(t); }
 
     std::shared_ptr<Volume> mVolume;
+
+    static std::vector<QVector4D> calculateTransferFunctionValues(
+        const std::vector<Node>& nodes,
+        unsigned int volumeResolution = VOLUME_RESOLUTION_DEFAULT
+    );
 
 protected:
     void initializeGL() override;
@@ -73,6 +60,8 @@ protected:
     QVector2D screenToNormalizedCoordinates(const QPoint& point) const;
 
     void updateVolume();
+
+    unsigned int mVolumeResolution = VOLUME_RESOLUTION_DEFAULT;
 
     QMatrix4x4 mPerspMat;
     std::vector<Node> mNodes;

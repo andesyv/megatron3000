@@ -1,4 +1,6 @@
 #include "math.h"
+#include <array>
+#include <tuple>
 
 // using namespace megamath;
 
@@ -45,4 +47,29 @@ float partialCubicSolve(float (&& coefficients)[4], float initialGuess) {
 
     return x;
 }
+
+float signedDistToPlane(const QVector3D& ppos, const QVector3D& pdir, const QVector3D& point) {
+    return QVector3D::dotProduct(point - ppos, pdir);
+}
+
+bool boxPlaneIntersect(const QVector3D& bpos, const QVector3D& bsize, const QVector3D& ppos, const QVector3D& pdir) {
+    const auto [bx, by, bz] = std::make_tuple(bsize.x() * 0.5f, bsize.y() * 0.5f, bsize.z() * 0.5f);
+    const std::array<QVector3D, 8> points{
+        bpos + QVector3D{bx, by, bz},
+        bpos + QVector3D{-bx, by, bz},
+        bpos + QVector3D{bx, -by, bz},
+        bpos + QVector3D{bx, by, -bz},
+        bpos + QVector3D{-bx, -by, bz},
+        bpos + QVector3D{-bx, by, -bz},
+        bpos + QVector3D{bx, -by, -bz},
+        bpos + QVector3D{-bx, -by, -bz}
+    };
+
+    const auto dists = mapList(points, [=](const auto& p){ return signedDistToPlane(ppos, pdir, p); });
+    const auto [min, max] = std::minmax_element(dists.begin(), dists.end());
+
+    // If the maximum and minimum distances have different signs, the plane intersects the box.
+    return sign(*min) != sign(*max);
+}
+
 }

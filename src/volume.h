@@ -36,6 +36,18 @@ public:
 
     QVector3D volumeScale() const { return m_scale; }
     QVector3D volumeSpacing() const { return m_spacing; }
+    QVector3D voxelScale() const;
+    auto data() const { return m_volumeData; }
+    float data(unsigned int i, unsigned int j, unsigned int k) const;
+    auto transferFunctionValues() const { return m_tfValues; }
+
+    std::array<unsigned int, 3> getVoxelIndex(unsigned int i) const;
+    struct VoxelBounds {
+        QVector3D pos;
+        QVector3D size;
+    };
+    VoxelBounds getVoxelBounds(unsigned int i, unsigned int j, unsigned int k) const;
+    VoxelBounds getVoxelBounds(const std::array<unsigned int, 3>& index) const;
 
     void updateTransferFunction(const std::vector<QVector4D>& values);
 
@@ -52,6 +64,7 @@ public:
 
 signals:
     void loaded();
+    void transferFunctionUpdated();
 
 private:
     unsigned short m_width{0}, m_height{0}, m_depth{0};
@@ -68,6 +81,7 @@ private:
     bool loadINI(const QString &fileName);
 
 
+    std::vector<QVector4D> m_tfValues;
     GLuint m_tfBuffer;
     bool m_tfInitiated{false};
     std::optional<GLuint> m_tfBinding{std::nullopt};
