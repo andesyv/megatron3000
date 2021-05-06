@@ -8,6 +8,9 @@
 #include <QVector4D>
 #include <QMatrix4x4>
 #include <array>
+#include <QVector3D>
+#include "math.h"
+#include "transferfunctionrenderer.h"
 
 using namespace Slicing;
 
@@ -266,16 +269,20 @@ bool Volume::loadINI(const QString &fileName) {
 void Volume::generateTransferFunction() {
     initializeOpenGLFunctions();
 
-    const QVector4D initialValues[] = {
-        {1.f, 1.f, 1.f, 0.f},
-        {1.f, 1.f, 1.f, 0.25f},
-        {1.f, 1.f, 1.f, 0.75f},
-        {1.f, 1.f, 1.f, 1.f},
+    // Generate some initial transfer function values:
+    const std::vector<Node> initialNodes{
+        {QVector2D{0.f, 0.f}},
+        {QVector2D{0.05f, 0.f}},
+        {QVector2D{0.95f, 1.f}},
+        {QVector2D{1.f, 1.f}}
     };
 
+    constexpr unsigned int INITIAL_VALUE_COUNT = 10;
+    m_tfValues = TransferFunctionRenderer::calculateTransferFunctionValues(initialNodes, INITIAL_VALUE_COUNT);
+    
     glGenTextures(1, &m_tfBuffer);
     glBindTexture(GL_TEXTURE_1D, m_tfBuffer);
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA16F, 4, 0, GL_RGBA, GL_FLOAT, initialValues);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA16F, INITIAL_VALUE_COUNT, 0, GL_RGBA, GL_FLOAT, m_tfValues.data());
 
     // Min and mag filter: linear scaling
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
