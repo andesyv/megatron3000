@@ -11,6 +11,8 @@
 #include <QVector3D>
 #include "math.h"
 #include "transferfunctionrenderer.h"
+#include <QOpenGLContext>
+#include <QOffscreenSurface>
 
 using namespace Slicing;
 
@@ -32,8 +34,14 @@ QMatrix4x4 Plane::model(const QVector3D& up) const {
     return m;
 }
 
-bool Volume::loadData(const QString &fileName)
+Volume::Volume(QOpenGLContext* context, QOffscreenSurface* surface)
+    : mContext{context}, mSurface{surface}
+{}
+
+bool Volume::loadData(const QString &fileName, const bool& cancel)
 {
+    if (cancel) return false;
+
     QFile file(fileName);
 
     if (!file.open(QIODevice::ReadOnly))
@@ -41,6 +49,8 @@ bool Volume::loadData(const QString &fileName)
         qWarning() << "File " << fileName << " is not possible to open.";
         return false;
     }
+
+    if (cancel) return false;
 
 #ifndef NDEBUG
     qDebug() << "Reading file.";
@@ -61,6 +71,8 @@ bool Volume::loadData(const QString &fileName)
     volumeRaw.resize(volumeSize);
 
     emit loaded();
+    
+    if (cancel) return false;
 
     if (stream.readRawData(reinterpret_cast<char*>(volumeRaw.data()),volumeSize*sizeof (unsigned short)) != volumeSize*sizeof (unsigned short))
     {
@@ -68,6 +80,8 @@ bool Volume::loadData(const QString &fileName)
     }
 
 
+
+    if (cancel) return false;
 
 #ifndef NDEBUG
     qDebug() << "Converting and normalizing data";
@@ -90,6 +104,8 @@ bool Volume::loadData(const QString &fileName)
 
 
 
+    if (cancel) return false;
+
 #ifndef NDEBUG
     qDebug() << "Allocating and storing in GPU memory";
 #endif
@@ -99,6 +115,8 @@ bool Volume::loadData(const QString &fileName)
 
 
 
+    if (cancel) return false;
+
 #ifndef NDEBUG
     qDebug() << "Loading additional settings from INI file";
 #endif
@@ -107,6 +125,8 @@ bool Volume::loadData(const QString &fileName)
 
 
 
+    if (cancel) return false;
+
 #ifndef NDEBUG
     qDebug() << "Generating transfer function";
 #endif
@@ -114,10 +134,17 @@ bool Volume::loadData(const QString &fileName)
 
 
 
+    if (cancel) return false;
+
 #ifndef NDEBUG
     qDebug() << "Generating slicing plane";
 #endif
     generateSlicingGeometryBuffer();
+
+    // If we got this far, we are done with the offscreen
+    // context and surface and can safely remove them.
+    mContext = nullptr;
+    mSurface = nullptr;
 
 
 
@@ -128,7 +155,9 @@ bool Volume::loadData(const QString &fileName)
     loaded();
 
 
-    return true;
+
+
+    return !cancel;
 }
 
 void Volume::bind(GLuint binding, GLuint tfBinding, GLuint geometryBinding) {
@@ -219,6 +248,8 @@ void Volume::updateTransferFunction(const std::vector<QVector4D>& values) {
 }
 
 void Volume::generateTexture() {
+    if (mContext && mSurface)
+        mContext->makeCurrent(mSurface);
     initializeOpenGLFunctions();
 
     glGenTextures(1, &m_texBuffer);
@@ -235,6 +266,9 @@ void Volume::generateTexture() {
 
     glBindTexture(GL_TEXTURE_3D, 0);
     m_texInitiated = true;
+    
+    if (mContext)
+        mContext->doneCurrent();
 }
 
 bool Volume::loadINI(const QString &fileName) {
@@ -267,6 +301,8 @@ bool Volume::loadINI(const QString &fileName) {
 }
 
 void Volume::generateTransferFunction() {
+    if (mContext && mSurface)
+        mContext->makeCurrent(mSurface);
     initializeOpenGLFunctions();
 
     // Generate some initial transfer function values:
@@ -294,14 +330,23 @@ void Volume::generateTransferFunction() {
     m_tfInitiated = true;
 
     transferFunctionUpdated();
+    if (mContext)
+        mContext->doneCurrent();
 }
 
 void Volume::generateSlicingGeometryBuffer() {
+    if (mContext && mSurface)
+        mContext->makeCurrent(mSurface);
+    initializeOpenGLFunctions();
+
     glGenBuffers(1, &m_slicingGeometryBuffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_slicingGeometryBuffer);
     glBufferStorage(GL_SHADER_STORAGE_BUFFER, 8 * sizeof(GLfloat), nullptr, GL_DYNAMIC_STORAGE_BIT);
     updateSlicingGeometryBuffer();
     m_slicingGeometryBufferInitiated = true;
+
+    if (mContext)
+        mContext->doneCurrent();
 }
 
 void Volume::updateSlicingGeometryBuffer() {
@@ -326,6 +371,10 @@ void Volume::updateSlicingGeometryBuffer(const Plane& geometry) {
 }
 
 Volume::~Volume() {
+    if (mContext && mSurface)
+        mContext->makeCurrent(mSurface);
+    initializeOpenGLFunctions();
+
     if (m_texInitiated)
         glDeleteTextures(1, &m_texBuffer);
 
@@ -334,4 +383,7 @@ Volume::~Volume() {
 
     if (m_slicingGeometryBufferInitiated)
         glDeleteTextures(1, &m_slicingGeometryBuffer);
+
+    if (mContext)
+        mContext->doneCurrent();
 }

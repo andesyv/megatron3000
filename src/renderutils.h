@@ -100,4 +100,9 @@ inline QVector2D aspectScale(float aspectRatio = 1.f) {
 
 QVector2D screenPointToNormalizedCoordinates(const QPoint& point, int width, int height);
 
+enum class HistogramSource : uint8_t {
+    All = 0,
+    Plane
+};
+
 #endif // RENDERUTILS_H

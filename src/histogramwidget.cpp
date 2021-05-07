@@ -63,7 +63,7 @@ HistogramWidget::HistogramWidget(QWidget *parent) :
                 throw std::logic_error{"Action not in list. >:("};
 #endif
             const auto index = sourceActionPos - mSourceOptionActions.begin();
-            mHistogramSource = static_cast<HistogramWidget::Source>(index);
+            mHistogramSource = static_cast<HistogramSource>(index);
             drawHistogram();
         });
     }
@@ -103,7 +103,7 @@ void HistogramWidget::drawHistogram()
     // Initialize async func:
 
     const auto tfValues = mMapToTransferFunction ? mVolume->transferFunctionValues() : std::vector<QVector4D>{};
-    const auto& cuttingPlane = mHistogramSource == Source::Plane ? mVolume->m_slicingGeometry : Slicing::Plane{};
+    const auto& cuttingPlane = mHistogramSource == HistogramSource::Plane ? mVolume->m_slicingGeometry : Slicing::Plane{};
 
     // Note to self: There's apparantly no easy way to pass gui objects between threads,
     // so can only really manipulate widgets with other threads.
@@ -208,7 +208,7 @@ Q_DECLARE_METATYPE( QFutureInterface<QVector<qreal>> );
 
 HistogramRunner::HistogramRunner(
     unsigned int binCount,
-    HistogramWidget::Source source,
+    HistogramSource source,
     std::shared_ptr<Volume> volume,
     std::vector<QVector4D> tfValues,
     const Slicing::Plane& plane)
@@ -263,7 +263,7 @@ void HistogramRunner::run() {
             return;
         }
 
-        if (mSource == HistogramWidget::Source::Plane) {
+        if (mSource == HistogramSource::Plane) {
             const auto box = mVolume->getVoxelBounds(mVolume->getVoxelIndex(i));
             if (!megamath::boxPlaneIntersect(box.pos, box.size, mPlane.pos, mPlane.dir))
                 continue;
