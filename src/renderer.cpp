@@ -1,5 +1,5 @@
 #include "renderer.h"
-#include <iostream>
+#include <QDebug>
 #include <QElapsedTimer>
 #include "shaders/shadermanager.h"
 #include "mainwindow.h"
@@ -41,7 +41,7 @@ void Renderer::initializeGL() {
             GLsizei length,
             const GLchar *message,
             const void *userParam) {
-        std::cout << "GL DEBUG: " << message << std::endl;
+        qDebug() << "GL DEBUG: " << message;
     };
     glDebugMessageCallback(debugMessageCallback, nullptr);
 #endif

@@ -55,8 +55,7 @@ HEADERS += \
 FORMS += \
     src/datawidget.ui \
     src/mainwindow.ui \
-    src/nodepropertywidget.ui \
-    src/transferfunctionwidget.ui
+    src/nodepropertywidget.ui
 
 DISTFILES += \
     src/shaders/default.vs \

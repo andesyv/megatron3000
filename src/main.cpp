@@ -1,6 +1,4 @@
 #include "mainwindow.h"
-#include "datawidget.h"
-#include "volume.h"
 
 #include <QApplication>
 #include <QSurfaceFormat>

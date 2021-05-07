@@ -2,13 +2,13 @@
 #include "ui_datawidget.h"
 #include "volume.h"
 #include <QDialog>
-#include <QtCore>
-#include <QtGui>
 #include <QFileSystemModel>
 #include <filesystem>
 #include <fstream>
 #include <QOpenGLContext>
 #include <QOffscreenSurface>
+#include <QCloseEvent>
+#include <QThreadPool>
 
 
 DataWidget::DataWidget(QWidget *parent) :

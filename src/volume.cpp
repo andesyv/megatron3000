@@ -2,7 +2,6 @@
 #include <QFile>
 #include <QDataStream>
 #include <QDebug>
-#include <cmath>
 #include <algorithm>
 #include "mini/ini.h"
 #include <QVector4D>

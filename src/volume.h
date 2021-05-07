@@ -6,7 +6,6 @@
 #include <optional>
 #include <vector>
 #include <QVector3D>
-#include <QQuaternion>
 #include <QMatrix3x3>
 
 namespace Slicing {

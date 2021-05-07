@@ -1,12 +1,9 @@
 #include "renderer2d.h"
 #include "mainwindow.h"
 #include "volume.h"
-#include <filesystem>
 #include "renderutils.h"
 #include "shaders/shadermanager.h"
 #include <QDebug>
-
-namespace fs = std::filesystem;
 
 void Renderer2D::zoom(double z) {
     auto& view = getViewMatrix();

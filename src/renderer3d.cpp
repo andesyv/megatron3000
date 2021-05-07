@@ -1,12 +1,10 @@
 #include "renderer3d.h"
 #include "mainwindow.h"
 #include "volume.h"
-#include <filesystem>
 #include "renderutils.h"
 #include "shaders/shadermanager.h"
 #include <QDebug>
 
-namespace fs = std::filesystem;
 using namespace Slicing;
 
 void LightGlobe::rotate(float dx, float dy) {

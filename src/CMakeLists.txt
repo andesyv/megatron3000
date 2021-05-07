@@ -3,10 +3,8 @@ target_sources(megatron3000 PRIVATE
     mainwindow.cpp
     mainwindow.ui
     histogramwidget.cpp
-    histogramwidget.ui
     transferfunctionrenderer.cpp
     transferfunctionwidget.cpp
-    transferfunctionwidget.ui
     viewport2d.cpp
     viewport3d.cpp
     renderer.cpp

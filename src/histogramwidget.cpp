@@ -10,8 +10,6 @@
 #include <QChartView>
 #include "math.h"
 
-#include <QtConcurrentRun>
-
 using namespace QtCharts;
 
 HistogramWidget::HistogramWidget(QWidget *parent) :
