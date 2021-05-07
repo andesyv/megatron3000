@@ -15,7 +15,6 @@ DataWidget::DataWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::DataWidget)
 {
-
     ui->setupUi(this);
 
     //Directory model
@@ -105,6 +104,9 @@ void DataWidget::finishLoading() {
     }
 
     mRunner.release();
+    // Yoink the thread back so we can safely clean up
+    mThreadContext->moveToThread(thread());
+    mThreadSurface->moveToThread(thread());
 }
 
 void DataWidget::load(const QString& filePath) {
@@ -112,8 +114,11 @@ void DataWidget::load(const QString& filePath) {
     const auto oldFuture = mFuture;
 
     // Remove thread affinity (so the runner can "take" it)
-    mThreadContext->moveToThread(nullptr);
-    mThreadSurface->moveToThread(nullptr);
+    // Only remove thread affinity if this is the owner, otherwise let the runner do it
+    if (mThreadContext->thread() == thread()) {
+        mThreadContext->moveToThread(nullptr);
+        mThreadSurface->moveToThread(nullptr);
+    }
 
     // Create new runner:
     mRunner = std::make_unique<DataReaderRunner>(filePath, mThreadContext.get(), mThreadSurface.get());
@@ -185,16 +190,21 @@ void DataReaderRunner::run() {
     auto volume = std::make_shared<Volume>(mContext, mSurface);
 
     const auto bLoadStatus = volume->loadData(mPath, mCancelled);
-    // Move volume ownership to main thread
-    volume->moveToThread(QApplication::instance()->thread());
+    if (bLoadStatus) {
+        // Move volume ownership to main thread
+        volume->moveToThread(QApplication::instance()->thread());
+    } else {
+        // Manually clear resources before returning ownership of context
+        volume.reset();
+    }
 
-    // Move context and surface back to main thread (for cleanup)
-    mContext->moveToThread(QApplication::instance()->thread());
-    mSurface->moveToThread(QApplication::instance()->thread());
+    // Remove thread for context and surface (for cleanup)
+    mContext->moveToThread(nullptr);
+    mSurface->moveToThread(nullptr);
     mContext = nullptr;
     mSurface = nullptr;
 
-    mFutureInterface.reportResult(bLoadStatus ? volume : std::make_shared<Volume>());
+    mFutureInterface.reportResult(volume);
     mFutureInterface.reportFinished();
 }
 
