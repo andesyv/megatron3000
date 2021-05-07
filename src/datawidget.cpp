@@ -95,11 +95,10 @@ void DataWidget::finishLoading() {
         const auto& fileIdentifier = std::filesystem::path{filePath.toStdString()}.stem().string();
         // If we managed to load the volume, pass it as a signal for anyone to catch
         loaded(volume, fileIdentifier);
-        this->close();
 
         // cache what file were opened last:
         cacheLast(filePath);
-    } else {
+    } else if (!mGlobalCancelled) {
         qInfo() << "Failed to read file at " + filePath;
     }
 
@@ -107,9 +106,36 @@ void DataWidget::finishLoading() {
     // Yoink the thread back so we can safely clean up
     mThreadContext->moveToThread(thread());
     mThreadSurface->moveToThread(thread());
+
+    finished();
+
+    if (volume)
+        close();
+}
+
+void DataWidget::closeEvent(QCloseEvent* event) {
+    // If we're cancelling, block all close events:
+    if (mGlobalCancelled) {
+        event->ignore();
+
+    // If we have a job running, cancel that first and then close window:
+    } else if (mRunner) {
+        mGlobalCancelled = true;
+        connect(this, &DataWidget::finished, this, [&](){
+#ifndef NDEBUG
+            qDebug() << "Cancelled data loading";
+#endif
+            mGlobalCancelled = false;
+            close();
+        });
+        mRunner->mCancelled = true;
+    } else {
+        event->accept();
+    }
 }
 
 void DataWidget::load(const QString& filePath) {
+    mGlobalCancelled = false;
     auto oldRunner = std::move(mRunner);
     const auto oldFuture = mFuture;
 

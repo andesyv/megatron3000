@@ -24,6 +24,7 @@ public:
 
 signals:
     void loaded(std::shared_ptr<Volume> volume, const std::string& identifier = {});
+    void finished();
 
 private slots:
     void on_treeView_clicked(const QModelIndex &index);
@@ -32,10 +33,16 @@ private slots:
 
     void finishLoading();
 
+protected:
+    void closeEvent(QCloseEvent* event) override;
+
 private:
     Ui::DataWidget *ui;
     QFileSystemModel *dirmodel;
     QFileSystemModel *filemodel;
+
+    // True when the widget has been closed during loading
+    bool mGlobalCancelled{false};
 
     std::unique_ptr<QOpenGLContext> mThreadContext;
     std::unique_ptr<QOffscreenSurface> mThreadSurface;
