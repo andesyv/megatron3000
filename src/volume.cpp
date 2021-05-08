@@ -12,6 +12,7 @@
 #include "transferfunctionrenderer.h"
 #include <QOpenGLContext>
 #include <QOffscreenSurface>
+#include <cmath>
 
 using namespace Slicing;
 
