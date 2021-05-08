@@ -60,6 +60,21 @@ private:
     std::unique_ptr<Ui::MainWindow> mUi;
 
     DockWrapper* createWrapperWidget(QWidget* widget, const QString& title = "Dockwidget");
+
+    /**
+     * @brief Create a wrapped Widget object
+     * This works the same as createWrapperWidget, except that it defers the
+     * creation of the widget until after the wrapper dock is created.
+     * @tparam T The type of widget. Must accept the pattern T{QWidget* parent}
+     * @param title The title of the widget
+     * @return DockWrapper* pointer to new wrapped widget
+     */
+    template <typename T>
+    DockWrapper* createWrappedWidget(const QString& title = "Dockwidget") {
+        auto dock = new DockWrapper{title, this};
+        dock->setWidget(new T{dock});
+        return dock;
+    }
     // ALgorithm for finding new dock widget placements.
     void layoutDockWidget(DockWrapper* newWidget);
 

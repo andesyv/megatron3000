@@ -9,6 +9,7 @@
 #include <QLabel>
 #include "renderutils.h"
 #include <QMenuBar>
+#include <QShortcut>
 
 Viewport3D::Viewport3D(QWidget *parent) :
     QWidget{parent}, IMenu{this}
@@ -17,12 +18,33 @@ Viewport3D::Viewport3D(QWidget *parent) :
     mLayout = new QVBoxLayout{this};
     mLayout->setContentsMargins(0, 0, 0, 0);
 
+    // Shortcuts:
+    const auto sliceKeys = QKeySequence{tr("S", "Toggle slice")};
+    const auto mvTglKeys = QKeySequence{tr("L", "Toggle linked to camera")};
+
     // Slice menu
     auto slicemenu = mMenuBar->addMenu("Slicing");
     auto sliceEnable = slicemenu->addAction("Enable");
     sliceEnable->setCheckable(true);
+    // This shortcut will actually never be run because widget can never get focus,
+    // but I want the shortcut to be there. (hacky solution, but you can't argue with the results)
+    sliceEnable->setShortcut(sliceKeys);
+    sliceEnable->setShortcutContext(Qt::ShortcutContext::WidgetShortcut);
+
+    auto sliceEnableProxyShortcut = new QShortcut{sliceKeys, parent};
+    sliceEnableProxyShortcut->setContext(Qt::ShortcutContext::WidgetWithChildrenShortcut);
+    connect(sliceEnableProxyShortcut, &QShortcut::activated, sliceEnable, &QAction::toggle);
+
     mSliceMoveToggle = slicemenu->addAction("Linked to camera");
     mSliceMoveToggle->setCheckable(true);
+    // Again, just a fake shortcut:
+    mSliceMoveToggle->setShortcut(mvTglKeys);
+    mSliceMoveToggle->setShortcutContext(Qt::ShortcutContext::WidgetShortcut);
+
+    // Actual shortcut:
+    auto sliceMoveToggleProxyShortcut = new QShortcut{mvTglKeys, parent};
+    sliceMoveToggleProxyShortcut->setContext(Qt::ShortcutContext::WidgetWithChildrenShortcut);
+    connect(sliceMoveToggleProxyShortcut, &QShortcut::activated, mSliceMoveToggle, &QAction::toggle);
 
     // Opacity slider menu widget:
     auto sliceSlider = new QWidgetAction{this};
