@@ -28,7 +28,24 @@ void Renderer2D::rotate(float dx, float dy) {
     if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
         volume->m_slicingGeometry.dir = (mMVPInverse * QVector4D{0.f, 0.f, -1.f, 0.f}).toVector3D().normalized();
         volume->m_slicingGeometry.pos = (mMVPInverse * QVector4D{0.f, 0.f, 0.f, 1.f}).toVector3D();
+
+        mBlockSliceUpdate = true;
         volume->updateSlicingGeometryBuffer();
+        mBlockSliceUpdate = false;
+    }
+}
+
+void Renderer2D::updateViewMatrixFromSlicingPlane() {
+    if (mBlockSliceUpdate)
+        return;
+        
+    auto volume = getVolume();
+    if (volume) {
+        const auto& plane = volume->m_slicingGeometry;
+        auto& view = getViewMatrix();
+        view.setToIdentity();
+        view.lookAt(plane.pos, plane.pos - plane.dir, {0.f, 1.f, 0.f});
+        viewMatrixUpdated();
     }
 }
 

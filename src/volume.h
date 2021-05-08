@@ -68,6 +68,7 @@ public:
 signals:
     void loaded();
     void transferFunctionUpdated();
+    void slicingGeometryUpdated();
 
 private:
     unsigned short m_width{0}, m_height{0}, m_depth{0};

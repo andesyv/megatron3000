@@ -358,6 +358,8 @@ void Volume::updateSlicingGeometryBuffer() {
     };
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 8 * sizeof(GLfloat), values);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    slicingGeometryUpdated();
 }
 
 void Volume::updateSlicingGeometryBuffer(const Plane& geometry) {

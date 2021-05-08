@@ -43,6 +43,7 @@ private:
     QAction* mRemoveVolumeAction{nullptr};
     std::vector<QAction*> mAxisActions;
     AxisMode mAxisMode{AxisMode::ORTHOGONAL};
+    QMetaObject::Connection mSliceUpdateConnection;
 
 private slots:
     void setAxis(QAction* axis);

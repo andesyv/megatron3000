@@ -85,6 +85,11 @@ void Viewport2D::wheelEvent(QWheelEvent *ev)
 
 void Viewport2D::volumeSwitched() {
     mRenderer->mVolume = mVolume;
+    if (mAxisMode == AxisMode::SLICE)
+        mSliceUpdateConnection = connect(
+            mVolume.get(), &Volume::slicingGeometryUpdated,
+            mRenderer, &Renderer2D::updateViewMatrixFromSlicingPlane
+        );
 }
 
 Viewport2D::~Viewport2D() = default;
@@ -131,17 +136,17 @@ void Viewport2D::setAxis(QAction* axis) {
             break;
         case AxisMode::SLICE:
             {
-                const auto& volume = mRenderer->getVolume();
-                if (volume) {
-                    const auto& plane = volume->m_slicingGeometry;
-                    auto& viewMat = mRenderer->getViewMatrix();
-                    viewMat.setToIdentity();
-                    viewMat.lookAt(plane.pos, plane.pos - plane.dir, {0.f, 1.f, 0.f});
-                    mRenderer->viewMatrixUpdated();
-                }
+                mRenderer->updateViewMatrixFromSlicingPlane();
+                if (mVolume)
+                    mSliceUpdateConnection = connect(
+                        mVolume.get(), &Volume::slicingGeometryUpdated,
+                        mRenderer, &Renderer2D::updateViewMatrixFromSlicingPlane
+                    );
             }
             break;
     }
 
     mRenderer->mIsSlicePlaneEnabled = mRenderer->mIsCameraLinkedToSlicePlane = mAxisMode == AxisMode::SLICE;
+    if (mAxisMode != AxisMode::SLICE && mSliceUpdateConnection)
+        disconnect(mSliceUpdateConnection);
 }
