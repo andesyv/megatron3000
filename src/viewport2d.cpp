@@ -135,7 +135,8 @@ void Viewport2D::setAxis(QAction* axis) {
                 if (volume) {
                     const auto& plane = volume->m_slicingGeometry;
                     auto& viewMat = mRenderer->getViewMatrix();
-                    viewMat.lookAt(plane.pos, plane.pos + plane.dir, {0.f, 1.f, 0.f});
+                    viewMat.setToIdentity();
+                    viewMat.lookAt(plane.pos, plane.pos - plane.dir, {0.f, 1.f, 0.f});
                     mRenderer->viewMatrixUpdated();
                 }
             }

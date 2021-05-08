@@ -38,7 +38,7 @@ public:
     ~Renderer() override;
 
     virtual void zoom(double z);
-    void rotate(float dx, float dy);
+    virtual void rotate(float dx, float dy);
 
     virtual const QMatrix4x4& getViewMatrix() const; 
     virtual std::shared_ptr<Volume> getVolume() const;

@@ -8,6 +8,7 @@ public:
     Renderer2D(QWidget *parent = nullptr) : Renderer{parent} {}
 
     void zoom(double z) override;
+    void rotate(float dx, float dy) override;
 
 protected:
     void initializeGL() override;

@@ -26,6 +26,21 @@ bool Renderer3D::isGlobeIntersecting(const QVector2D& p) const {
     return (p - globePosition()).length() <= mGlobe.mRadius;
 }
 
+void Renderer3D::rotate(float dx, float dy) {
+    const auto origMat{getViewMatrix()};
+
+    Renderer::rotate(dx, dy);
+
+    // Rotate plane:
+    auto volume = getVolume();
+    if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
+        const auto relativeTrans = mViewMatrixInverse * origMat;
+        const auto newDir = (relativeTrans * QVector4D{volume->m_slicingGeometry.dir, 0.f}).toVector3D();
+        volume->m_slicingGeometry.dir = newDir;
+        volume->updateSlicingGeometryBuffer();
+    }
+}
+
 void Renderer3D::initializeGL() {
     Renderer::initializeGL();
 
