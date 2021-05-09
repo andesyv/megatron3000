@@ -3,15 +3,18 @@
 [![Build](https://github.com/andesyv/megatron3000/actions/workflows/build.yml/badge.svg)](https://github.com/andesyv/megatron3000/actions/workflows/build.yml)
 
 **Megatron 3000** is a volume renderer for visualization of medical CT scan data. This project was the
-course project for the for the [INF252 - Visualization course at the University of Bergen](https://vis.uib.no/courses/inf252/).
+course project for the [INF252 - Visualization course at the University of Bergen](https://vis.uib.no/courses/inf252/).
 
 # Table of Contents
 - [Table of Contents](#table-of-contents)
+- [Design](#design)
 - [Overview](#overview)
   - [Transfer Function View](#transfer-function-view)
   - [2D View](#2d-view)
   - [3D View](#3d-view)
   - [Histogram View](#histogram-view)
+  - [Other stuff](#other-stuff)
+    - [Multithreading](#multithreading)
 - [Shortcuts](#shortcuts)
   - [Global shortcuts](#global-shortcuts)
   - [View shortcuts](#view-shortcuts)
@@ -27,6 +30,8 @@ course project for the for the [INF252 - Visualization course at the University 
     - [VS Code](#vs-code)
 - [Licence](#licence)
 
+# Design
+The project was designed using the [Five Design Sheet](http://fds.design) methodology. The final sheet (5) is supplied in the [design.pdf](design.pdf) file.
 # Overview
 ![Demo](demo.png)
 
@@ -83,6 +88,14 @@ representation corresponds to the histogram.
 The histogram is generated in the background using separate worker threads and will reflect any changes
 in the connected data. If the histogram is mapped to the transfer function, any changes in the transfer function will regenerate the histogram. Any changes to the bin count will also regenerate the histogram.
 
+## Other stuff
+### Multithreading
+All expensive tasks the program has to do are running on separate threads from the main program,
+making it possible to still use the program while stuff happens in the background. In practice this
+means data loading and histogram generation. The worker threads are also cancellable.
+For data loading this means that if the user decides to load a different volume mid-loading or cancel the loading process, they can just click on another file or cancel the data window, respectively. For
+histograms this means that if the user changes the data mid histogram-generation, the generation will
+cancel and start a new generation as soon as it's convenient.
 # Shortcuts
 The application has two sets of shortcuts: *Global shortcuts* and *view shortcuts*. Global shortcuts
 operate on the whole program, while view shortcuts affect the currently *focused* view. The view in
@@ -106,7 +119,8 @@ focus is indicated by having a cyanish title bar.
  - <kbd>L</kbd>/<kbd>Right Mouse Button</kbd> Enable / disable linked camera for slicing plane
 
 # Dependencies
-The project uses some dependencies beside Qt that are supplied as submodules. To fetch them simply do
+The project mostly uses Qt 5.15.2, which is not supplied in this repository and must be downloaded and
+installed separately for development setup. The project also uses [pulzed/mINI](https://github.com/pulzed/mINI) to load INI files, which is supplied as a git submodule. To load all submodules you can use the following command:
 ```
 git submodule update --init --recursive
 ```
@@ -115,7 +129,7 @@ git submodule update --init --recursive
 The project uses two build systems that you can choose from when building: QMake and CMake.
 
 ## QMake
-Definitively the easiest setup. Using either a Qt extension or Qt creator itself, configure the project using the `megatron3000.pro` file.
+Definitively the easiest setup. Using either a Qt extension or Qt creator itself, configure the project using the [megatron3000.pro](megatron3000.pro) file.
 
 ## CMake
 The project is additionaly setup using CMake as an optional approach. The CMake project setup has some dependencies in terms of externally linked libraries, which you will have to manually provide the environment paths to yourself. With CMake, this boils down to supplying the path to the CMake project of the dependency to the *CMAKE_PREFIX_PATH* variable. You can either set this as an environment variable in your working environment or you can manually set the CMake variable for the project. Here is how to do this for some different environment setups:
@@ -125,7 +139,7 @@ There are two ways of setting up a development environment in Visual Studio: usi
 
 **CLI**:
 
-Using the CLI you can very simply generate a solution file using something like this:
+Using the CLI you can generate a solution file using something like this:
 ```
 cmake -G "Visual Studio 16 2019" -DCMAKE_PREFIX_PATH="D:\Qt\5.15.2\msvc2019_64"
 ```
@@ -135,7 +149,7 @@ Replace `Visual Studio 16 2019` with whatever version of Visual Studio you're us
 
 Visual Studio 2017 and later has build-in support for CMake. To use this you open up the editor, go to File -> Open -> CMake and then navigate to and select the root `CMakeLists.txt` in this project.
 
-A sample `CMakeSettings.json` file is included in the project. The CMake extension uses this to correctly configure the CMake project for Visual Studio. In this file you will need to specify additional paths to any dependencies required by the project, like Qt. Just change the `cmakeCommandArgs` key to `"-DCMAKE_PREFIX_PATH=\"qt-installation-path"` where *qt-installation-path* is the full path to your Qt installation.
+A sample [CMakeSettings.json](CMakeSettings.json) file is included in the project. The CMake extension uses this to correctly configure the CMake project for Visual Studio. In this file you will need to specify additional paths to any dependencies required by the project, like Qt. Just change the `cmakeCommandArgs` key to `"-DCMAKE_PREFIX_PATH=\"qt-installation-path"` where *qt-installation-path* is the full path to your Qt installation.
 
 ### Visual Studio Code
 If you're using the [CMake extension for visual studio code](https://marketplace.visualstudio.com/items?itemName=twxs.cmake) you can add custom settings to cmake for a particular workspace by adding it to the `.vscode/settings.json` file. Simply add the key `cmake.configureEnvironment` with the property `CMAKE_PREFIX_PATH` followed by the path to your Qt installation to the `.vscode/settings.json` file (create it if it doesn't exist). Example `.vscode/settings.json` file:
@@ -167,7 +181,7 @@ For linter help you would probably also like to add the include path `<qt-instal
 If using Windows you need to dynamically link to shared libraries. To do this you need to have all the dynamically linked libraries loaded in a path the executable have access to, like the working directory or system32. Fortunately Qt comes with a program to setup dynamically linked libraries for us called `windeployqt`. Simply run this program, located in the `bin` folder for your Qt installation, with the built executable as an argument and it will set up all shared libraries in the current working directory.
 
 ### VS Code
-VS Code tasks are handy, so I've set up a tasks template in the file `vscode.tasks.json` that can be used to automate the process of building and linking.
+VS Code tasks are handy, so I've set up a tasks template in the file [vscode.tasks.json](vscode.tasks.json) that can be used to automate the process of building and linking.
 
 # Licence
 Copyright © 2021, Sigurd Aleksander Sagstad and Anders Syvertsen.
