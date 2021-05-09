@@ -11,15 +11,37 @@
 
 class QWidget;
 class Volume;
-class DockWrapper;
 class QShortcut;
 class DataWidget;
 class IMenu;
+
+
+
+/**
+ * @brief Wrapper helper class for QDockWidget
+ * 
+ */
+class DockWrapper : public QDockWidget {
+public:
+    explicit DockWrapper(
+        const QString &title,
+        QWidget *parent = nullptr,
+        Qt::WindowFlags flags = Qt::WindowFlags()
+    );
+
+protected:
+    void closeEvent(QCloseEvent* event) override;
+};
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+/**
+ * @brief Main application wrapper
+ * Handles all widgets, global shortcuts, and volumes.
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -60,39 +82,25 @@ private:
     std::unique_ptr<Ui::MainWindow> mUi;
 
     DockWrapper* createWrapperWidget(QWidget* widget, const QString& title = "Dockwidget");
+
+    /**
+     * @brief Create a wrapped Widget object
+     * This works the same as createWrapperWidget, except that it defers the
+     * creation of the widget until after the wrapper dock is created.
+     * @tparam T The type of widget. Must accept the pattern T{QWidget* parent}
+     * @param title The title of the widget
+     * @return DockWrapper* pointer to new wrapped widget
+     */
+    template <typename T>
+    DockWrapper* createWrappedWidget(const QString& title = "Dockwidget") {
+        auto dock = new DockWrapper{title, this};
+        dock->setWidget(new T{dock});
+        return dock;
+    }
     // ALgorithm for finding new dock widget placements.
     void layoutDockWidget(DockWrapper* newWidget);
 
     std::vector<std::pair<std::string, std::shared_ptr<Volume>>> mVolumes;
-};
-
-
-
-
-
-/**
- * @brief Wrapper helper class for QDockWidget
- * 
- */
-class DockWrapper : public QDockWidget {
-public:
-    explicit DockWrapper(const QString &title, QWidget *parent = nullptr,
-                         Qt::WindowFlags flags = Qt::WindowFlags())
-        : QDockWidget{title, parent, flags} {
-            setFocusPolicy(Qt::StrongFocus);
-        }
-
-protected:
-    void closeEvent(QCloseEvent* event) override {
-        auto parent = dynamic_cast<MainWindow*>(parentWidget());
-        if (parent) {
-            auto& widgets = parent->mWidgets;
-            auto pos = std::find(widgets.begin(), widgets.end(), this);
-            if (pos != widgets.end())
-                widgets.erase(pos);
-        }
-        event->accept();
-    }
 };
 
 #endif // MAINWINDOW_H

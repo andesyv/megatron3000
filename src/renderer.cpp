@@ -168,18 +168,8 @@ void Renderer::rotate(float dx, float dy)
 
     QVector4D transformedAxis = mViewMatrixInverse*QVector4D(rotVec,0.f);
 
-    const auto origMat{view};
     view.rotate(0.5f*rotVec.length(), transformedAxis.toVector3D());
     viewMatrixUpdated();
-
-    // Rotate plane:
-    auto volume = getVolume();
-    if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
-        const auto relativeTrans = mViewMatrixInverse * origMat;
-        const auto newDir = (relativeTrans * QVector4D{volume->m_slicingGeometry.dir, 0.f}).toVector3D();
-        volume->m_slicingGeometry.dir = newDir;
-        volume->updateSlicingGeometryBuffer();
-    }
 }
 
 Shader& Renderer::shaderProgram(const std::string& name) {

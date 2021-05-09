@@ -30,6 +30,8 @@ public:
     QVector2D globePosition() const;
     bool isGlobeIntersecting(const QVector2D& p) const;
 
+    void rotate(float dx, float dy) override;
+
 protected:
     void initializeGL() override;
     void paintGL() override;

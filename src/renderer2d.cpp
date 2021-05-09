@@ -7,7 +7,6 @@
 
 void Renderer2D::zoom(double z) {
     auto& view = getViewMatrix();
-    const auto& origMat{view};
 
     auto& trans = view(2,3);
     const auto delta = std::clamp(trans + static_cast<float>(z) * 0.02f, -1.f, 1.f) - trans;
@@ -16,11 +15,37 @@ void Renderer2D::zoom(double z) {
 
     auto volume = getVolume();
     if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
-        auto& plane = volume->m_slicingGeometry;
-        const auto dir = (mViewMatrixInverse * QVector4D{0.f, 0.f, 1.f, 0.f}).toVector3D();
-        const auto newPos = plane.pos + dir * delta;
-        plane.pos = QVector3D::dotProduct(newPos, plane.dir) * plane.dir;
+        auto pos = (mMVPInverse * QVector4D{0.f, 0.f, 0.f, 1.f}).toVector3D();
+        volume->m_slicingGeometry.pos = pos;
         volume->updateSlicingGeometryBuffer();
+    }
+}
+
+void Renderer2D::rotate(float dx, float dy) {
+    Renderer::rotate(dx, dy);
+
+    auto volume = getVolume();
+    if (volume && mIsSlicePlaneEnabled && mIsCameraLinkedToSlicePlane) {
+        volume->m_slicingGeometry.dir = (mMVPInverse * QVector4D{0.f, 0.f, -1.f, 0.f}).toVector3D().normalized();
+        volume->m_slicingGeometry.pos = (mMVPInverse * QVector4D{0.f, 0.f, 0.f, 1.f}).toVector3D();
+
+        mBlockSliceUpdate = true;
+        volume->updateSlicingGeometryBuffer();
+        mBlockSliceUpdate = false;
+    }
+}
+
+void Renderer2D::updateViewMatrixFromSlicingPlane() {
+    if (mBlockSliceUpdate)
+        return;
+        
+    auto volume = getVolume();
+    if (volume) {
+        const auto& plane = volume->m_slicingGeometry;
+        auto& view = getViewMatrix();
+        view.setToIdentity();
+        view.lookAt(plane.pos, plane.pos - plane.dir, {0.f, 1.f, 0.f});
+        viewMatrixUpdated();
     }
 }
 
@@ -71,11 +96,6 @@ void Renderer2D::paintGL() {
     if (volume) {
         shader.setUniformValue("volumeScale", volume->volumeScale());
         shader.setUniformValue("volumeSpacing", volume->volumeSpacing());
-        if (mIsCameraLinkedToSlicePlane) {
-            auto& plane = volume->m_slicingGeometry;
-            viewMatrix.lookAt(plane.pos, plane.pos + plane.dir, {0.f, 1.f, 0.f});
-            shader.setUniformValue("MVP", (mPerspectiveMatrix * viewMatrix).inverted());
-        }
 
         // Volume guard automatically binds and unbinds. :)
         volumeGuard = volume->guard();
