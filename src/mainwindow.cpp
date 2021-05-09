@@ -46,16 +46,16 @@ MainWindow::MainWindow(QWidget *parent)
     // Connections:
     connect(mUi->action2D_Viewport, &QAction::triggered, this, [&](){
         // Lambda mediator: button connected to lambda -> lambda decides what widget to add to viewport
-        addWidget(createWrappedWidget<Viewport2D>("2D Viewport"));
+        addWidget(createWrappedWidget<Viewport2D>("2D View"));
     });
     connect(mUi->action3D_Viewport, &QAction::triggered, this, [&](){
-        addWidget(createWrappedWidget<Viewport3D>("3D Viewport"));
+        addWidget(createWrappedWidget<Viewport3D>("3D View"));
     });
     connect(mUi->actionTransfer_function, &QAction::triggered, this, [&](){
-        addWidget(createWrappedWidget<TransferFunctionWidget>("Transfer function"));
+        addWidget(createWrappedWidget<TransferFunctionWidget>("Transfer Function View"));
     });
     connect(mUi->actionHistogram_Widget, &QAction::triggered, this, [&](){
-        addWidget(createWrappedWidget<HistogramWidget>("Histogram Widget"));
+        addWidget(createWrappedWidget<HistogramWidget>("Histogram View"));
     });
     connect(mUi->actionOpen, &QAction::triggered, this, &MainWindow::load);
     connect(mUi->actionOpen_last_opened, &QAction::triggered, this, [=](){ load(true); });
