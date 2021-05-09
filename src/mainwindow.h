@@ -11,15 +11,37 @@
 
 class QWidget;
 class Volume;
-class DockWrapper;
 class QShortcut;
 class DataWidget;
 class IMenu;
+
+
+
+/**
+ * @brief Wrapper helper class for QDockWidget
+ * 
+ */
+class DockWrapper : public QDockWidget {
+public:
+    explicit DockWrapper(
+        const QString &title,
+        QWidget *parent = nullptr,
+        Qt::WindowFlags flags = Qt::WindowFlags()
+    );
+
+protected:
+    void closeEvent(QCloseEvent* event) override;
+};
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+/**
+ * @brief Main application wrapper
+ * Handles all widgets, global shortcuts, and volumes.
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -79,35 +101,6 @@ private:
     void layoutDockWidget(DockWrapper* newWidget);
 
     std::vector<std::pair<std::string, std::shared_ptr<Volume>>> mVolumes;
-};
-
-
-
-
-
-/**
- * @brief Wrapper helper class for QDockWidget
- * 
- */
-class DockWrapper : public QDockWidget {
-public:
-    explicit DockWrapper(const QString &title, QWidget *parent = nullptr,
-                         Qt::WindowFlags flags = Qt::WindowFlags())
-        : QDockWidget{title, parent, flags} {
-            setFocusPolicy(Qt::StrongFocus);
-        }
-
-protected:
-    void closeEvent(QCloseEvent* event) override {
-        auto parent = dynamic_cast<MainWindow*>(parentWidget());
-        if (parent) {
-            auto& widgets = parent->mWidgets;
-            auto pos = std::find(widgets.begin(), widgets.end(), this);
-            if (pos != widgets.end())
-                widgets.erase(pos);
-        }
-        event->accept();
-    }
 };
 
 #endif // MAINWINDOW_H

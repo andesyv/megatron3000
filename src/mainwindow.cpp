@@ -14,6 +14,28 @@
 #include "histogramwidget.h"
 #include "transferfunctionwidget.h"
 
+DockWrapper::DockWrapper(const QString &title, QWidget *parent, Qt::WindowFlags flags)
+    : QDockWidget{title, parent, flags}
+{
+    setFocusPolicy(Qt::StrongFocus);
+}
+
+void DockWrapper::closeEvent(QCloseEvent* event) {
+    auto parent = dynamic_cast<MainWindow*>(parentWidget());
+    if (parent) {
+        auto& widgets = parent->mWidgets;
+        auto pos = std::find(widgets.begin(), widgets.end(), this);
+        if (pos != widgets.end())
+            widgets.erase(pos);
+    }
+    event->accept();
+}
+
+
+
+
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     mUi{new Ui::MainWindow}
