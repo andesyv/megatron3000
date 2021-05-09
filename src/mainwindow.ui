@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Megatron3000</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="horizontalLayoutWidget">
@@ -49,6 +49,8 @@
      <addaction name="actionHistogram_Widget"/>
     </widget>
     <addaction name="menuAdd"/>
+    <addaction name="actionClose"/>
+    <addaction name="actionReset_to_default"/>
    </widget>
    <widget class="QMenu" name="menuData">
     <property name="title">
@@ -71,7 +73,7 @@
     <string>2D Viewport</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+2</string>
+    <string>Ctrl+1</string>
    </property>
   </action>
   <action name="action3D_Viewport">
@@ -79,7 +81,7 @@
     <string>3D Viewport</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+3</string>
+    <string>Ctrl+2</string>
    </property>
   </action>
   <action name="actionData_Manager">
@@ -100,7 +102,7 @@
     <string>Transfer function</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+4</string>
+    <string>Ctrl+3</string>
    </property>
   </action>
   <action name="actionHistogram_Widget">
@@ -108,7 +110,7 @@
     <string>Histogram Widget</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+5</string>
+    <string>Ctrl+4</string>
    </property>
   </action>
   <action name="actionOpen_last_opened">
@@ -117,6 +119,19 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="text">
+    <string>Close</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionReset_to_default">
+   <property name="text">
+    <string>Reset to default</string>
    </property>
   </action>
  </widget>

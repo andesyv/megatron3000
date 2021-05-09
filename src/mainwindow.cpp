@@ -4,7 +4,6 @@
 #include <QDebug>
 #include "volume.h"
 #include "shaders/shadermanager.h"
-#include <QShortcut>
 #include <QApplication>
 
 // Modules:
@@ -60,29 +59,28 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(mUi->actionOpen, &QAction::triggered, this, &MainWindow::load);
     connect(mUi->actionOpen_last_opened, &QAction::triggered, this, [=](){ load(true); });
-
-    // Manually create a rendering widget:
-    // NOTE: For datawidget to be able to create a volume, a render widget must be present. Else OpenGL crashes.
-    mUi->action2D_Viewport->trigger();
-    //mUi->actionHistogram_Widget->trigger();
-
-    // loadData();
-
-    mGlobalViewMatrix.setToIdentity();
-
-    auto shortcut = new QShortcut{QKeySequence{tr("F5", "Reload_Shaders")}, this};
-    mShortcuts.push_back(shortcut);
-    connect(shortcut, &QShortcut::activated, this, [](){
-        qDebug() << "Reloading shaders!";
-        ShaderManager::get().reloadShaders();
-    });
-    shortcut = new QShortcut{QKeySequence{tr("Ctrl+W", "Close Viewport")}, this};
-    mShortcuts.push_back(shortcut);
-    connect(shortcut, &QShortcut::activated, this, [](){
+    connect(mUi->actionClose, &QAction::triggered, this, [](){
         auto focus = QApplication::focusWidget();
         if (focus)
             focus->close();
     });
+    connect(mUi->actionReset_to_default, &QAction::triggered, this, &MainWindow::defaultLayout);
+
+    // Manually create a rendering widget:
+    // NOTE: For datawidget to be able to create a volume, a render widget must be present. Else OpenGL crashes.
+    defaultLayout();
+
+    mGlobalViewMatrix.setToIdentity();
+
+#ifndef NDEBUG
+    auto reloadShaders = mUi->menuData->addAction("Reload shaders");
+    reloadShaders->setShortcut(QKeySequence{tr("F5", "Reload_Shaders")});
+    reloadShaders->setShortcutContext(Qt::ApplicationShortcut);
+    connect(reloadShaders, &QAction::triggered, this, [](){
+        qDebug() << "Reloading shaders!";
+        ShaderManager::get().reloadShaders();
+    });
+#endif
 }
 
 void MainWindow::addWidget(DockWrapper* dock) {
@@ -152,6 +150,17 @@ void MainWindow::load(bool bOpenLast) {
     
     if (bOpenLast)
         widget->loadCached();
+}
+
+void MainWindow::defaultLayout() {
+    while (!mWidgets.empty())
+        mWidgets.back()->close();
+
+    // Default setup:
+    // mUi->action2D_Viewport->trigger();
+    mUi->action3D_Viewport->trigger();
+    // mUi->actionTransfer_function->trigger();
+    // mUi->actionHistogram_Widget->trigger();
 }
 
 DockWrapper* MainWindow::createWrapperWidget(QWidget* widget, const QString& title) {

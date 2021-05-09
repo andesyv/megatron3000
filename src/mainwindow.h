@@ -11,7 +11,6 @@
 
 class QWidget;
 class Volume;
-class QShortcut;
 class DataWidget;
 class IMenu;
 
@@ -54,7 +53,6 @@ public:
     // Global camera matrix for all render-widgets
     QMatrix4x4 mGlobalViewMatrix;
     std::vector<QDockWidget*> mWidgets;
-    std::vector<QShortcut*> mShortcuts;
 
     auto volumesList() const { return mVolumes; }
 
@@ -77,6 +75,8 @@ public slots:
 
     // Helper slot for button.
     void load(bool bOpenLast = false);
+
+    void defaultLayout();
 
 private:
     std::unique_ptr<Ui::MainWindow> mUi;
