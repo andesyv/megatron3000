@@ -1,4 +1,4 @@
-<h1>Megatron 3000</h1>
+<a href="https://github.com/andesyv/megatron3000"><h1>Megatron 3000</h1></a>
 
 [![Build](https://github.com/andesyv/megatron3000/actions/workflows/build.yml/badge.svg)](https://github.com/andesyv/megatron3000/actions/workflows/build.yml)
 
@@ -15,6 +15,7 @@ course project for the [INF252 - Visualization course at the University of Berge
   - [Histogram View](#histogram-view)
   - [Other stuff](#other-stuff)
     - [Multithreading](#multithreading)
+- [Task Completion](#task-completion)
 - [Shortcuts](#shortcuts)
   - [Global shortcuts](#global-shortcuts)
   - [View shortcuts](#view-shortcuts)
@@ -104,6 +105,43 @@ For data loading this means that if the user decides to load a different volume 
 the loading process, they can just click on another file or cancel the data window, respectively. For
 histograms this means that if the user changes the data mid histogram-generation, the generation will
 cancel and start a new generation as soon as it's convenient.
+
+# Task Completion
+In the task description of the course, the product was made for a fictional client, Dr. Strangevis.
+According to the various wishes of the fictional client, the following wishes should have been
+fullfilled by our application:
+
+Id | Task description | Completion
+-- | ---------------- | ----------
+**T01** | I want to se a histogram of all the data values | ✅
+**T02** | I want to be able to scroll through cross-sectional images along each of the main axes |✅
+**T03** | I want to interactively control how colors are assigned to different structures | ✅
+**T04** | I want to see the data values along a selected line of sight (ray) through the volume |❌
+**T05** | I want to see an image that looks like a standard x-ray |✅ *(The grayscale slices looks like x-rays.)*
+**T06** | I want to see which structures in the volume contain the highest data values |❌ *(Using the transfer function you can find the parts of the volume with the highest data values, but indirectly.)*
+**T07** | I want to see the 3d surfaces associated with different data values | ✅
+**T08** | I want to simultaneously see internal and external structures | ✅
+**T09** | I want to see regions where the data values change a lot | ✅
+**T10** | I want to be able to control a virtual light source | ✅
+**T11** | I want to be able to cut open the volume to see its interior | ✅
+**T12** | I want to select a range of data values and see the resulting 3D structures in relation to the whole volume | ❌
+**T13** | I want to select a position in a cross-sectional view and see where this point is located in 3D | ❌
+**T14** | I want to select a poition in a 3D view and see this point in a cross-sectional view | ❌
+**T15** | I want to see the gradient direction and magnitude for a selected position within the volume | ❌
+**T16** | I want to see a magnified view of a specified region of the volume | ❌
+**T17** | I want to see multiple different views of the same dataset side-by-side | ✅
+**T18** | I want to compare two different datasets side-by-side | ✅
+**T19** | I want to compare two different datasets in the same view | ❌
+**T20** | I want to measure distances to images in real-world coordinates | ❌
+**T21** | I want to switch between orthographic and perspective projection in 3D views | ❌
+**T22** | I want to assign textures to use different rendering styles for different structures in the volume | ❌
+**T23** | I want to be able to generate realistic images with shadows | ❌
+**T24** | I want to interactively cut out parts of the volume and examine them in detail | ❌
+**T25** | I want to see an overview of the whole dataset | ✅ *(The histogram)*
+**T26** | I want to be able to rotate cross-sectional planes | ✅
+**T27** | I want to be able to zoom in on regions without losing context | ✅
+**T28** | I want to be able to select and control the appearance of salient structures | ❌
+
 # Shortcuts
 The application has two sets of shortcuts: *Global shortcuts* and *view shortcuts*. Global shortcuts
 operate on the whole program, while view shortcuts affect the currently *focused* view. The view in
