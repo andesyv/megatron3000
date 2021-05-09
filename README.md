@@ -59,7 +59,8 @@ representation of the view can be modified by the transfer function view however
 the representation is unaffected by the opacity of the transfer function.
 
 The 2D view can show slices across any of the major axis (x, y and z), any arbitrary axis, or an axis
-aligned with the slicing plane in the 3D view. The current axis can be changed in the view's ***View*** menu. When aligned with the major axis, movement is limited to that axis. When aligned with the slicing
+aligned with the slicing plane in the 3D view. The current axis can be changed in the view's ***View***
+menu. When aligned with the major axis, movement is limited to that axis. When aligned with the slicing
 plane axis, movements in the 2D view will be reflected on the slicing plane. This makes adjusting the
 slicing plane via the 2D view most likely the preferred method of moving the slicing plane.
 
@@ -73,6 +74,9 @@ the ***Slicing*** menu. To rotate and move the slicing plane, the slicing plane 
 unlinked to the camera such that movements to the camera will move be reflected on the slicing plane.
 You can also move the slicing plane by using the slicing plane in a *2D View*.
 
+There's a small ball glyph right below the axis glyph that can be used dragged with left click in order to
+change the light direction of the rendering.
+
 Shortcuts for 3D View:
  - <kbd>S</kbd> Enable / disable slicing plane
  - <kbd>L</kbd>/<kbd>Right Mouse Button</kbd> Enable / disable linked camera for slicing plane
@@ -82,18 +86,22 @@ The *Histogram View* generates a histogram of the data. The histogram displays t
 different densities in the volume, where the horizontal axis represents the different density
 *"bins"*, and the vertical axis shows the relative amount in relation to the whole volume.
 
-The *bin count*, which is the count of different values you would like to measure, can be changed from the ***View*** menu. In the same menu you can also map the histogram to the transfer function, which will multiply the histogram by the transfer function. This is usefull to filter the histogram such that the
-representation corresponds to the histogram.
+The *bin count*, which is the count of different values you would like to measure, can be changed from
+the ***View*** menu. In the same menu you can also map the histogram to the transfer function, which
+will multiply the histogram by the transfer function. This is usefull to filter the histogram such that
+the representation corresponds to the histogram.
 
 The histogram is generated in the background using separate worker threads and will reflect any changes
-in the connected data. If the histogram is mapped to the transfer function, any changes in the transfer function will regenerate the histogram. Any changes to the bin count will also regenerate the histogram.
+in the connected data. If the histogram is mapped to the transfer function, any changes in the transfer
+function will regenerate the histogram. Any changes to the bin count will also regenerate the histogram.
 
 ## Other stuff
 ### Multithreading
 All expensive tasks the program has to do are running on separate threads from the main program,
 making it possible to still use the program while stuff happens in the background. In practice this
 means data loading and histogram generation. The worker threads are also cancellable.
-For data loading this means that if the user decides to load a different volume mid-loading or cancel the loading process, they can just click on another file or cancel the data window, respectively. For
+For data loading this means that if the user decides to load a different volume mid-loading or cancel
+the loading process, they can just click on another file or cancel the data window, respectively. For
 histograms this means that if the user changes the data mid histogram-generation, the generation will
 cancel and start a new generation as soon as it's convenient.
 # Shortcuts
@@ -105,7 +113,9 @@ focus is indicated by having a cyanish title bar.
  - <kbd>Tab</kbd> Cycles the view focus. You can also left click in a view to change the focus to that view.
  - <kbd>Ctrl+O</kbd> Opens a pop-up menu for loading a volume.
  - <kbd>Ctrl+Shift+O</kbd> Opens the last opened volume.
-   - When you load a volume the application will create a file called `lastopened`, which will contain a path to the file last opened. <kbd>Ctrl+Shift+O</kbd> loads the volume from this file, and reverts to normal file opening if the file isn't found.
+   - When you load a volume the application will create a file called `lastopened`, which will
+   contain a path to the file last opened. <kbd>Ctrl+Shift+O</kbd> loads the volume from this
+   file, and reverts to normal file opening if the file isn't found.
  - <kbd>Ctrl+1</kbd> Create a new *2D View*
  - <kbd>Ctrl+2</kbd> Create a new *3D View*
  - <kbd>Ctrl+3</kbd> Create a new *Tranfer Function View*
@@ -121,7 +131,8 @@ focus is indicated by having a cyanish title bar.
 
 # Dependencies
 The project mostly uses Qt 5.15.2, which is not supplied in this repository and must be downloaded and
-installed separately for development setup. The project also uses [pulzed/mINI](https://github.com/pulzed/mINI) to load INI files, which is supplied as a git submodule. To load all submodules you can use the following command:
+installed separately for development setup. The project also uses [pulzed/mINI](https://github.com/pulzed/mINI)
+to load INI files, which is supplied as a git submodule. To load all submodules you can use the following command:
 ```
 git submodule update --init --recursive
 ```
