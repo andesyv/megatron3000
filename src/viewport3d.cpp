@@ -132,7 +132,7 @@ void Viewport3D::wheelEvent(QWheelEvent *ev)
     //qDebug() << "Mouse scroll in 3D viewport";
     const auto degrees = ev->angleDelta().y() / 8.0;
     double z = degrees/10.0;
-    double speed = 1.0;
+    double speed = 0.1;
 
     this->mRenderer->zoom(z*speed);
     emit Mouse_scroll3D();
