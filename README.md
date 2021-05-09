@@ -110,6 +110,7 @@ focus is indicated by having a cyanish title bar.
  - <kbd>Ctrl+2</kbd> Create a new *3D View*
  - <kbd>Ctrl+3</kbd> Create a new *Tranfer Function View*
  - <kbd>Ctrl+4</kbd> Create a new *Histogram View*
+ - <kbd>F5</kbd> Reload shaders (***only enabled when using a debug build***)
 
 ## View shortcuts
  - <kbd>Ctrl+W</kbd> Close the current view.
