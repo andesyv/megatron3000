@@ -1,0 +1,8 @@
+{
+  "name": "megatron3000",
+  "version-string": "1.1.0",
+  "dependencies": [
+    "qt5-base",
+    "qt5-charts"
+  ]
+}

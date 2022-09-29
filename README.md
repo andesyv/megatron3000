@@ -21,14 +21,13 @@ course project for the [INF252 - Visualization course at the University of Berge
   - [View shortcuts](#view-shortcuts)
     - [3D View](#3d-view-1)
 - [Dependencies](#dependencies)
+- [Building with CMake](#building-with-cmake)
 - [Development setup](#development-setup)
   - [QMake](#qmake)
   - [CMake](#cmake)
     - [Visual Studio](#visual-studio)
-    - [Visual Studio Code](#visual-studio-code)
-- [Deployment](#deployment)
-  - [Windows](#windows)
-    - [VS Code](#vs-code)
+  - [Deployment](#deployment)
+    - [Windows](#windows)
 - [Licence](#licence)
 
 # Design
@@ -168,11 +167,22 @@ focus is indicated by having a cyanish title bar.
  - <kbd>L</kbd>/<kbd>Right Mouse Button</kbd> Enable / disable linked camera for slicing plane
 
 # Dependencies
-The project mostly uses Qt 5.15.2, which is not supplied in this repository and must be downloaded and
-installed separately for development setup. The project also uses [pulzed/mINI](https://github.com/pulzed/mINI)
+The project mostly uses Qt 5.15.6 which is supplied via [vcpkg](https://github.com/microsoft/vcpkg). The project also uses [pulzed/mINI](https://github.com/pulzed/mINI)
 to load INI files, which is supplied as a git submodule. To load all submodules you can use the following command:
 ```
 git submodule update --init --recursive
+```
+
+# Building with CMake
+*Note*: The CMake project automatically fetches the required libraries, but they are huge so it's highly recommended installing the qt libraries in [vcpkg.json](vcpkg.json) locally with vcpkg before configuring the project.
+
+First run CMake to configure the project:
+```
+cmake -B build .
+```
+And then build (*Debug* or *Release*):
+```
+cmake --build build --config Release
 ```
 
 # Development setup
@@ -182,7 +192,7 @@ The project uses two build systems that you can choose from when building: QMake
 Definitively the easiest setup. Using either a Qt extension or Qt creator itself, configure the project using the [megatron3000.pro](megatron3000.pro) file.
 
 ## CMake
-The project is additionaly setup using CMake as an optional approach. The CMake project setup has some dependencies in terms of externally linked libraries, which you will have to manually provide the environment paths to yourself. With CMake, this boils down to supplying the path to the CMake project of the dependency to the *CMAKE_PREFIX_PATH* variable. You can either set this as an environment variable in your working environment or you can manually set the CMake variable for the project. Here is how to do this for some different environment setups:
+The project is additionally setup using CMake as an optional approach. External dependencies are automatically setup by vcpkg and CMake, however it is highly recommended to locally install the qt packages manually using vcpkg before configuring the project as they are very large.
 
 ### Visual Studio
 There are two ways of setting up a development environment in Visual Studio: using the CMake CLI or using the build-in CMake support in Visual Studio, the latter being the easiest.
@@ -191,47 +201,19 @@ There are two ways of setting up a development environment in Visual Studio: usi
 
 Using the CLI you can generate a solution file using something like this:
 ```
-cmake -G "Visual Studio 16 2019" -DCMAKE_PREFIX_PATH="D:\Qt\5.15.2\msvc2019_64"
+cmake -G "Visual Studio 16 2019"
 ```
-Replace `Visual Studio 16 2019` with whatever version of Visual Studio you're using, and replace `D:\Qt\5.15.2\msvc2019_64` with the path to your Qt installation (for a specific Qt version and compiler combo). Building the solution as normal in Visual Studio will then build the project, but you will have to manually set up a debugging target and deployment on your own.
+Replace `Visual Studio 16 2019` with whatever version of Visual Studio you're using. Building the solution as normal in Visual Studio will then build the project, but you will have to manually set up a debugging target and deployment on your own.
 
 **CMake Extension**:
 
 Visual Studio 2017 and later has build-in support for CMake. To use this you open up the editor, go to File -> Open -> CMake and then navigate to and select the root `CMakeLists.txt` in this project.
 
-A sample [CMakeSettings.json](CMakeSettings.json) file is included in the project. The CMake extension uses this to correctly configure the CMake project for Visual Studio. In this file you will need to specify additional paths to any dependencies required by the project, like Qt. Just change the `cmakeCommandArgs` key to `"-DCMAKE_PREFIX_PATH=\"qt-installation-path"` where *qt-installation-path* is the full path to your Qt installation.
-
-### Visual Studio Code
-If you're using the [CMake extension for visual studio code](https://marketplace.visualstudio.com/items?itemName=twxs.cmake) you can add custom settings to cmake for a particular workspace by adding it to the `.vscode/settings.json` file. Simply add the key `cmake.configureEnvironment` with the property `CMAKE_PREFIX_PATH` followed by the path to your Qt installation to the `.vscode/settings.json` file (create it if it doesn't exist). Example `.vscode/settings.json` file:
-```json
-{
-    "cmake.configureEnvironment": {
-        "CMAKE_PREFIX_PATH": "D:\\Qt\\5.15.2\\msvc2019_64"
-    }
-}
-```
-
-For linter help you would probably also like to add the include path `<qt-installation-path>/include` to the `.vscode/c_cpp_properties.json` file aswell. Ex.:
-```json
-{
-    "configurations": [
-        {
-            "name": "Win32",
-            "includePath": [
-                "${workspaceFolder}/**",
-                "D:\\Qt\\5.15.2\\msvc2019_64\\include"
-            ]
-        }
-    ]
-}
-```
-
-# Deployment
-## Windows
-If using Windows you need to dynamically link to shared libraries. To do this you need to have all the dynamically linked libraries loaded in a path the executable have access to, like the working directory or system32. Fortunately Qt comes with a program to setup dynamically linked libraries for us called `windeployqt`. Simply run this program, located in the `bin` folder for your Qt installation, with the built executable as an argument and it will set up all shared libraries in the current working directory.
-
-### VS Code
-VS Code tasks are handy, so I've set up a tasks template in the file [vscode.tasks.json](vscode.tasks.json) that can be used to automate the process of building and linking.
+## Deployment
+### Windows
+If using Windows you might need to dynamically link to shared libraries. To do this you need to have all the dynamically linked libraries loaded in a path the executable have access to, like the working directory or system32. Fortunately Qt comes with a program to setup dynamically linked libraries for us called `windeployqt`. Simply run this program, located in the `bin` folder for your Qt installation, with the built executable as an argument and it will set up all shared libraries in the current working directory.
 
 # Licence
-Copyright © 2021, Sigurd Aleksander Sagstad and Anders Syvertsen.
+Starting with version 1.1 this software and all source code is open source!, and licensed under [LICENSE](LICENSE).
+
+The version before is copyrighted © 2021 by Sigurd Aleksander Sagstad and Anders Syvertsen.
