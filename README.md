@@ -20,6 +20,7 @@ course project for the [INF252 - Visualization course at the University of Berge
   - [Global shortcuts](#global-shortcuts)
   - [View shortcuts](#view-shortcuts)
     - [3D View](#3d-view-1)
+- [Data](#data)
 - [Dependencies](#dependencies)
 - [Building with CMake](#building-with-cmake)
 - [Development setup](#development-setup)
@@ -165,6 +166,11 @@ focus is indicated by having a cyanish title bar.
 ### 3D View
  - <kbd>S</kbd> Enable / disable slicing plane
  - <kbd>L</kbd>/<kbd>Right Mouse Button</kbd> Enable / disable linked camera for slicing plane
+
+# Data
+In the original course, we were given some data that followed a specific structure and one of the tasks was to figure out how to read said data. Each datafile is a single "dat" file containing the volume dimensions as a header, and then the rest of the file contains the raw data in single bytes using 12 bits with padding. Alongside each file there is an INI file describing the spacing of the volume grid. Two of the original data files used for tests and the example images can be found in the [dat](dat) folder.
+
+Additionally, the application can now read the Nifti-1 file format supported via [nifti_clib](https://nifti-imaging.github.io).
 
 # Dependencies
 The project mostly uses Qt 5.15.6 which is supplied via [vcpkg](https://github.com/microsoft/vcpkg). The project also uses [pulzed/mINI](https://github.com/pulzed/mINI)
