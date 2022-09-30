@@ -194,6 +194,10 @@ Definitively the easiest setup. Using either a Qt extension or Qt creator itself
 ## CMake
 The project is additionally setup using CMake as an optional approach. External dependencies are automatically setup by vcpkg and CMake, however it is highly recommended to locally install the qt packages manually using vcpkg before configuring the project as they are very large.
 
+If you already have the Qt toolsets installed on your local machine you can also directly link to them instead of downloading via vcpkg. To do so:
+  1. First, remove the qt library references in the [vcpkg.json](vcpkg.json) file.
+  2. Link to the Qt installation toolset root folder while configuring CMake by specifying the prefix path. E.g.: `cmake -G "Visual Studio 16 2019" -DCMAKE_PREFIX_PATH="D:\Qt\5.15.2\msvc2019_64"`
+
 ### Visual Studio
 There are two ways of setting up a development environment in Visual Studio: using the CMake CLI or using the build-in CMake support in Visual Studio, the latter being the easiest.
 
