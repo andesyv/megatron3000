@@ -79,12 +79,11 @@ private:
     bool m_texInitiated{false};
     std::optional<GLuint> m_binding{std::nullopt};
     QVector3D m_scale{};
-    QVector3D m_spacing{};
+    QVector3D m_spacing{1.f, 1.f, 1.f};
 
 
     void generateTexture();
-    bool loadINI(const QString &fileName);
-
+    std::optional<std::vector<float>> readBytesFromDataFile(const QString &fileName, const bool& cancel = false);
 
     std::vector<QVector4D> m_tfValues;
     GLuint m_tfBuffer;

@@ -20,6 +20,7 @@ option(EMBEDDED_SHADERS "Embed shaders into executable" OFF)
 if (EMBEDDED_SHADERS)
     add_compile_definitions(EMBEDDED_SHADERS)
 endif()
+add_compile_definitions(SHADERPATH="${CMAKE_SOURCE_DIR}/src/shaders")
 
 
 target_include_directories(megatron3000 PRIVATE lib/mINI/src)
@@ -28,7 +29,8 @@ find_package(Qt5 COMPONENTS Widgets Gui Concurrent REQUIRED)
 find_package(Qt5Charts)
 target_link_libraries(megatron3000 PRIVATE Qt::Core Qt::Widgets Qt::Gui Qt::Charts Qt::Concurrent)
 
-add_compile_definitions(SHADERPATH="${CMAKE_SOURCE_DIR}/src/shaders")
+find_package(NIFTI CONFIG REQUIRED)
+target_link_libraries(megatron3000 PRIVATE NIFTI::niftiio)
 
 # Add project sources
 add_subdirectory(src)

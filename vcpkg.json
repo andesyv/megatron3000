@@ -3,6 +3,7 @@
   "version-string": "1.1.0",
   "dependencies": [
     "qt5-base",
-    "qt5-charts"
+    "qt5-charts",
+    "nifticlib"
   ]
 }

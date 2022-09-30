@@ -9,6 +9,7 @@
 #include <QOffscreenSurface>
 #include <QCloseEvent>
 #include <QThreadPool>
+#include <nifti1_io.h>
 
 
 DataWidget::DataWidget(QWidget *parent) :
@@ -77,7 +78,9 @@ void DataWidget::on_listView_doubleClicked(const QModelIndex &index)
 {
     // This is the absolute file path to the file double clicked
     QString filePath = filemodel->fileInfo(index).absoluteFilePath();
-    if (filemodel->fileInfo(index).suffix()=="dat") {
+    auto fileInfo = filemodel->fileInfo(index);
+    auto path = fileInfo.filePath().toStdString();
+    if (fileInfo.suffix()=="dat" || -1 < is_nifti_file(path.c_str())) {
         load(filePath);
     } else {
         //Not supported file type
